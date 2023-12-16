@@ -3,7 +3,7 @@ import torch.nn as nn
 from typing import Self
 
 
-class LoRAfiedWeight(nn.Module):
+class LoRAfiedLinear(nn.Module):
     """
     Approximation of a weight matrix as a sum of a base weight matrix and a low-rank matrix.
     Can be computed automatically using from_weight_delta().
@@ -15,7 +15,7 @@ class LoRAfiedWeight(nn.Module):
         assert len(down_proj.shape) == 2, "down_proj should be 2D tensor of weights"
         assert up_proj.shape[1] == down_proj.shape[0], "up_proj and down_proj should have same hidden dim"
 
-        if isinstance(base, nn.Linear) or isinstance(base, LoRAfiedWeight):
+        if isinstance(base, nn.Linear) or isinstance(base, LoRAfiedLinear):
             assert up_proj.shape[0] == base.weight.shape[0], "up_proj should have same output dim as base"
             assert down_proj.shape[1] == base.weight.shape[1], "down_proj should have same input dim as base"
 
@@ -26,15 +26,15 @@ class LoRAfiedWeight(nn.Module):
         with th.no_grad():
             self.up_proj.weight.copy_(up_proj)
             self.down_proj.weight.copy_(down_proj)
-    
+
     @property
     def weight(self) -> th.Tensor:
         return self.base.weight + self.up_proj.weight @ self.down_proj.weight
 
     @classmethod
     def from_weight_delta(cls, base: nn.Linear | Self, derived: nn.Linear | Self, rank: int | float) -> Self:
-        assert isinstance(base, nn.Linear) or isinstance(base, LoRAfiedWeight), "base should be nn.Linear or LoRAfiedWeight"
-        assert isinstance(derived, nn.Linear) or isinstance(derived, LoRAfiedWeight), "derived should be nn.Linear or LoRAfiedWeight"
+        assert isinstance(base, nn.Linear) or isinstance(base, LoRAfiedLinear), "base should be nn.Linear or LoRAfiedLinear"
+        assert isinstance(derived, nn.Linear) or isinstance(derived, LoRAfiedLinear), "derived should be nn.Linear or LoRAfiedLinear"
         assert base.weight.shape == derived.weight.shape, "base and derived should have same shape"
         assert base.device == derived.device, "base and derived should be on same device"
 
