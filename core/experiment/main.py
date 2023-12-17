@@ -38,7 +38,8 @@ def lorafy_lm_parameter_grid_eval(
     ranks: Iterable[int | float] = (1/16, 1/8, 1/4),
     param_names: Iterable[str] = ("self_attn.q_proj", "self_attn.k_proj"),
     mappings: Iterable[dict[int, int]] | None = None,
-    raw_results_dir: os.PathLike | str = "raw_results"
+    raw_results_dir: os.PathLike | str = "raw_results",
+    lorafied_model_cache_dir: os.PathLike | str = ".lorafied_model_cache",
 ) -> None:
     initialize_tasks(verbosity="INFO")
     tasks = ["winogrande"]
@@ -51,41 +52,55 @@ def lorafy_lm_parameter_grid_eval(
 
     full_results = {}
     param_names_power_set = powerset(param_names)
-    for rank, param_names, (base_param_idx, mapping) in product(ranks, param_names_power_set, enumerate(mappings)):
+    # currently only works when there's 1 base param
+    for rank, param_names, (mapping_idx, mapping) in product(ranks, param_names_power_set, enumerate(mappings)):
+        mapping_json = json.dumps(mapping, sort_keys=True)
+        experiment_hash = hash(f"{rank}{param_names}{mapping_json}")
+        lorafied_params_hash = hash(f"{model.__class__.__name__}{rank}{mapping_json}")
+
+        cache_path = os.path.join(
+            lorafied_model_cache_dir,
+            lorafied_params_hash,  # so we can reuse lorafied params across multiple experiments
+        )
+
         lorafy_parameters_layerwise(
             layers,
             rank,
             param_names,
             mapping,
-            inplace=True
+            inplace = True,
+            cache_path = cache_path,
         )
 
         lm = HFLM(pretrained=model, tokenizer=tokenizer)
 
         results = evaluator.simple_evaluate(
-            model=lm,
-            tasks=tasks,
+            model = lm,
+            tasks = tasks,
             batch_size="auto",
         )
         results["lorafy_config"] = {
             "rank": rank,
             "param_names": param_names,
+            "base_params": sorted(list(set(mapping.values()))),
             "mapping": mapping
         }
 
         del layers, tokenizer, model
 
-        test_hash = hash(f"{rank}{param_names}{base_param_idx}")
         raw_output_filepath = os.path.join(
             output_dir,
             raw_results_dir,
-            f"{test_hash}.json"
+            f"{experiment_hash}.json"
         )
         with open(raw_output_filepath, "w", encoding="utf-8") as f:
             json.dump(results, f, indent=2)
 
         results = results["results"]
-        full_results[(rank, param_names, base_param_idx)] = results
+        if len(mappings) == len(layers):  # if there's only one base layer per mapping
+            full_results[(rank, param_names, mapping_idx)] = results
+        else:
+            full_results[(rank, param_names, json.dumps(mapping, sort_keys=True))] = results
 
         if rank == ranks[-1] and param_names == param_names_power_set[-1] and mapping == mappings[-1]:
             break  # don't reload model if we're done

@@ -1,4 +1,5 @@
 import torch.nn as nn
+from copy import deepcopy
 from dataclasses import dataclass
 from lorafied_weight import LoRAfiedLinear
 from core.utils import get_param_ancestors
@@ -37,8 +38,7 @@ def lorafy_model(
     if inplace:
         lorafied_model = model
     else:
-        lorafied_model = model.__class__()
-        lorafied_model.load_state_dict(model.state_dict())
+        lorafied_model = deepcopy(model)
 
     for param_config in param_configs:
         base_param_name = remove_weight_from_name(param_config.base_param)
