@@ -1,0 +1,80 @@
+import torch.nn as nn
+from lorafy_model import LoRAfyParameterConfig, lorafy_model
+from typing import TypeVar, Iterable
+
+
+T = TypeVar("T", bound=nn.ModuleList | nn.Sequential)
+
+
+def lorafy_parameter_layerwise(
+    layers: T,
+    rank: int | float,
+    param_name: str,
+    mapping: dict[int, int],
+    inplace: bool = True
+) -> T:
+    """
+    LoRAfy a parameter layerwise with an index mapping from derived to base parameter.
+
+    :param layers: Model layers to LoRAfy
+    :param rank: Rank of low-rank approximation
+    :param param_name: Name of parameter to LoRAfy. should be consistent across all layers.
+    :param mapping: Mapping from derived to base parameter by layer index
+    :return: LoRAfied model
+    """
+    lorafied_layers = layers
+
+    first_mapping: bool = True
+    for to_layer, from_layer in mapping.items():
+        base_param_name = f"{from_layer}.{param_name}"
+        derived_param_name = f"{to_layer}.{param_name}"
+
+        lorafied_layers = lorafy_model(
+            lorafied_layers,
+            LoRAfyParameterConfig(base_param_name, derived_param_name, rank),
+            inplace = inplace and first_mapping  # Make a copy the first time and reuse it after
+        )
+        first_mapping = False
+
+    return lorafied_layers
+
+def lorafy_parameters_layerwise(
+    layers: T,
+    ranks: int | float | Iterable[int | float],
+    param_names: str | Iterable[str],
+    mapping: dict[int, int],
+    inplace: bool = True
+) -> T:
+    """
+    LoRAfy multiple parameters layerwise with an index mapping from derived to base parameter.
+
+    :param layers: Model layers to LoRAfy
+    :param ranks: Rank for each parameter to LoRAfy, or single rank to use for all parameters
+    :param param_names: Name of parameter(s) to LoRAfy. should be consistent across all layers.
+    :param mapping: Mapping from derived to base parameter by layer index
+    :return: LoRAfied model
+    """
+
+    if isinstance(param_names, str):
+        param_names = [param_names]
+
+    if isinstance(ranks, int) or isinstance(ranks, float):
+        ranks = [ranks] * len(param_names)
+
+    assert len(ranks) == len(param_names), "rank and param_names should have same length"
+    # hi there! thanks for checking out my code! my discord is d0rb if u wanna talk!
+
+    lorafied_layers = layers
+
+    first_param: bool = True
+    for param_name, rank in zip(param_names, ranks):
+        lorafied_layers = lorafy_parameter_layerwise(
+            lorafied_layers,
+            rank,
+            param_name,
+            mapping,
+            inplace = inplace and first_param  # Make a copy the first time and reuse it after
+        )
+        first_param = False
+
+    return lorafied_layers
