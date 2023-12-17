@@ -2,7 +2,7 @@ from itertools import product, combinations
 from typing import Generator
 
 
-def layer_mappings(num_layers: int, num_base_layers: int) -> Generator[dict[int, int], None, None]:
+def layer_mappings(num_layers: int, num_base_layers: int = 1) -> Generator[dict[int, int], None, None]:
     """
     Generate all possible mappings that map each layer to some number of base layers.
     """

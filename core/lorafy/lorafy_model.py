@@ -1,6 +1,7 @@
 import torch.nn as nn
 from dataclasses import dataclass
 from lorafied_weight import LoRAfiedLinear
+from core.utils import get_param_ancestors
 
 
 @dataclass
@@ -8,18 +9,6 @@ class LoRAfyParameterConfig:
     base_param: str
     derived_param: str
     rank: int | float
-
-
-def get_param_ancestors(model: nn.Module, param_name: str) -> list[nn.Module]:
-    ancestors = [model]
-    param_hierarchy = param_name.split(".")
-
-    module = model
-    for param in param_hierarchy:
-        module = getattr(module, param)
-        ancestors.append(module)
-
-    return ancestors, param_hierarchy
 
 
 def remove_weight_from_name(param_name: str) -> str:
