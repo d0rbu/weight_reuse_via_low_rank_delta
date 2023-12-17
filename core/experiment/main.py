@@ -105,4 +105,4 @@ def llama_2_7b_model_and_tokenizer() -> tuple[PreTrainedModel, PreTrainedTokeniz
 
 
 if __name__ == "__main__":
-    lorafy_parameter_grid_eval("outputs/", llama_2_7b_model_and_tokenizer)
+    lorafy_lm_parameter_grid_eval("outputs/", llama_2_7b_model_and_tokenizer)
