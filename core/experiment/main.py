@@ -12,17 +12,17 @@ from itertools import product, chain, combinations
 from typing import Iterable, Callable
 
 
-def powerset(iterable: Iterable):
+def powerset(iterable: Iterable, include_null_set: bool = False):
     full_set = list(iterable)
     return chain.from_iterable(
         combinations(full_set, num_elements)
-        for num_elements in range(len(full_set) + 1)
+        for num_elements in range(0 if include_null_set else 1, len(full_set) + 1)
     )
 
 
 def get_model_tokenizer_and_layers(
     get_model_and_tokenizer: Callable[[], tuple[PreTrainedModel, PreTrainedTokenizer]],
-    blocks_name: str = "model.layers"
+    blocks_name: str,
 ) -> tuple[PreTrainedModel, PreTrainedTokenizer, nn.ModuleList | nn.Sequential]:
     model, tokenizer = get_model_and_tokenizer()
     layers_ancestors, _ = get_param_ancestors(model, blocks_name)
@@ -36,7 +36,7 @@ def lorafy_lm_parameter_grid_eval(
     get_model_and_tokenizer: Callable[[], tuple[PreTrainedModel, PreTrainedTokenizer]],
     blocks_name: str = "model.layers",
     ranks: Iterable[int | float] = (1/16, 1/8, 1/4),
-    param_names: Iterable[str] = ("self_attn.q_proj", "self_attn.k_proj"),
+    param_name_combinations: Iterable[str] = powerset(("self_attn.q_proj", "self_attn.k_proj")),
     mappings: Iterable[dict[int, int]] | None = None,
     raw_results_dir: os.PathLike | str = "raw_results",
     lorafied_model_cache_dir: os.PathLike | str = ".lorafied_model_cache",
@@ -51,9 +51,8 @@ def lorafy_lm_parameter_grid_eval(
         mappings = layer_mappings(len(layers))
 
     full_results = {}
-    param_names_power_set = powerset(param_names)
     # currently only works when there's 1 base param
-    for rank, param_names, (mapping_idx, mapping) in product(ranks, param_names_power_set, enumerate(mappings)):
+    for rank, param_names, (mapping_idx, mapping) in product(ranks, param_name_combinations, enumerate(mappings)):
         mapping_json = json.dumps(mapping, sort_keys=True)
         experiment_hash = hash(f"{rank}{param_names}{mapping_json}")
         lorafied_params_hash = hash(f"{model.__class__.__name__}{rank}{mapping_json}")
@@ -102,7 +101,7 @@ def lorafy_lm_parameter_grid_eval(
         else:
             full_results[(rank, param_names, json.dumps(mapping, sort_keys=True))] = results
 
-        if rank == ranks[-1] and param_names == param_names_power_set[-1] and mapping == mappings[-1]:
+        if rank == ranks[-1] and param_names == param_name_combinations[-1] and mapping == mappings[-1]:
             break  # don't reload model if we're done
 
         model, tokenizer, layers = get_model_tokenizer_and_layers(get_model_and_tokenizer, blocks_name)
