@@ -3,7 +3,9 @@ import torch as th
 import torch.nn as nn
 from copy import deepcopy
 from core.lorafy.lorafy_model import LoRAfyParameterConfig, lorafy_model
+from core.utils import Verbosity
 from typing import TypeVar, Iterable
+from tqdm import tqdm
 
 
 T = TypeVar("T", bound=nn.ModuleList | nn.Sequential)
@@ -16,6 +18,7 @@ def lorafy_parameter_layerwise(
     mapping: dict[int, int],
     inplace: bool = True,
     cache_file: os.PathLike | str | None = None,
+    verbosity: Verbosity = Verbosity.INFO,
 ) -> T:
     """
     LoRAfy a parameter layerwise with an index mapping from derived to base parameter.
@@ -37,8 +40,12 @@ def lorafy_parameter_layerwise(
         lorafied_layers.load_state_dict(th.load(cache_file))
         return lorafied_layers
 
+    to_from_layer_generator = mapping.items()
+    if verbosity >= Verbosity.INFO:
+        to_from_layer_generator = tqdm(to_from_layer_generator)
+
     first_mapping: bool = True
-    for to_layer, from_layer in mapping.items():
+    for to_layer, from_layer in to_from_layer_generator:
         base_param_name = f"{from_layer}.{param_name}"
         derived_param_name = f"{to_layer}.{param_name}"
 
@@ -61,7 +68,8 @@ def lorafy_parameters_layerwise(
     param_names: str | Iterable[str],
     mapping: dict[int, int],
     inplace: bool = True,
-    cache_path: os.PathLike | str | None = None
+    cache_path: os.PathLike | str | None = None,
+    verbosity: Verbosity = Verbosity.INFO,
 ) -> T:
     """
     LoRAfy multiple parameters layerwise with an index mapping from derived to base parameter.
@@ -96,6 +104,7 @@ def lorafy_parameters_layerwise(
             mapping,
             inplace = inplace and first_param,  # Make a copy the first time and reuse it after
             cache_file = cache_file,
+            verbosity = verbosity,
         )
         first_param = False
 

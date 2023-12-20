@@ -4,7 +4,7 @@ import torch.nn as nn
 from transformers import AutoModelForCausalLM, AutoTokenizer, PreTrainedModel, PreTrainedTokenizer
 from core.lorafy.mappings import layer_mappings
 from core.lorafy.structured_lorafy import lorafy_parameters_layerwise
-from core.utils import get_param_ancestors, log_error, log_warn, log_info, log_info_1
+from core.utils import get_param_ancestors, log_error, log_warn, log_info, log_info_1, Verbosity
 from lm_eval import evaluator
 from lm_eval.tasks import initialize_tasks
 from lm_eval.models.huggingface import HFLM
@@ -40,10 +40,13 @@ def lorafy_lm_parameter_grid_eval(
     mappings: Iterable[dict[int, int]] | None = None,
     raw_results_dir: os.PathLike | str = "raw_results",
     lorafied_model_cache_dir: os.PathLike | str = ".lorafied_model_cache",
-    verbosity: str = "INFO",
+    verbosity: Verbosity | str = "INFO",
 ) -> None:
+    if isinstance(verbosity, str):
+        verbosity = Verbosity[verbosity]
+
     log_info("Initializing tasks...", verbosity)
-    initialize_tasks(verbosity=verbosity)
+    initialize_tasks(verbosity = verbosity)
     tasks = ["winogrande"]
     log_info(f"Tasks: {tasks}", verbosity)
     os.makedirs(os.path.join(output_dir, raw_results_dir), exist_ok=True)
@@ -81,6 +84,7 @@ def lorafy_lm_parameter_grid_eval(
             mapping,
             inplace = True,
             cache_path = cache_path,
+            verbosity = verbosity,
         )
 
         log_info_1(f"Wrapping LoRAfied model in lm-evaluation-harness HFLM API...", verbosity)

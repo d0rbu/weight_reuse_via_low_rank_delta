@@ -22,10 +22,7 @@ def get_param_ancestors(model: nn.Module, param_name: str) -> list[nn.Module]:
 
     return ancestors, param_hierarchy
 
-def log(msg: str, current_verbosity: Verbosity | str, msg_verbosity: Verbosity):
-    if isinstance(current_verbosity, str):
-        current_verbosity = Verbosity[current_verbosity]
-
+def log(msg: str, current_verbosity: Verbosity, msg_verbosity: Verbosity):
     if current_verbosity < msg_verbosity:  # If the current verbosity is not important enough
         return
     
