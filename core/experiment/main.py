@@ -40,13 +40,14 @@ def lorafy_lm_parameter_grid_eval(
     mappings: Iterable[dict[int, int]] | None = None,
     raw_results_dir: os.PathLike | str = "raw_results",
     lorafied_model_cache_dir: os.PathLike | str = ".lorafied_model_cache",
-    verbosity: Verbosity | str = "INFO",
+    verbosity: str = "INFO",
 ) -> None:
-    if isinstance(verbosity, str):
-        verbosity = Verbosity[verbosity]
+    enum_verbosity = Verbosity[verbosity]
 
-    log_info("Initializing tasks...", verbosity)
+    log_info("Initializing tasks...", enum_verbosity)
     initialize_tasks(verbosity = verbosity)
+    verbosity = enum_verbosity
+
     tasks = ["winogrande"]
     log_info(f"Tasks: {tasks}", verbosity)
     os.makedirs(os.path.join(output_dir, raw_results_dir), exist_ok=True)
