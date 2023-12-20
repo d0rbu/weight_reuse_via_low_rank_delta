@@ -4,7 +4,7 @@ import torch.nn as nn
 from transformers import AutoModelForCausalLM, AutoTokenizer, PreTrainedModel, PreTrainedTokenizer
 from core.lorafy.mappings import layer_mappings
 from core.lorafy.structured_lorafy import lorafy_parameters_layerwise
-from core.utils import get_param_ancestors
+from core.utils import get_param_ancestors, log_error, log_warn, log_info, log_info_1
 from lm_eval import evaluator
 from lm_eval.tasks import initialize_tasks
 from lm_eval.models.huggingface import HFLM
@@ -40,28 +40,40 @@ def lorafy_lm_parameter_grid_eval(
     mappings: Iterable[dict[int, int]] | None = None,
     raw_results_dir: os.PathLike | str = "raw_results",
     lorafied_model_cache_dir: os.PathLike | str = ".lorafied_model_cache",
+    verbosity: str = "INFO",
 ) -> None:
-    initialize_tasks(verbosity="INFO")
+    log_info("Initializing tasks...", verbosity)
+    initialize_tasks(verbosity=verbosity)
     tasks = ["winogrande"]
+    log_info(f"Tasks: {tasks}", verbosity)
     os.makedirs(os.path.join(output_dir, raw_results_dir), exist_ok=True)
 
+    log_info("Initializing model and tokenizer...", verbosity)
     model, tokenizer, layers = get_model_tokenizer_and_layers(get_model_and_tokenizer, blocks_name)
+    log_info_1(f"Model:\n{model}", verbosity)
+    log_info_1(f"Tokenizer:\n{tokenizer}", verbosity)
+    log_info_1(f"Model Layers:\n{layers}", verbosity)
 
     if mappings is None:
+        log_info("Initializing layer mappings...", verbosity)
         mappings = layer_mappings(len(layers))
+        log_info_1(str(mappings), verbosity)
 
     full_results = {}
-    # currently only works when there's 1 base param
     for rank, param_names, (mapping_idx, mapping) in product(ranks, param_name_combinations, enumerate(mappings)):
+        log_info(f"Evaluating the following config:\nRank: {rank}\nParameters: {param_names}", verbosity)
+        log_info_1(f"Mapping: {mapping}", verbosity)
         mapping_json = json.dumps(mapping, sort_keys=True)
         experiment_hash = hash(f"{rank}{param_names}{mapping_json}")
         lorafied_params_hash = hash(f"{model.__class__.__name__}{rank}{mapping_json}")
+        log_info_1(f"Experiment hash: {experiment_hash}\nLoRAfied parameter cache hash: {lorafied_params_hash}", verbosity)
 
         cache_path = os.path.join(
             lorafied_model_cache_dir,
-            lorafied_params_hash,  # so we can reuse lorafied params across multiple experiments
+            str(lorafied_params_hash),  # so we can reuse lorafied params across multiple experiments
         )
 
+        log_info(f"LoRAfying the parameters...", verbosity)
         lorafy_parameters_layerwise(
             layers,
             rank,
@@ -71,8 +83,10 @@ def lorafy_lm_parameter_grid_eval(
             cache_path = cache_path,
         )
 
+        log_info_1(f"Wrapping LoRAfied model in lm-evaluation-harness HFLM API...", verbosity)
         lm = HFLM(pretrained=model, tokenizer=tokenizer)
 
+        log_info(f"Evaluating LoRAfied model...", verbosity)
         results = evaluator.simple_evaluate(
             model = lm,
             tasks = tasks,
@@ -94,6 +108,7 @@ def lorafy_lm_parameter_grid_eval(
         )
         with open(raw_output_filepath, "w", encoding="utf-8") as f:
             json.dump(results, f, indent=2)
+        log_info_1(f"Raw output written to {raw_output_filepath}", verbosity)
 
         results = results["results"]
         if len(mappings) == len(layers):  # if there's only one base layer per mapping
@@ -104,10 +119,12 @@ def lorafy_lm_parameter_grid_eval(
         if rank == ranks[-1] and param_names == param_name_combinations[-1] and mapping == mappings[-1]:
             break  # don't reload model if we're done
 
+        log_info(f"Initializing next model and tokenizer...", verbosity)
         model, tokenizer, layers = get_model_tokenizer_and_layers(get_model_and_tokenizer, blocks_name)
 
     with open(os.path.join(output_dir, "results.json"), "w", encoding="utf-8") as f:
         json.dump(full_results, f, indent=2)
+    log_info(f"Wrote full results to {output_dir}", verbosity)
 
 
 def llama_2_7b_model_and_tokenizer() -> tuple[PreTrainedModel, PreTrainedTokenizer]:

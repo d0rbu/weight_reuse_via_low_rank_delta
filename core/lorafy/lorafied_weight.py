@@ -36,7 +36,7 @@ class LoRAfiedLinear(nn.Module):
         assert isinstance(base, nn.Linear) or isinstance(base, LoRAfiedLinear), "base should be nn.Linear or LoRAfiedLinear"
         assert isinstance(derived, nn.Linear) or isinstance(derived, LoRAfiedLinear), "derived should be nn.Linear or LoRAfiedLinear"
         assert base.weight.shape == derived.weight.shape, "base and derived should have same shape"
-        assert base.device == derived.device, "base and derived should be on same device"
+        assert base.weight.device == derived.weight.device, "base and derived should be on same device"
 
         weight_delta = (derived.weight - base.weight).detach()
         U, S, Vh = th.linalg.svd(weight_delta, full_matrices=False)

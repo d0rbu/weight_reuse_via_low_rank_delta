@@ -2,7 +2,7 @@ import os
 import torch as th
 import torch.nn as nn
 from copy import deepcopy
-from lorafy_model import LoRAfyParameterConfig, lorafy_model
+from core.lorafy.lorafy_model import LoRAfyParameterConfig, lorafy_model
 from typing import TypeVar, Iterable
 
 
