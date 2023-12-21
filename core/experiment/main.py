@@ -2,6 +2,7 @@ import os
 import json
 import torch.nn as nn
 from transformers import AutoModelForCausalLM, AutoTokenizer, PreTrainedModel, PreTrainedTokenizer
+from accelerate import dispatch_model, infer_auto_device_map
 from core.lorafy.mappings import layer_mappings
 from core.lorafy.structured_lorafy import lorafy_parameters_layerwise
 from core.utils import get_param_ancestors, log_error, log_warn, log_info, log_info_1, Verbosity
@@ -89,6 +90,9 @@ def lorafy_lm_parameter_grid_eval(
             verbosity = verbosity,
             move_device = move_device,
         )
+
+        new_device_map = infer_auto_device_map(model)
+        dispatch_model(model, new_device_map)
 
         log_info_1(f"Wrapping LoRAfied model in lm-evaluation-harness HFLM API...", verbosity)
         lm = HFLM(pretrained=model, tokenizer=tokenizer)
