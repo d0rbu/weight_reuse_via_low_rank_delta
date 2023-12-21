@@ -1,5 +1,7 @@
+import asyncio
 import torch as th
 import torch.nn as nn
+from torch.futures import Future
 from typing import Self
 
 
@@ -67,6 +69,12 @@ class LoRAfiedLinear(nn.Module):
         Qh = S @ Vh[:rank]
 
         return cls(base, P, Qh)
+    
+    def base_linear_callback(self: Self, future: Future):
+        pass
 
     def forward(self, x: th.Tensor) -> th.Tensor:
-        return self.base(x) + self.up_proj(self.down_proj(x))
+        # To deal with tensors being on different devices and also speed up by doing parallelism
+        # Sequentially, this code would be self.base(x) + self.up_proj(self.down_proj(x))
+
+        pass

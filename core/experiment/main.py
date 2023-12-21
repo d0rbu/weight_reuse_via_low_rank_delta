@@ -92,7 +92,7 @@ def lorafy_lm_parameter_grid_eval(
         )
 
         new_device_map = infer_auto_device_map(model)
-        dispatch_model(model, new_device_map)
+        model = dispatch_model(model, new_device_map)
 
         log_info_1(f"Wrapping LoRAfied model in lm-evaluation-harness HFLM API...", verbosity)
         lm = HFLM(pretrained=model, tokenizer=tokenizer)
