@@ -41,6 +41,7 @@ def lorafy_lm_parameter_grid_eval(
     raw_results_dir: os.PathLike | str = "raw_results",
     lorafied_model_cache_dir: os.PathLike | str = ".lorafied_model_cache",
     verbosity: str = "INFO",
+    move_device: str | None = None,
 ) -> None:
     enum_verbosity = Verbosity[verbosity]
 
@@ -86,6 +87,7 @@ def lorafy_lm_parameter_grid_eval(
             inplace = True,
             cache_path = cache_path,
             verbosity = verbosity,
+            move_device = move_device,
         )
 
         log_info_1(f"Wrapping LoRAfied model in lm-evaluation-harness HFLM API...", verbosity)
@@ -132,13 +134,13 @@ def lorafy_lm_parameter_grid_eval(
     log_info(f"Wrote full results to {output_dir}", verbosity)
 
 
-def llama_2_7b_model_and_tokenizer() -> tuple[PreTrainedModel, PreTrainedTokenizer]:
+def llama_2_7b_model_and_tokenizer(device_map: str = "cpu") -> tuple[PreTrainedModel, PreTrainedTokenizer]:
     model_name = "meta-llama/Llama-2-7b-hf"
-    model = AutoModelForCausalLM.from_pretrained(model_name, device_map="auto")
+    model = AutoModelForCausalLM.from_pretrained(model_name, device_map=device_map)
     tokenizer = AutoTokenizer.from_pretrained(model_name)
 
     return model, tokenizer
 
 
 if __name__ == "__main__":
-    lorafy_lm_parameter_grid_eval("outputs/", llama_2_7b_model_and_tokenizer)
+    lorafy_lm_parameter_grid_eval("outputs/", llama_2_7b_model_and_tokenizer, move_device="cuda:0")

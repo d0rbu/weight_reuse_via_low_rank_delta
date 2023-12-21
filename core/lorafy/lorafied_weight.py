@@ -32,13 +32,31 @@ class LoRAfiedLinear(nn.Module):
         return self.base.weight + self.up_proj.weight @ self.down_proj.weight
 
     @classmethod
-    def from_weight_delta(cls, base: nn.Linear | Self, derived: nn.Linear | Self, rank: int | float) -> Self:
+    def from_weight_delta(
+        cls,
+        base: nn.Linear | Self,
+        derived: nn.Linear | Self,
+        rank: int | float,
+        move_device: str | None = None,
+    ) -> Self:
         assert isinstance(base, nn.Linear) or isinstance(base, LoRAfiedLinear), "base should be nn.Linear or LoRAfiedLinear"
         assert isinstance(derived, nn.Linear) or isinstance(derived, LoRAfiedLinear), "derived should be nn.Linear or LoRAfiedLinear"
         assert base.weight.shape == derived.weight.shape, "base and derived should have same shape"
-        assert base.weight.device == derived.weight.device, "base and derived should be on same device"
+
+        if move_device:
+            original_derived_device = derived.weight.device
+            original_base_device = base.weight.device
+            derived.weight = derived.weight.to(move_device)
+            base.weight = base.weight.to(move_device)
+        else:
+            assert base.weight.device == derived.weight.device, "base and derived should be on same device"
 
         weight_delta = (derived.weight - base.weight).detach()
+
+        if move_device:
+            derived.weight = derived.weight.to(original_derived_device)
+            base.weight = base.weight.to(original_base_device)
+
         U, S, Vh = th.linalg.svd(weight_delta, full_matrices=False)
 
         if isinstance(rank, float):

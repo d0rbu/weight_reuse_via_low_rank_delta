@@ -19,6 +19,7 @@ def lorafy_parameter_layerwise(
     inplace: bool = True,
     cache_file: os.PathLike | str | None = None,
     verbosity: Verbosity = Verbosity.INFO,
+    move_device: str | None = None,
 ) -> T:
     """
     LoRAfy a parameter layerwise with an index mapping from derived to base parameter.
@@ -52,7 +53,8 @@ def lorafy_parameter_layerwise(
         lorafied_layers = lorafy_model(
             lorafied_layers,
             LoRAfyParameterConfig(base_param_name, derived_param_name, rank),
-            inplace = inplace or not first_mapping  # Make a copy the first time and reuse it after
+            inplace = inplace or not first_mapping,  # Make a copy the first time and reuse it after
+            move_device = move_device,
         )
         first_mapping = False
 
@@ -70,6 +72,7 @@ def lorafy_parameters_layerwise(
     inplace: bool = True,
     cache_path: os.PathLike | str | None = None,
     verbosity: Verbosity = Verbosity.INFO,
+    move_device: str | None = None,
 ) -> T:
     """
     LoRAfy multiple parameters layerwise with an index mapping from derived to base parameter.
@@ -105,6 +108,7 @@ def lorafy_parameters_layerwise(
             inplace = inplace or not first_param,  # Make a copy the first time and reuse it after
             cache_file = cache_file,
             verbosity = verbosity,
+            move_device = move_device,
         )
         first_param = False
 
