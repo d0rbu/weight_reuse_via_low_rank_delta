@@ -1,4 +1,4 @@
-import asyncio
+import threading
 import torch as th
 import torch.nn as nn
 from torch.futures import Future
@@ -69,12 +69,56 @@ class LoRAfiedLinear(nn.Module):
         Qh = S @ Vh[:rank]
 
         return cls(base, P, Qh)
-    
-    def base_linear_callback(self: Self, future: Future):
-        pass
 
-    def forward(self, x: th.Tensor) -> th.Tensor:
+    def async_base_forward(self: Self, future: Future[th.Tensor], x: th.Tensor) -> None:
+        if self.base.weight.device == x.device:
+            future.set_result(self.base(x))
+
+        original_device = self.base.weight.device
+
+        self.base = self.base.to(x.device)
+        output = self.base(x)
+        # self.base = self.base.to(original_device)
+
+        future.set_result(output)
+
+    def async_lora_forward(self: Self, future: Future[th.Tensor], x: th.Tensor) -> None:
+        if self.up_proj.weight.device == x.device and self.down_proj.weight.device == x.device:
+            future.set_result(self.up_proj(self.down_proj(x)))
+        
+        original_device = self.down_proj.weight.device
+
+        self.down_proj = self.down_proj.to(x.device)
+        hidden = self.down_proj(x)
+        self.down_proj = self.down_proj.to(original_device)
+
+        original_device = self.up_proj.weight.device
+
+        self.up_proj = self.up_proj.to(x.device)
+        output = self.up_proj(hidden)
+        self.up_proj = self.up_proj.to(original_device)
+
+        future.set_result(output)
+
+    def forward(self: Self, x: th.Tensor) -> th.Tensor:
         # To deal with tensors being on different devices and also speed up by doing parallelism
         # Sequentially, this code would be self.base(x) + self.up_proj(self.down_proj(x))
 
-        pass
+        base_future: Future[th.Tensor] = Future()
+        lora_future: Future[th.Tensor] = Future()
+
+        base_thread: threading.Thread = threading.Thread(
+            target = self.async_base_forward,
+            args = (base_future, x),
+        )
+        lora_thread: threading.Thread = threading.Thread(
+            target = self.async_lora_forward,
+            args = (lora_future, x),
+        )
+
+        base_thread.start()
+        lora_thread.start()
+
+        base_result, lora_result = th.futures.wait_all([base_future, lora_future])
+
+        return base_result + lora_result
