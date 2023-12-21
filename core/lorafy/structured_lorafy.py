@@ -52,7 +52,7 @@ def lorafy_parameter_layerwise(
         lorafied_layers = lorafy_model(
             lorafied_layers,
             LoRAfyParameterConfig(base_param_name, derived_param_name, rank),
-            inplace = inplace and first_mapping  # Make a copy the first time and reuse it after
+            inplace = inplace or not first_mapping  # Make a copy the first time and reuse it after
         )
         first_mapping = False
 
@@ -102,7 +102,7 @@ def lorafy_parameters_layerwise(
             rank,
             param_name,
             mapping,
-            inplace = inplace and first_param,  # Make a copy the first time and reuse it after
+            inplace = inplace or not first_param,  # Make a copy the first time and reuse it after
             cache_file = cache_file,
             verbosity = verbosity,
         )

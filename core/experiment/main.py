@@ -134,7 +134,7 @@ def lorafy_lm_parameter_grid_eval(
 
 def llama_2_7b_model_and_tokenizer() -> tuple[PreTrainedModel, PreTrainedTokenizer]:
     model_name = "meta-llama/Llama-2-7b-hf"
-    model = AutoModelForCausalLM.from_pretrained(model_name)
+    model = AutoModelForCausalLM.from_pretrained(model_name, device_map="auto")
     tokenizer = AutoTokenizer.from_pretrained(model_name)
 
     return model, tokenizer
