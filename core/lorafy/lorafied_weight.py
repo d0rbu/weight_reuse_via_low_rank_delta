@@ -109,8 +109,6 @@ class LoRAfiedLinear(nn.Module):
         base_future: Future[th.Tensor] = Future()
         lora_future: Future[th.Tensor] = Future()
 
-        import pdb; pdb.set_trace()
-
         base_thread: threading.Thread = threading.Thread(
             target = self.async_base_forward,
             args = (base_future, x),
