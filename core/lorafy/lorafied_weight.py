@@ -73,18 +73,20 @@ class LoRAfiedLinear(nn.Module):
     def async_base_forward(self: Self, future: Future[th.Tensor], x: th.Tensor) -> None:
         if self.base.weight.device == x.device:
             future.set_result(self.base(x))
+            return
 
         original_device = self.base.weight.device
 
         self.base = self.base.to(x.device)
         output = self.base(x)
-        # self.base = self.base.to(original_device)
+        self.base = self.base.to(original_device)
 
         future.set_result(output)
 
     def async_lora_forward(self: Self, future: Future[th.Tensor], x: th.Tensor) -> None:
         if self.up_proj.weight.device == x.device and self.down_proj.weight.device == x.device:
             future.set_result(self.up_proj(self.down_proj(x)))
+            return
         
         original_device = self.down_proj.weight.device
 
@@ -106,6 +108,8 @@ class LoRAfiedLinear(nn.Module):
 
         base_future: Future[th.Tensor] = Future()
         lora_future: Future[th.Tensor] = Future()
+
+        import pdb; pdb.set_trace()
 
         base_thread: threading.Thread = threading.Thread(
             target = self.async_base_forward,
