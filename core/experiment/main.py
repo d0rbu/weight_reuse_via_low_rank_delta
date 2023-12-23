@@ -10,7 +10,7 @@ from lm_eval import evaluator
 from lm_eval.tasks import initialize_tasks
 from lm_eval.models.huggingface import HFLM
 from itertools import product, chain, combinations
-from typing import Iterable, Callable
+from typing import Iterable, Callable, Collection
 
 
 def powerset(iterable: Iterable, include_null_set: bool = False):
@@ -38,7 +38,7 @@ def lorafy_lm_parameter_grid_eval(
     blocks_name: str = "model.layers",
     ranks: Iterable[int | float] = (1/16, 1/8, 1/4),
     param_name_combinations: Iterable[str] = powerset(("self_attn.q_proj", "self_attn.k_proj")),
-    mappings: Iterable[dict[int, int]] | None = None,
+    mappings: Collection[dict[int, int]] | None = None,
     raw_results_dir: os.PathLike | str = "raw_results",
     lorafied_model_cache_dir: os.PathLike | str = ".lorafied_model_cache",
     verbosity: str = "INFO",
@@ -91,8 +91,9 @@ def lorafy_lm_parameter_grid_eval(
             move_device = move_device,
         )
 
-        new_device_map = infer_auto_device_map(model)
-        model = dispatch_model(model, new_device_map)
+        # new_device_map = infer_auto_device_map(model)
+        # model = dispatch_model(model, new_device_map)
+        model = model.cuda()
 
         log_info_1(f"Wrapping LoRAfied model in lm-evaluation-harness HFLM API...", verbosity)
         lm = HFLM(pretrained=model, tokenizer=tokenizer)

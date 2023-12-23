@@ -160,3 +160,4 @@ cython_debug/
 #.idea/
 
 .lorafied_model_cache/
+outputs/raw_results/
