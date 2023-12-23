@@ -111,7 +111,7 @@ def lorafy_lm_parameter_grid_eval(
             "mapping": mapping
         }
 
-        del layers, tokenizer, model
+        del tokenizer, model
 
         raw_output_filepath = os.path.join(
             output_dir,
@@ -123,10 +123,13 @@ def lorafy_lm_parameter_grid_eval(
         log_info_1(f"Raw output written to {raw_output_filepath}", verbosity)
 
         results = results["results"]
+        import pdb; pdb.set_trace()
         if len(mappings) == len(layers):  # if there's only one base layer per mapping
             full_results[(rank, param_names, mapping_idx)] = results
         else:
             full_results[(rank, param_names, json.dumps(mapping, sort_keys=True))] = results
+        
+        del layers
 
         if rank == ranks[-1] and param_names == param_name_combinations[-1] and mapping == mappings[-1]:
             break  # don't reload model if we're done
