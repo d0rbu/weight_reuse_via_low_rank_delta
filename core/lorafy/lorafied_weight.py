@@ -46,8 +46,6 @@ class LoRAfiedLinear(nn.Module):
         assert base.weight.shape == derived.weight.shape, "base and derived should have same shape"
 
         if move_device:
-            original_derived_device = derived.weight.device
-            original_base_device = base.weight.device
             derived_weight = derived.weight.to(move_device)
             base_weight = base.weight.to(move_device)
         else:
@@ -56,6 +54,7 @@ class LoRAfiedLinear(nn.Module):
             base_weight = base.weight
 
         weight_delta = (derived_weight - base_weight).detach()
+        del derived_weight, base_weight
 
         U, S, Vh = th.linalg.svd(weight_delta, full_matrices=False)
 
