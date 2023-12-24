@@ -1,9 +1,8 @@
 import os
 import torch as th
 import torch.nn as nn
-from copy import deepcopy
 from core.lorafy.lorafy_model import LoRAfyParameterConfig, lorafy_model
-from core.utils import Verbosity
+from core.utils import Verbosity, log_warn
 from typing import TypeVar, Iterable
 from tqdm import tqdm
 
@@ -36,6 +35,23 @@ def lorafy_parameter_layerwise(
 
     load_from_cache: bool = cache_file and os.path.exists(cache_file)
 
+    if load_from_cache:
+        try:
+            # Test if we can properly load the cache file
+            cached_state_dict = th.load(cache_file)
+
+            lora_name_endings = [
+                f"{param_name}.{lora_weight}.weight" for lora_weight in ("down_proj", "up_proj")
+            ]
+            cached_state_dict = {  # Only update the PQ* weights
+                key: value for key, value in cached_state_dict.items()
+                if any(key.endswith(param_name_ending) for param_name_ending in lora_name_endings)
+            }
+        except RuntimeError as e:
+            log_warn(f"Unable to read cache file {cache_file}, recalculating...", verbosity)
+            os.remove(cache_file)
+            load_from_cache = False
+
     to_from_layer_generator = mapping.items()
     if verbosity >= Verbosity.INFO:
         to_from_layer_generator = tqdm(to_from_layer_generator)
@@ -55,7 +71,12 @@ def lorafy_parameter_layerwise(
         first_mapping = False
 
     if load_from_cache:
-        lorafied_layers.load_state_dict(th.load(cache_file))
+        updated_state_dict = lorafied_layers.state_dict()
+        updated_state_dict.update(cached_state_dict)
+
+        del cached_state_dict
+
+        lorafied_layers.load_state_dict(updated_state_dict)
     elif cache_file:  # If the cache file path is given but it does not exist
         os.makedirs(os.path.dirname(cache_file), exist_ok=True)
         th.save(lorafied_layers.state_dict(), cache_file)
