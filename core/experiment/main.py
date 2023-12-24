@@ -155,4 +155,4 @@ def llama_2_7b_model_and_tokenizer(device_map: str = "cpu") -> tuple[PreTrainedM
 
 
 if __name__ == "__main__":
-    lorafy_lm_parameter_grid_eval("outputs/", llama_2_7b_model_and_tokenizer, param_name_combinations=(("self_attn.q_proj", "self_attn.k_proj"),), move_device="cuda:0")
+    lorafy_lm_parameter_grid_eval("outputs/", llama_2_7b_model_and_tokenizer, move_device="cuda:0")
