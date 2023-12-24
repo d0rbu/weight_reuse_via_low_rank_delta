@@ -71,8 +71,8 @@ def lorafy_lm_parameter_grid_eval(
         log_info(f"Evaluating the following config:\nRank: {rank}\nParameters: {param_names}", verbosity)
         log_info_1(f"Mapping: {mapping}", verbosity)
         mapping_json = json.dumps(mapping, sort_keys=True)
-        experiment_hash = int(md5(bytes(f"{rank}{param_names}{mapping_json}")).hexdigest(), 16)
-        lorafied_params_hash = int(md5(bytes(f"{model.__class__.__name__}{rank}{mapping_json}")).hexdigest(), 16)
+        experiment_hash = int(md5(str.encode(f"{rank}{param_names}{mapping_json}")).hexdigest(), 16)
+        lorafied_params_hash = int(md5(str.encode(f"{model.__class__.__name__}{rank}{mapping_json}")).hexdigest(), 16)
         log_info_1(f"Experiment hash: {experiment_hash}\nLoRAfied parameter cache hash: {lorafied_params_hash}", verbosity)
 
         cache_path = os.path.join(
