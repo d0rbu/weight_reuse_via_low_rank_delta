@@ -34,12 +34,7 @@ def lorafy_parameter_layerwise(
     """
     lorafied_layers = layers
 
-    if cache_file and os.path.exists(cache_file):
-        if not inplace:
-            lorafied_layers = deepcopy(lorafied_layers)
-
-        lorafied_layers.load_state_dict(th.load(cache_file))
-        return lorafied_layers
+    load_from_cache: bool = cache_file and os.path.exists(cache_file)
 
     to_from_layer_generator = mapping.items()
     if verbosity >= Verbosity.INFO:
@@ -55,10 +50,13 @@ def lorafy_parameter_layerwise(
             LoRAfyParameterConfig(base_param_name, derived_param_name, rank),
             inplace = inplace or not first_mapping,  # Make a copy the first time and reuse it after
             move_device = move_device,
+            approximate_lora = not load_from_cache,  # If we are loading from cache, do not approximate PQ*
         )
         first_mapping = False
 
-    if cache_file:
+    if load_from_cache:
+        lorafied_layers.load_state_dict(th.load(cache_file))
+    elif cache_file:  # If the cache file path is given but it does not exist
         os.makedirs(os.path.dirname(cache_file), exist_ok=True)
         th.save(lorafied_layers.state_dict(), cache_file)
 

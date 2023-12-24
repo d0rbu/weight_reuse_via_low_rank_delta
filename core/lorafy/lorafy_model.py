@@ -25,6 +25,7 @@ def lorafy_model(
     inplace: bool = False,
     delete_original_params: bool = True,
     move_device: str | None = None,
+    approximate_lora: bool = True
 ) -> nn.Module:
     """
     LoRAfy a model by replacing parameters with low-rank approximations.
@@ -55,6 +56,7 @@ def lorafy_model(
             derived_param_ancestors[-1],
             param_config.rank,
             move_device,
+            approximate_lora,
         )
         setattr(derived_param_ancestors[-2], derived_param_ancestor_names[-1], lorafied_param)
 

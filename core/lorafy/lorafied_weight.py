@@ -40,32 +40,37 @@ class LoRAfiedLinear(nn.Module):
         derived: nn.Linear | Self,
         rank: int | float,
         move_device: str | None = None,
+        approximate_lora: bool = True,
     ) -> Self:
         assert isinstance(base, nn.Linear) or isinstance(base, LoRAfiedLinear), "base should be nn.Linear or LoRAfiedLinear"
         assert isinstance(derived, nn.Linear) or isinstance(derived, LoRAfiedLinear), "derived should be nn.Linear or LoRAfiedLinear"
         assert base.weight.shape == derived.weight.shape, "base and derived should have same shape"
 
-        if move_device:
-            derived_weight = derived.weight.to(move_device)
-            base_weight = base.weight.to(move_device)
-        else:
-            assert base.weight.device == derived.weight.device, "base and derived should be on same device"
-            derived_weight = derived.weight
-            base_weight = base.weight
-
-        weight_delta = (derived_weight - base_weight).detach()
-        del derived_weight, base_weight
-
-        U, S, Vh = th.linalg.svd(weight_delta, full_matrices=False)
-
         if isinstance(rank, float):
-            rank = int(rank * S.shape[0])
+            rank = int(rank * min(*base.weight.shape))
 
-        S = th.diag_embed(S[:rank].sqrt())
+        if approximate_lora:  # If we want to project the delta down to lower rank to approximate the LoRAized matrix
+            if move_device:
+                derived_weight = derived.weight.to(move_device)
+                base_weight = base.weight.to(move_device)
+            else:
+                assert base.weight.device == derived.weight.device, "base and derived should be on same device"
+                derived_weight = derived.weight
+                base_weight = base.weight
 
-        # Low-rank approximation of weight_delta as P @ Qh
-        P = U[:, :rank] @ S
-        Qh = S @ Vh[:rank]
+            weight_delta = (derived_weight - base_weight).detach()
+            del derived_weight, base_weight
+
+            U, S, Vh = th.linalg.svd(weight_delta, full_matrices=False)
+
+            S = th.diag_embed(S[:rank].sqrt())
+
+            # Low-rank approximation of weight_delta as P @ Qh
+            P = U[:, :rank] @ S
+            Qh = S @ Vh[:rank]
+        else:
+            P = th.empty(base.weight.shape[0], rank)
+            Qh = th.empty(rank, base.weight.shape[1])
 
         return cls(base, P, Qh)
 
