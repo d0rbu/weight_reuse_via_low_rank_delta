@@ -136,10 +136,25 @@ def lorafy_lm_parameter_grid_eval(
             log_info_1(f"Raw output written to {raw_output_filepath}", verbosity)
 
         results = results["results"]
+        param_names_str = ",".join(param_names)
         if len(mappings) == num_layers:  # if there's only one base layer per mapping
-            full_results[(rank, param_names, mapping_idx)] = results
+            if rank not in full_results:
+                full_results[rank] = {
+                    param_names_str: {}
+                }
+            elif param_names not in full_results[rank]:
+                full_results[rank][param_names_str] = {}
+
+            full_results[rank][param_names_str][mapping_idx] = results
         else:
-            full_results[(rank, param_names, json.dumps(mapping, sort_keys=True))] = results
+            if rank not in full_results:
+                full_results[rank] = {
+                    param_names_str: {}
+                }
+            elif param_names not in full_results[rank]:
+                full_results[rank][param_names_str] = {}
+
+            full_results[rank][param_names_str][json.dumps(mapping, sort_keys=True)] = results
 
     with open(os.path.join(output_dir, "results.json"), "w", encoding="utf-8") as f:
         json.dump(full_results, f, indent=2)
