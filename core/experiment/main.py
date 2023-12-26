@@ -142,7 +142,7 @@ def lorafy_lm_parameter_grid_eval(
                 full_results[rank] = {
                     param_names_str: {}
                 }
-            elif param_names not in full_results[rank]:
+            elif param_names_str not in full_results[rank]:
                 full_results[rank][param_names_str] = {}
 
             full_results[rank][param_names_str][mapping_idx] = results
@@ -151,7 +151,7 @@ def lorafy_lm_parameter_grid_eval(
                 full_results[rank] = {
                     param_names_str: {}
                 }
-            elif param_names not in full_results[rank]:
+            elif param_names_str not in full_results[rank]:
                 full_results[rank][param_names_str] = {}
 
             full_results[rank][param_names_str][json.dumps(mapping, sort_keys=True)] = results
