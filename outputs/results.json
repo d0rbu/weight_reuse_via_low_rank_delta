@@ -1,0 +1,4076 @@
+{
+  "0.0625": {
+    "self_attn.q_proj": {
+      "0": {
+        "winogrande": {
+          "acc,none": 0.6408839779005525,
+          "acc_stderr,none": 0.013483115202120229,
+          "alias": "winogrande"
+        }
+      },
+      "1": {
+        "winogrande": {
+          "acc,none": 0.595895816890292,
+          "acc_stderr,none": 0.013791610664670852,
+          "alias": "winogrande"
+        }
+      },
+      "2": {
+        "winogrande": {
+          "acc,none": 0.585635359116022,
+          "acc_stderr,none": 0.013844846232268561,
+          "alias": "winogrande"
+        }
+      },
+      "3": {
+        "winogrande": {
+          "acc,none": 0.6108918705603789,
+          "acc_stderr,none": 0.013702520871485952,
+          "alias": "winogrande"
+        }
+      },
+      "4": {
+        "winogrande": {
+          "acc,none": 0.601420678768745,
+          "acc_stderr,none": 0.01376035717687384,
+          "alias": "winogrande"
+        }
+      },
+      "5": {
+        "winogrande": {
+          "acc,none": 0.5935280189423836,
+          "acc_stderr,none": 0.01380444869775337,
+          "alias": "winogrande"
+        }
+      },
+      "6": {
+        "winogrande": {
+          "acc,none": 0.595895816890292,
+          "acc_stderr,none": 0.01379161066467086,
+          "alias": "winogrande"
+        }
+      },
+      "7": {
+        "winogrande": {
+          "acc,none": 0.6148382004735596,
+          "acc_stderr,none": 0.013676821287521419,
+          "alias": "winogrande"
+        }
+      },
+      "8": {
+        "winogrande": {
+          "acc,none": 0.6101026045777427,
+          "acc_stderr,none": 0.013707547317008463,
+          "alias": "winogrande"
+        }
+      },
+      "9": {
+        "winogrande": {
+          "acc,none": 0.6172059984214681,
+          "acc_stderr,none": 0.01366094610944201,
+          "alias": "winogrande"
+        }
+      },
+      "10": {
+        "winogrande": {
+          "acc,none": 0.6393054459352802,
+          "acc_stderr,none": 0.01349606439423403,
+          "alias": "winogrande"
+        }
+      },
+      "11": {
+        "winogrande": {
+          "acc,none": 0.6187845303867403,
+          "acc_stderr,none": 0.013650172164160304,
+          "alias": "winogrande"
+        }
+      },
+      "12": {
+        "winogrande": {
+          "acc,none": 0.6250986582478295,
+          "acc_stderr,none": 0.013605544523788007,
+          "alias": "winogrande"
+        }
+      },
+      "13": {
+        "winogrande": {
+          "acc,none": 0.6195737963693765,
+          "acc_stderr,none": 0.013644727908656826,
+          "alias": "winogrande"
+        }
+      },
+      "14": {
+        "winogrande": {
+          "acc,none": 0.6108918705603789,
+          "acc_stderr,none": 0.013702520871485947,
+          "alias": "winogrande"
+        }
+      },
+      "15": {
+        "winogrande": {
+          "acc,none": 0.6140489344909235,
+          "acc_stderr,none": 0.013682036993397413,
+          "alias": "winogrande"
+        }
+      },
+      "16": {
+        "winogrande": {
+          "acc,none": 0.5951065509076559,
+          "acc_stderr,none": 0.013795927003124932,
+          "alias": "winogrande"
+        }
+      },
+      "17": {
+        "winogrande": {
+          "acc,none": 0.6077348066298343,
+          "acc_stderr,none": 0.013722400462000888,
+          "alias": "winogrande"
+        }
+      },
+      "18": {
+        "winogrande": {
+          "acc,none": 0.6140489344909235,
+          "acc_stderr,none": 0.013682036993397404,
+          "alias": "winogrande"
+        }
+      },
+      "19": {
+        "winogrande": {
+          "acc,none": 0.6101026045777427,
+          "acc_stderr,none": 0.013707547317008463,
+          "alias": "winogrande"
+        }
+      },
+      "20": {
+        "winogrande": {
+          "acc,none": 0.6156274664561957,
+          "acc_stderr,none": 0.01367156760083619,
+          "alias": "winogrande"
+        }
+      },
+      "21": {
+        "winogrande": {
+          "acc,none": 0.6179952644041041,
+          "acc_stderr,none": 0.013655578215970425,
+          "alias": "winogrande"
+        }
+      },
+      "22": {
+        "winogrande": {
+          "acc,none": 0.6124704025256511,
+          "acc_stderr,none": 0.01369235463601677,
+          "alias": "winogrande"
+        }
+      },
+      "23": {
+        "winogrande": {
+          "acc,none": 0.6029992107340174,
+          "acc_stderr,none": 0.013751092519806699,
+          "alias": "winogrande"
+        }
+      },
+      "24": {
+        "winogrande": {
+          "acc,none": 0.6298342541436464,
+          "acc_stderr,none": 0.013570454689603911,
+          "alias": "winogrande"
+        }
+      },
+      "25": {
+        "winogrande": {
+          "acc,none": 0.611681136543015,
+          "acc_stderr,none": 0.013697456658457232,
+          "alias": "winogrande"
+        }
+      },
+      "26": {
+        "winogrande": {
+          "acc,none": 0.6164167324388319,
+          "acc_stderr,none": 0.013666275889539019,
+          "alias": "winogrande"
+        }
+      },
+      "27": {
+        "winogrande": {
+          "acc,none": 0.6298342541436464,
+          "acc_stderr,none": 0.013570454689603911,
+          "alias": "winogrande"
+        }
+      },
+      "28": {
+        "winogrande": {
+          "acc,none": 0.6148382004735596,
+          "acc_stderr,none": 0.013676821287521415,
+          "alias": "winogrande"
+        }
+      },
+      "29": {
+        "winogrande": {
+          "acc,none": 0.6037884767166535,
+          "acc_stderr,none": 0.013746404157154953,
+          "alias": "winogrande"
+        }
+      },
+      "30": {
+        "winogrande": {
+          "acc,none": 0.5927387529597474,
+          "acc_stderr,none": 0.013808654122417835,
+          "alias": "winogrande"
+        }
+      },
+      "31": {
+        "winogrande": {
+          "acc,none": 0.606156274664562,
+          "acc_stderr,none": 0.013732114472668746,
+          "alias": "winogrande"
+        }
+      }
+    },
+    "self_attn.k_proj": {
+      "0": {
+        "winogrande": {
+          "acc,none": 0.6495659037095501,
+          "acc_stderr,none": 0.013409047676670187,
+          "alias": "winogrande"
+        }
+      },
+      "1": {
+        "winogrande": {
+          "acc,none": 0.5832675611681136,
+          "acc_stderr,none": 0.013856250072796316,
+          "alias": "winogrande"
+        }
+      },
+      "2": {
+        "winogrande": {
+          "acc,none": 0.6029992107340174,
+          "acc_stderr,none": 0.013751092519806702,
+          "alias": "winogrande"
+        }
+      },
+      "3": {
+        "winogrande": {
+          "acc,none": 0.6203630623520127,
+          "acc_stderr,none": 0.013639245403711165,
+          "alias": "winogrande"
+        }
+      },
+      "4": {
+        "winogrande": {
+          "acc,none": 0.595895816890292,
+          "acc_stderr,none": 0.013791610664670852,
+          "alias": "winogrande"
+        }
+      },
+      "5": {
+        "winogrande": {
+          "acc,none": 0.6282557221783741,
+          "acc_stderr,none": 0.013582306284992875,
+          "alias": "winogrande"
+        }
+      },
+      "6": {
+        "winogrande": {
+          "acc,none": 0.6085240726124704,
+          "acc_stderr,none": 0.013717487071290852,
+          "alias": "winogrande"
+        }
+      },
+      "7": {
+        "winogrande": {
+          "acc,none": 0.6227308602999211,
+          "acc_stderr,none": 0.0136225679287995,
+          "alias": "winogrande"
+        }
+      },
+      "8": {
+        "winogrande": {
+          "acc,none": 0.6195737963693765,
+          "acc_stderr,none": 0.013644727908656824,
+          "alias": "winogrande"
+        }
+      },
+      "9": {
+        "winogrande": {
+          "acc,none": 0.6306235201262825,
+          "acc_stderr,none": 0.013564470596053525,
+          "alias": "winogrande"
+        }
+      },
+      "10": {
+        "winogrande": {
+          "acc,none": 0.6037884767166535,
+          "acc_stderr,none": 0.013746404157154966,
+          "alias": "winogrande"
+        }
+      },
+      "11": {
+        "winogrande": {
+          "acc,none": 0.6156274664561957,
+          "acc_stderr,none": 0.013671567600836189,
+          "alias": "winogrande"
+        }
+      },
+      "12": {
+        "winogrande": {
+          "acc,none": 0.606156274664562,
+          "acc_stderr,none": 0.013732114472668758,
+          "alias": "winogrande"
+        }
+      },
+      "13": {
+        "winogrande": {
+          "acc,none": 0.5935280189423836,
+          "acc_stderr,none": 0.013804448697753371,
+          "alias": "winogrande"
+        }
+      },
+      "14": {
+        "winogrande": {
+          "acc,none": 0.6101026045777427,
+          "acc_stderr,none": 0.013707547317008462,
+          "alias": "winogrande"
+        }
+      },
+      "15": {
+        "winogrande": {
+          "acc,none": 0.6243093922651933,
+          "acc_stderr,none": 0.013611257508380444,
+          "alias": "winogrande"
+        }
+      },
+      "16": {
+        "winogrande": {
+          "acc,none": 0.6085240726124704,
+          "acc_stderr,none": 0.01371748707129085,
+          "alias": "winogrande"
+        }
+      },
+      "17": {
+        "winogrande": {
+          "acc,none": 0.6140489344909235,
+          "acc_stderr,none": 0.013682036993397413,
+          "alias": "winogrande"
+        }
+      },
+      "18": {
+        "winogrande": {
+          "acc,none": 0.6140489344909235,
+          "acc_stderr,none": 0.013682036993397415,
+          "alias": "winogrande"
+        }
+      },
+      "19": {
+        "winogrande": {
+          "acc,none": 0.6535122336227308,
+          "acc_stderr,none": 0.01337377341168565,
+          "alias": "winogrande"
+        }
+      },
+      "20": {
+        "winogrande": {
+          "acc,none": 0.6203630623520127,
+          "acc_stderr,none": 0.013639245403711161,
+          "alias": "winogrande"
+        }
+      },
+      "21": {
+        "winogrande": {
+          "acc,none": 0.6227308602999211,
+          "acc_stderr,none": 0.013622567928799501,
+          "alias": "winogrande"
+        }
+      },
+      "22": {
+        "winogrande": {
+          "acc,none": 0.6077348066298343,
+          "acc_stderr,none": 0.013722400462000886,
+          "alias": "winogrande"
+        }
+      },
+      "23": {
+        "winogrande": {
+          "acc,none": 0.6227308602999211,
+          "acc_stderr,none": 0.013622567928799501,
+          "alias": "winogrande"
+        }
+      },
+      "24": {
+        "winogrande": {
+          "acc,none": 0.6361483820047356,
+          "acc_stderr,none": 0.013521488896883411,
+          "alias": "winogrande"
+        }
+      },
+      "25": {
+        "winogrande": {
+          "acc,none": 0.6124704025256511,
+          "acc_stderr,none": 0.01369235463601677,
+          "alias": "winogrande"
+        }
+      },
+      "26": {
+        "winogrande": {
+          "acc,none": 0.6503551696921863,
+          "acc_stderr,none": 0.013402073680850514,
+          "alias": "winogrande"
+        }
+      },
+      "27": {
+        "winogrande": {
+          "acc,none": 0.6132596685082873,
+          "acc_stderr,none": 0.013687214761883056,
+          "alias": "winogrande"
+        }
+      },
+      "28": {
+        "winogrande": {
+          "acc,none": 0.6085240726124704,
+          "acc_stderr,none": 0.01371748707129085,
+          "alias": "winogrande"
+        }
+      },
+      "29": {
+        "winogrande": {
+          "acc,none": 0.6464088397790055,
+          "acc_stderr,none": 0.013436541262599957,
+          "alias": "winogrande"
+        }
+      },
+      "30": {
+        "winogrande": {
+          "acc,none": 0.6211523283346487,
+          "acc_stderr,none": 0.013633724603180318,
+          "alias": "winogrande"
+        }
+      },
+      "31": {
+        "winogrande": {
+          "acc,none": 0.6156274664561957,
+          "acc_stderr,none": 0.013671567600836194,
+          "alias": "winogrande"
+        }
+      }
+    },
+    "self_attn.q_proj,self_attn.k_proj": {
+      "0": {
+        "winogrande": {
+          "acc,none": 0.6029992107340174,
+          "acc_stderr,none": 0.013751092519806697,
+          "alias": "winogrande"
+        }
+      },
+      "1": {
+        "winogrande": {
+          "acc,none": 0.5327545382794001,
+          "acc_stderr,none": 0.014022300570434134,
+          "alias": "winogrande"
+        }
+      },
+      "2": {
+        "winogrande": {
+          "acc,none": 0.5311760063141279,
+          "acc_stderr,none": 0.014025142640639515,
+          "alias": "winogrande"
+        }
+      },
+      "3": {
+        "winogrande": {
+          "acc,none": 0.5303867403314917,
+          "acc_stderr,none": 0.014026510839428739,
+          "alias": "winogrande"
+        }
+      },
+      "4": {
+        "winogrande": {
+          "acc,none": 0.516179952644041,
+          "acc_stderr,none": 0.014045126130978601,
+          "alias": "winogrande"
+        }
+      },
+      "5": {
+        "winogrande": {
+          "acc,none": 0.5406471981057617,
+          "acc_stderr,none": 0.014005973823825138,
+          "alias": "winogrande"
+        }
+      },
+      "6": {
+        "winogrande": {
+          "acc,none": 0.5169692186266772,
+          "acc_stderr,none": 0.01404439040161297,
+          "alias": "winogrande"
+        }
+      },
+      "7": {
+        "winogrande": {
+          "acc,none": 0.5185477505919495,
+          "acc_stderr,none": 0.014042813708888378,
+          "alias": "winogrande"
+        }
+      },
+      "8": {
+        "winogrande": {
+          "acc,none": 0.5146014206787688,
+          "acc_stderr,none": 0.014046492383275837,
+          "alias": "winogrande"
+        }
+      },
+      "9": {
+        "winogrande": {
+          "acc,none": 0.5295974743488555,
+          "acc_stderr,none": 0.014027843827840086,
+          "alias": "winogrande"
+        }
+      },
+      "10": {
+        "winogrande": {
+          "acc,none": 0.5438042620363063,
+          "acc_stderr,none": 0.013998453610924328,
+          "alias": "winogrande"
+        }
+      },
+      "11": {
+        "winogrande": {
+          "acc,none": 0.5201262825572218,
+          "acc_stderr,none": 0.014041096664344329,
+          "alias": "winogrande"
+        }
+      },
+      "12": {
+        "winogrande": {
+          "acc,none": 0.5201262825572218,
+          "acc_stderr,none": 0.014041096664344327,
+          "alias": "winogrande"
+        }
+      },
+      "13": {
+        "winogrande": {
+          "acc,none": 0.5240726124704025,
+          "acc_stderr,none": 0.01403618966539513,
+          "alias": "winogrande"
+        }
+      },
+      "14": {
+        "winogrande": {
+          "acc,none": 0.5074980268350434,
+          "acc_stderr,none": 0.01405090552122858,
+          "alias": "winogrande"
+        }
+      },
+      "15": {
+        "winogrande": {
+          "acc,none": 0.5074980268350434,
+          "acc_stderr,none": 0.014050905521228577,
+          "alias": "winogrande"
+        }
+      },
+      "16": {
+        "winogrande": {
+          "acc,none": 0.5430149960536701,
+          "acc_stderr,none": 0.01400038676159829,
+          "alias": "winogrande"
+        }
+      },
+      "17": {
+        "winogrande": {
+          "acc,none": 0.5217048145224941,
+          "acc_stderr,none": 0.014039239216484634,
+          "alias": "winogrande"
+        }
+      },
+      "18": {
+        "winogrande": {
+          "acc,none": 0.5240726124704025,
+          "acc_stderr,none": 0.014036189665395132,
+          "alias": "winogrande"
+        }
+      },
+      "19": {
+        "winogrande": {
+          "acc,none": 0.5130228887134964,
+          "acc_stderr,none": 0.014047718393997667,
+          "alias": "winogrande"
+        }
+      },
+      "20": {
+        "winogrande": {
+          "acc,none": 0.5074980268350434,
+          "acc_stderr,none": 0.014050905521228584,
+          "alias": "winogrande"
+        }
+      },
+      "21": {
+        "winogrande": {
+          "acc,none": 0.531965272296764,
+          "acc_stderr,none": 0.014023739221166386,
+          "alias": "winogrande"
+        }
+      },
+      "22": {
+        "winogrande": {
+          "acc,none": 0.494869771112865,
+          "acc_stderr,none": 0.014051745961790513,
+          "alias": "winogrande"
+        }
+      },
+      "23": {
+        "winogrande": {
+          "acc,none": 0.5090765588003157,
+          "acc_stderr,none": 0.014050170094497707,
+          "alias": "winogrande"
+        }
+      },
+      "24": {
+        "winogrande": {
+          "acc,none": 0.5043409629044988,
+          "acc_stderr,none": 0.0140519560640769,
+          "alias": "winogrande"
+        }
+      },
+      "25": {
+        "winogrande": {
+          "acc,none": 0.5224940805051302,
+          "acc_stderr,none": 0.014038257824059895,
+          "alias": "winogrande"
+        }
+      },
+      "26": {
+        "winogrande": {
+          "acc,none": 0.5295974743488555,
+          "acc_stderr,none": 0.01402784382784008,
+          "alias": "winogrande"
+        }
+      },
+      "27": {
+        "winogrande": {
+          "acc,none": 0.4980268350434096,
+          "acc_stderr,none": 0.014052376259225636,
+          "alias": "winogrande"
+        }
+      },
+      "28": {
+        "winogrande": {
+          "acc,none": 0.505130228887135,
+          "acc_stderr,none": 0.014051745961790516,
+          "alias": "winogrande"
+        }
+      },
+      "29": {
+        "winogrande": {
+          "acc,none": 0.500394632991318,
+          "acc_stderr,none": 0.014052481306049512,
+          "alias": "winogrande"
+        }
+      },
+      "30": {
+        "winogrande": {
+          "acc,none": 0.4980268350434096,
+          "acc_stderr,none": 0.014052376259225636,
+          "alias": "winogrande"
+        }
+      },
+      "31": {
+        "winogrande": {
+          "acc,none": 0.5248618784530387,
+          "acc_stderr,none": 0.01403510288362775,
+          "alias": "winogrande"
+        }
+      }
+    },
+    "mlp.up_proj": {
+      "0": {
+        "winogrande": {
+          "acc,none": 0.500394632991318,
+          "acc_stderr,none": 0.014052481306049516,
+          "alias": "winogrande"
+        }
+      },
+      "1": {
+        "winogrande": {
+          "acc,none": 0.5224940805051302,
+          "acc_stderr,none": 0.014038257824059878,
+          "alias": "winogrande"
+        }
+      },
+      "2": {
+        "winogrande": {
+          "acc,none": 0.5043409629044988,
+          "acc_stderr,none": 0.01405195606407689,
+          "alias": "winogrande"
+        }
+      },
+      "3": {
+        "winogrande": {
+          "acc,none": 0.5059194948697711,
+          "acc_stderr,none": 0.014051500838485807,
+          "alias": "winogrande"
+        }
+      },
+      "4": {
+        "winogrande": {
+          "acc,none": 0.5201262825572218,
+          "acc_stderr,none": 0.014041096664344329,
+          "alias": "winogrande"
+        }
+      },
+      "5": {
+        "winogrande": {
+          "acc,none": 0.4877663772691397,
+          "acc_stderr,none": 0.01404827882040562,
+          "alias": "winogrande"
+        }
+      },
+      "6": {
+        "winogrande": {
+          "acc,none": 0.49013417521704816,
+          "acc_stderr,none": 0.014049749833367596,
+          "alias": "winogrande"
+        }
+      },
+      "7": {
+        "winogrande": {
+          "acc,none": 0.4861878453038674,
+          "acc_stderr,none": 0.014047122916440422,
+          "alias": "winogrande"
+        }
+      },
+      "8": {
+        "winogrande": {
+          "acc,none": 0.4972375690607735,
+          "acc_stderr,none": 0.014052271211616438,
+          "alias": "winogrande"
+        }
+      },
+      "9": {
+        "winogrande": {
+          "acc,none": 0.4956590370955012,
+          "acc_stderr,none": 0.014051956064076896,
+          "alias": "winogrande"
+        }
+      },
+      "10": {
+        "winogrande": {
+          "acc,none": 0.494869771112865,
+          "acc_stderr,none": 0.014051745961790516,
+          "alias": "winogrande"
+        }
+      },
+      "11": {
+        "winogrande": {
+          "acc,none": 0.4925019731649566,
+          "acc_stderr,none": 0.014050905521228573,
+          "alias": "winogrande"
+        }
+      },
+      "12": {
+        "winogrande": {
+          "acc,none": 0.5122336227308603,
+          "acc_stderr,none": 0.014048278820405616,
+          "alias": "winogrande"
+        }
+      },
+      "13": {
+        "winogrande": {
+          "acc,none": 0.5169692186266772,
+          "acc_stderr,none": 0.01404439040161298,
+          "alias": "winogrande"
+        }
+      },
+      "14": {
+        "winogrande": {
+          "acc,none": 0.494869771112865,
+          "acc_stderr,none": 0.014051745961790513,
+          "alias": "winogrande"
+        }
+      },
+      "15": {
+        "winogrande": {
+          "acc,none": 0.49013417521704816,
+          "acc_stderr,none": 0.014049749833367592,
+          "alias": "winogrande"
+        }
+      },
+      "16": {
+        "winogrande": {
+          "acc,none": 0.4972375690607735,
+          "acc_stderr,none": 0.014052271211616441,
+          "alias": "winogrande"
+        }
+      },
+      "17": {
+        "winogrande": {
+          "acc,none": 0.4972375690607735,
+          "acc_stderr,none": 0.014052271211616441,
+          "alias": "winogrande"
+        }
+      },
+      "18": {
+        "winogrande": {
+          "acc,none": 0.4711917916337806,
+          "acc_stderr,none": 0.014029141615909617,
+          "alias": "winogrande"
+        }
+      },
+      "19": {
+        "winogrande": {
+          "acc,none": 0.48539857932123126,
+          "acc_stderr,none": 0.014046492383275837,
+          "alias": "winogrande"
+        }
+      },
+      "20": {
+        "winogrande": {
+          "acc,none": 0.47434885556432516,
+          "acc_stderr,none": 0.014033980956108557,
+          "alias": "winogrande"
+        }
+      },
+      "21": {
+        "winogrande": {
+          "acc,none": 0.4988161010260458,
+          "acc_stderr,none": 0.014052446290529019,
+          "alias": "winogrande"
+        }
+      },
+      "22": {
+        "winogrande": {
+          "acc,none": 0.4861878453038674,
+          "acc_stderr,none": 0.014047122916440415,
+          "alias": "winogrande"
+        }
+      },
+      "23": {
+        "winogrande": {
+          "acc,none": 0.5074980268350434,
+          "acc_stderr,none": 0.014050905521228577,
+          "alias": "winogrande"
+        }
+      },
+      "24": {
+        "winogrande": {
+          "acc,none": 0.494869771112865,
+          "acc_stderr,none": 0.014051745961790516,
+          "alias": "winogrande"
+        }
+      },
+      "25": {
+        "winogrande": {
+          "acc,none": 0.4980268350434096,
+          "acc_stderr,none": 0.014052376259225627,
+          "alias": "winogrande"
+        }
+      },
+      "26": {
+        "winogrande": {
+          "acc,none": 0.46882399368587213,
+          "acc_stderr,none": 0.014025142640639513,
+          "alias": "winogrande"
+        }
+      },
+      "27": {
+        "winogrande": {
+          "acc,none": 0.5074980268350434,
+          "acc_stderr,none": 0.014050905521228577,
+          "alias": "winogrande"
+        }
+      },
+      "28": {
+        "winogrande": {
+          "acc,none": 0.48066298342541436,
+          "acc_stderr,none": 0.014041972733712977,
+          "alias": "winogrande"
+        }
+      },
+      "29": {
+        "winogrande": {
+          "acc,none": 0.5153906866614049,
+          "acc_stderr,none": 0.014045826789783658,
+          "alias": "winogrande"
+        }
+      },
+      "30": {
+        "winogrande": {
+          "acc,none": 0.4909234411996843,
+          "acc_stderr,none": 0.01405017009449771,
+          "alias": "winogrande"
+        }
+      },
+      "31": {
+        "winogrande": {
+          "acc,none": 0.494869771112865,
+          "acc_stderr,none": 0.014051745961790513,
+          "alias": "winogrande"
+        }
+      }
+    },
+    "mlp.down_proj": {
+      "0": {
+        "winogrande": {
+          "acc,none": 0.4980268350434096,
+          "acc_stderr,none": 0.014052376259225629,
+          "alias": "winogrande"
+        }
+      },
+      "1": {
+        "winogrande": {
+          "acc,none": 0.5146014206787688,
+          "acc_stderr,none": 0.014046492383275835,
+          "alias": "winogrande"
+        }
+      },
+      "2": {
+        "winogrande": {
+          "acc,none": 0.5177584846093133,
+          "acc_stderr,none": 0.014043619596174962,
+          "alias": "winogrande"
+        }
+      },
+      "3": {
+        "winogrande": {
+          "acc,none": 0.49013417521704816,
+          "acc_stderr,none": 0.014049749833367589,
+          "alias": "winogrande"
+        }
+      },
+      "4": {
+        "winogrande": {
+          "acc,none": 0.5090765588003157,
+          "acc_stderr,none": 0.014050170094497697,
+          "alias": "winogrande"
+        }
+      },
+      "5": {
+        "winogrande": {
+          "acc,none": 0.48855564325177586,
+          "acc_stderr,none": 0.014048804199859337,
+          "alias": "winogrande"
+        }
+      },
+      "6": {
+        "winogrande": {
+          "acc,none": 0.494869771112865,
+          "acc_stderr,none": 0.014051745961790516,
+          "alias": "winogrande"
+        }
+      },
+      "7": {
+        "winogrande": {
+          "acc,none": 0.4988161010260458,
+          "acc_stderr,none": 0.014052446290529022,
+          "alias": "winogrande"
+        }
+      },
+      "8": {
+        "winogrande": {
+          "acc,none": 0.4861878453038674,
+          "acc_stderr,none": 0.014047122916440419,
+          "alias": "winogrande"
+        }
+      },
+      "9": {
+        "winogrande": {
+          "acc,none": 0.4925019731649566,
+          "acc_stderr,none": 0.014050905521228573,
+          "alias": "winogrande"
+        }
+      },
+      "10": {
+        "winogrande": {
+          "acc,none": 0.4964483030781373,
+          "acc_stderr,none": 0.014052131146915867,
+          "alias": "winogrande"
+        }
+      },
+      "11": {
+        "winogrande": {
+          "acc,none": 0.5153906866614049,
+          "acc_stderr,none": 0.014045826789783661,
+          "alias": "winogrande"
+        }
+      },
+      "12": {
+        "winogrande": {
+          "acc,none": 0.4996053670086819,
+          "acc_stderr,none": 0.014052481306049512,
+          "alias": "winogrande"
+        }
+      },
+      "13": {
+        "winogrande": {
+          "acc,none": 0.5082872928176796,
+          "acc_stderr,none": 0.014050555322824192,
+          "alias": "winogrande"
+        }
+      },
+      "14": {
+        "winogrande": {
+          "acc,none": 0.4877663772691397,
+          "acc_stderr,none": 0.01404827882040562,
+          "alias": "winogrande"
+        }
+      },
+      "15": {
+        "winogrande": {
+          "acc,none": 0.4925019731649566,
+          "acc_stderr,none": 0.01405090552122858,
+          "alias": "winogrande"
+        }
+      },
+      "16": {
+        "winogrande": {
+          "acc,none": 0.4956590370955012,
+          "acc_stderr,none": 0.014051956064076892,
+          "alias": "winogrande"
+        }
+      },
+      "17": {
+        "winogrande": {
+          "acc,none": 0.48539857932123126,
+          "acc_stderr,none": 0.014046492383275835,
+          "alias": "winogrande"
+        }
+      },
+      "18": {
+        "winogrande": {
+          "acc,none": 0.505130228887135,
+          "acc_stderr,none": 0.014051745961790516,
+          "alias": "winogrande"
+        }
+      },
+      "19": {
+        "winogrande": {
+          "acc,none": 0.4988161010260458,
+          "acc_stderr,none": 0.014052446290529015,
+          "alias": "winogrande"
+        }
+      },
+      "20": {
+        "winogrande": {
+          "acc,none": 0.4877663772691397,
+          "acc_stderr,none": 0.01404827882040562,
+          "alias": "winogrande"
+        }
+      },
+      "21": {
+        "winogrande": {
+          "acc,none": 0.4956590370955012,
+          "acc_stderr,none": 0.014051956064076896,
+          "alias": "winogrande"
+        }
+      },
+      "22": {
+        "winogrande": {
+          "acc,none": 0.4940805051302289,
+          "acc_stderr,none": 0.014051500838485807,
+          "alias": "winogrande"
+        }
+      },
+      "23": {
+        "winogrande": {
+          "acc,none": 0.49329123914759276,
+          "acc_stderr,none": 0.014051220692330349,
+          "alias": "winogrande"
+        }
+      },
+      "24": {
+        "winogrande": {
+          "acc,none": 0.47671665351223363,
+          "acc_stderr,none": 0.01403724130957364,
+          "alias": "winogrande"
+        }
+      },
+      "25": {
+        "winogrande": {
+          "acc,none": 0.5035516969218626,
+          "acc_stderr,none": 0.014052131146915864,
+          "alias": "winogrande"
+        }
+      },
+      "26": {
+        "winogrande": {
+          "acc,none": 0.4925019731649566,
+          "acc_stderr,none": 0.014050905521228577,
+          "alias": "winogrande"
+        }
+      },
+      "27": {
+        "winogrande": {
+          "acc,none": 0.48066298342541436,
+          "acc_stderr,none": 0.014041972733712972,
+          "alias": "winogrande"
+        }
+      },
+      "28": {
+        "winogrande": {
+          "acc,none": 0.5074980268350434,
+          "acc_stderr,none": 0.014050905521228577,
+          "alias": "winogrande"
+        }
+      },
+      "29": {
+        "winogrande": {
+          "acc,none": 0.489344909234412,
+          "acc_stderr,none": 0.0140492945362904,
+          "alias": "winogrande"
+        }
+      },
+      "30": {
+        "winogrande": {
+          "acc,none": 0.5027624309392266,
+          "acc_stderr,none": 0.014052271211616441,
+          "alias": "winogrande"
+        }
+      },
+      "31": {
+        "winogrande": {
+          "acc,none": 0.500394632991318,
+          "acc_stderr,none": 0.014052481306049516,
+          "alias": "winogrande"
+        }
+      }
+    },
+    "mlp.gate_proj": {
+      "0": {
+        "winogrande": {
+          "acc,none": 0.489344909234412,
+          "acc_stderr,none": 0.014049294536290396,
+          "alias": "winogrande"
+        }
+      },
+      "1": {
+        "winogrande": {
+          "acc,none": 0.505130228887135,
+          "acc_stderr,none": 0.014051745961790516,
+          "alias": "winogrande"
+        }
+      },
+      "2": {
+        "winogrande": {
+          "acc,none": 0.5146014206787688,
+          "acc_stderr,none": 0.014046492383275835,
+          "alias": "winogrande"
+        }
+      },
+      "3": {
+        "winogrande": {
+          "acc,none": 0.5217048145224941,
+          "acc_stderr,none": 0.014039239216484636,
+          "alias": "winogrande"
+        }
+      },
+      "4": {
+        "winogrande": {
+          "acc,none": 0.500394632991318,
+          "acc_stderr,none": 0.014052481306049516,
+          "alias": "winogrande"
+        }
+      },
+      "5": {
+        "winogrande": {
+          "acc,none": 0.4980268350434096,
+          "acc_stderr,none": 0.014052376259225636,
+          "alias": "winogrande"
+        }
+      },
+      "6": {
+        "winogrande": {
+          "acc,none": 0.48539857932123126,
+          "acc_stderr,none": 0.014046492383275834,
+          "alias": "winogrande"
+        }
+      },
+      "7": {
+        "winogrande": {
+          "acc,none": 0.4980268350434096,
+          "acc_stderr,none": 0.014052376259225624,
+          "alias": "winogrande"
+        }
+      },
+      "8": {
+        "winogrande": {
+          "acc,none": 0.4956590370955012,
+          "acc_stderr,none": 0.014051956064076896,
+          "alias": "winogrande"
+        }
+      },
+      "9": {
+        "winogrande": {
+          "acc,none": 0.49013417521704816,
+          "acc_stderr,none": 0.014049749833367592,
+          "alias": "winogrande"
+        }
+      },
+      "10": {
+        "winogrande": {
+          "acc,none": 0.4909234411996843,
+          "acc_stderr,none": 0.0140501700944977,
+          "alias": "winogrande"
+        }
+      },
+      "11": {
+        "winogrande": {
+          "acc,none": 0.5074980268350434,
+          "acc_stderr,none": 0.01405090552122858,
+          "alias": "winogrande"
+        }
+      },
+      "12": {
+        "winogrande": {
+          "acc,none": 0.49329123914759276,
+          "acc_stderr,none": 0.014051220692330349,
+          "alias": "winogrande"
+        }
+      },
+      "13": {
+        "winogrande": {
+          "acc,none": 0.4925019731649566,
+          "acc_stderr,none": 0.014050905521228573,
+          "alias": "winogrande"
+        }
+      },
+      "14": {
+        "winogrande": {
+          "acc,none": 0.500394632991318,
+          "acc_stderr,none": 0.014052481306049516,
+          "alias": "winogrande"
+        }
+      },
+      "15": {
+        "winogrande": {
+          "acc,none": 0.5114443567482242,
+          "acc_stderr,none": 0.014048804199859322,
+          "alias": "winogrande"
+        }
+      },
+      "16": {
+        "winogrande": {
+          "acc,none": 0.4980268350434096,
+          "acc_stderr,none": 0.01405237625922564,
+          "alias": "winogrande"
+        }
+      },
+      "17": {
+        "winogrande": {
+          "acc,none": 0.5248618784530387,
+          "acc_stderr,none": 0.01403510288362775,
+          "alias": "winogrande"
+        }
+      },
+      "18": {
+        "winogrande": {
+          "acc,none": 0.48855564325177586,
+          "acc_stderr,none": 0.014048804199859325,
+          "alias": "winogrande"
+        }
+      },
+      "19": {
+        "winogrande": {
+          "acc,none": 0.4964483030781373,
+          "acc_stderr,none": 0.014052131146915869,
+          "alias": "winogrande"
+        }
+      },
+      "20": {
+        "winogrande": {
+          "acc,none": 0.5090765588003157,
+          "acc_stderr,none": 0.014050170094497697,
+          "alias": "winogrande"
+        }
+      },
+      "21": {
+        "winogrande": {
+          "acc,none": 0.48539857932123126,
+          "acc_stderr,none": 0.014046492383275842,
+          "alias": "winogrande"
+        }
+      },
+      "22": {
+        "winogrande": {
+          "acc,none": 0.5074980268350434,
+          "acc_stderr,none": 0.014050905521228577,
+          "alias": "winogrande"
+        }
+      },
+      "23": {
+        "winogrande": {
+          "acc,none": 0.5138121546961326,
+          "acc_stderr,none": 0.014047122916440419,
+          "alias": "winogrande"
+        }
+      },
+      "24": {
+        "winogrande": {
+          "acc,none": 0.4909234411996843,
+          "acc_stderr,none": 0.014050170094497704,
+          "alias": "winogrande"
+        }
+      },
+      "25": {
+        "winogrande": {
+          "acc,none": 0.5035516969218626,
+          "acc_stderr,none": 0.014052131146915857,
+          "alias": "winogrande"
+        }
+      },
+      "26": {
+        "winogrande": {
+          "acc,none": 0.48539857932123126,
+          "acc_stderr,none": 0.014046492383275835,
+          "alias": "winogrande"
+        }
+      },
+      "27": {
+        "winogrande": {
+          "acc,none": 0.48539857932123126,
+          "acc_stderr,none": 0.014046492383275835,
+          "alias": "winogrande"
+        }
+      },
+      "28": {
+        "winogrande": {
+          "acc,none": 0.4980268350434096,
+          "acc_stderr,none": 0.014052376259225636,
+          "alias": "winogrande"
+        }
+      },
+      "29": {
+        "winogrande": {
+          "acc,none": 0.5074980268350434,
+          "acc_stderr,none": 0.01405090552122858,
+          "alias": "winogrande"
+        }
+      },
+      "30": {
+        "winogrande": {
+          "acc,none": 0.5122336227308603,
+          "acc_stderr,none": 0.01404827882040562,
+          "alias": "winogrande"
+        }
+      },
+      "31": {
+        "winogrande": {
+          "acc,none": 0.48855564325177586,
+          "acc_stderr,none": 0.014048804199859325,
+          "alias": "winogrande"
+        }
+      }
+    }
+  },
+  "0.125": {
+    "self_attn.q_proj": {
+      "0": {
+        "winogrande": {
+          "acc,none": 0.6724546172059984,
+          "acc_stderr,none": 0.013190169546797017,
+          "alias": "winogrande"
+        }
+      },
+      "1": {
+        "winogrande": {
+          "acc,none": 0.6582478295185478,
+          "acc_stderr,none": 0.013330103018622863,
+          "alias": "winogrande"
+        }
+      },
+      "2": {
+        "winogrande": {
+          "acc,none": 0.6424625098658248,
+          "acc_stderr,none": 0.01347000744392069,
+          "alias": "winogrande"
+        }
+      },
+      "3": {
+        "winogrande": {
+          "acc,none": 0.6471981057616417,
+          "acc_stderr,none": 0.013429728101788952,
+          "alias": "winogrande"
+        }
+      },
+      "4": {
+        "winogrande": {
+          "acc,none": 0.6519337016574586,
+          "acc_stderr,none": 0.013388004531086045,
+          "alias": "winogrande"
+        }
+      },
+      "5": {
+        "winogrande": {
+          "acc,none": 0.6345698500394633,
+          "acc_stderr,none": 0.013533965097638802,
+          "alias": "winogrande"
+        }
+      },
+      "6": {
+        "winogrande": {
+          "acc,none": 0.6511444356748224,
+          "acc_stderr,none": 0.013395059320137332,
+          "alias": "winogrande"
+        }
+      },
+      "7": {
+        "winogrande": {
+          "acc,none": 0.6661404893449092,
+          "acc_stderr,none": 0.013254029695143348,
+          "alias": "winogrande"
+        }
+      },
+      "8": {
+        "winogrande": {
+          "acc,none": 0.6471981057616417,
+          "acc_stderr,none": 0.013429728101788956,
+          "alias": "winogrande"
+        }
+      },
+      "9": {
+        "winogrande": {
+          "acc,none": 0.6550907655880032,
+          "acc_stderr,none": 0.013359379805033697,
+          "alias": "winogrande"
+        }
+      },
+      "10": {
+        "winogrande": {
+          "acc,none": 0.6677190213101816,
+          "acc_stderr,none": 0.013238316554236521,
+          "alias": "winogrande"
+        }
+      },
+      "11": {
+        "winogrande": {
+          "acc,none": 0.654301499605367,
+          "acc_stderr,none": 0.013366596951934375,
+          "alias": "winogrande"
+        }
+      },
+      "12": {
+        "winogrande": {
+          "acc,none": 0.6708760852407262,
+          "acc_stderr,none": 0.013206387089091469,
+          "alias": "winogrande"
+        }
+      },
+      "13": {
+        "winogrande": {
+          "acc,none": 0.6677190213101816,
+          "acc_stderr,none": 0.013238316554236528,
+          "alias": "winogrande"
+        }
+      },
+      "14": {
+        "winogrande": {
+          "acc,none": 0.6629834254143646,
+          "acc_stderr,none": 0.01328495576939525,
+          "alias": "winogrande"
+        }
+      },
+      "15": {
+        "winogrande": {
+          "acc,none": 0.6535122336227308,
+          "acc_stderr,none": 0.013373773411685646,
+          "alias": "winogrande"
+        }
+      },
+      "16": {
+        "winogrande": {
+          "acc,none": 0.654301499605367,
+          "acc_stderr,none": 0.013366596951934375,
+          "alias": "winogrande"
+        }
+      },
+      "17": {
+        "winogrande": {
+          "acc,none": 0.6495659037095501,
+          "acc_stderr,none": 0.013409047676670189,
+          "alias": "winogrande"
+        }
+      },
+      "18": {
+        "winogrande": {
+          "acc,none": 0.6361483820047356,
+          "acc_stderr,none": 0.013521488896883411,
+          "alias": "winogrande"
+        }
+      },
+      "19": {
+        "winogrande": {
+          "acc,none": 0.6606156274664562,
+          "acc_stderr,none": 0.01330771492894175,
+          "alias": "winogrande"
+        }
+      },
+      "20": {
+        "winogrande": {
+          "acc,none": 0.648776637726914,
+          "acc_stderr,none": 0.013415981370545126,
+          "alias": "winogrande"
+        }
+      },
+      "21": {
+        "winogrande": {
+          "acc,none": 0.6637726913970008,
+          "acc_stderr,none": 0.013277286593993434,
+          "alias": "winogrande"
+        }
+      },
+      "22": {
+        "winogrande": {
+          "acc,none": 0.6566692975532754,
+          "acc_stderr,none": 0.013344823185358004,
+          "alias": "winogrande"
+        }
+      },
+      "23": {
+        "winogrande": {
+          "acc,none": 0.6456195737963694,
+          "acc_stderr,none": 0.013443314368356087,
+          "alias": "winogrande"
+        }
+      },
+      "24": {
+        "winogrande": {
+          "acc,none": 0.6393054459352802,
+          "acc_stderr,none": 0.013496064394234024,
+          "alias": "winogrande"
+        }
+      },
+      "25": {
+        "winogrande": {
+          "acc,none": 0.6606156274664562,
+          "acc_stderr,none": 0.01330771492894175,
+          "alias": "winogrande"
+        }
+      },
+      "26": {
+        "winogrande": {
+          "acc,none": 0.6550907655880032,
+          "acc_stderr,none": 0.013359379805033692,
+          "alias": "winogrande"
+        }
+      },
+      "27": {
+        "winogrande": {
+          "acc,none": 0.6527229676400947,
+          "acc_stderr,none": 0.013380909249751237,
+          "alias": "winogrande"
+        }
+      },
+      "28": {
+        "winogrande": {
+          "acc,none": 0.6669297553275454,
+          "acc_stderr,none": 0.013246194028070663,
+          "alias": "winogrande"
+        }
+      },
+      "29": {
+        "winogrande": {
+          "acc,none": 0.6424625098658248,
+          "acc_stderr,none": 0.013470007443920691,
+          "alias": "winogrande"
+        }
+      },
+      "30": {
+        "winogrande": {
+          "acc,none": 0.6503551696921863,
+          "acc_stderr,none": 0.013402073680850505,
+          "alias": "winogrande"
+        }
+      },
+      "31": {
+        "winogrande": {
+          "acc,none": 0.6606156274664562,
+          "acc_stderr,none": 0.01330771492894175,
+          "alias": "winogrande"
+        }
+      }
+    },
+    "self_attn.k_proj": {
+      "0": {
+        "winogrande": {
+          "acc,none": 0.6764009471191792,
+          "acc_stderr,none": 0.013148883320923151,
+          "alias": "winogrande"
+        }
+      },
+      "1": {
+        "winogrande": {
+          "acc,none": 0.65982636148382,
+          "acc_stderr,none": 0.013315218762417399,
+          "alias": "winogrande"
+        }
+      },
+      "2": {
+        "winogrande": {
+          "acc,none": 0.6535122336227308,
+          "acc_stderr,none": 0.013373773411685644,
+          "alias": "winogrande"
+        }
+      },
+      "3": {
+        "winogrande": {
+          "acc,none": 0.6614048934490924,
+          "acc_stderr,none": 0.01330016986584241,
+          "alias": "winogrande"
+        }
+      },
+      "4": {
+        "winogrande": {
+          "acc,none": 0.6527229676400947,
+          "acc_stderr,none": 0.013380909249751237,
+          "alias": "winogrande"
+        }
+      },
+      "5": {
+        "winogrande": {
+          "acc,none": 0.6732438831886346,
+          "acc_stderr,none": 0.01318199730213137,
+          "alias": "winogrande"
+        }
+      },
+      "6": {
+        "winogrande": {
+          "acc,none": 0.6582478295185478,
+          "acc_stderr,none": 0.013330103018622856,
+          "alias": "winogrande"
+        }
+      },
+      "7": {
+        "winogrande": {
+          "acc,none": 0.6400947119179163,
+          "acc_stderr,none": 0.013489609590266795,
+          "alias": "winogrande"
+        }
+      },
+      "8": {
+        "winogrande": {
+          "acc,none": 0.6582478295185478,
+          "acc_stderr,none": 0.01333010301862285,
+          "alias": "winogrande"
+        }
+      },
+      "9": {
+        "winogrande": {
+          "acc,none": 0.67008681925809,
+          "acc_stderr,none": 0.013214432542517562,
+          "alias": "winogrande"
+        }
+      },
+      "10": {
+        "winogrande": {
+          "acc,none": 0.6558800315706393,
+          "acc_stderr,none": 0.01335212190500594,
+          "alias": "winogrande"
+        }
+      },
+      "11": {
+        "winogrande": {
+          "acc,none": 0.6724546172059984,
+          "acc_stderr,none": 0.013190169546797016,
+          "alias": "winogrande"
+        }
+      },
+      "12": {
+        "winogrande": {
+          "acc,none": 0.681136543014996,
+          "acc_stderr,none": 0.013097928420088771,
+          "alias": "winogrande"
+        }
+      },
+      "13": {
+        "winogrande": {
+          "acc,none": 0.6614048934490924,
+          "acc_stderr,none": 0.013300169865842412,
+          "alias": "winogrande"
+        }
+      },
+      "14": {
+        "winogrande": {
+          "acc,none": 0.6724546172059984,
+          "acc_stderr,none": 0.013190169546797016,
+          "alias": "winogrande"
+        }
+      },
+      "15": {
+        "winogrande": {
+          "acc,none": 0.6637726913970008,
+          "acc_stderr,none": 0.013277286593993442,
+          "alias": "winogrande"
+        }
+      },
+      "16": {
+        "winogrande": {
+          "acc,none": 0.67008681925809,
+          "acc_stderr,none": 0.013214432542517548,
+          "alias": "winogrande"
+        }
+      },
+      "17": {
+        "winogrande": {
+          "acc,none": 0.6558800315706393,
+          "acc_stderr,none": 0.013352121905005943,
+          "alias": "winogrande"
+        }
+      },
+      "18": {
+        "winogrande": {
+          "acc,none": 0.6661404893449092,
+          "acc_stderr,none": 0.013254029695143344,
+          "alias": "winogrande"
+        }
+      },
+      "19": {
+        "winogrande": {
+          "acc,none": 0.6764009471191792,
+          "acc_stderr,none": 0.01314888332092315,
+          "alias": "winogrande"
+        }
+      },
+      "20": {
+        "winogrande": {
+          "acc,none": 0.6606156274664562,
+          "acc_stderr,none": 0.01330771492894175,
+          "alias": "winogrande"
+        }
+      },
+      "21": {
+        "winogrande": {
+          "acc,none": 0.6685082872928176,
+          "acc_stderr,none": 0.013230397198964655,
+          "alias": "winogrande"
+        }
+      },
+      "22": {
+        "winogrande": {
+          "acc,none": 0.6582478295185478,
+          "acc_stderr,none": 0.01333010301862285,
+          "alias": "winogrande"
+        }
+      },
+      "23": {
+        "winogrande": {
+          "acc,none": 0.6614048934490924,
+          "acc_stderr,none": 0.013300169865842412,
+          "alias": "winogrande"
+        }
+      },
+      "24": {
+        "winogrande": {
+          "acc,none": 0.659037095501184,
+          "acc_stderr,none": 0.013322681435934795,
+          "alias": "winogrande"
+        }
+      },
+      "25": {
+        "winogrande": {
+          "acc,none": 0.6629834254143646,
+          "acc_stderr,none": 0.013284955769395252,
+          "alias": "winogrande"
+        }
+      },
+      "26": {
+        "winogrande": {
+          "acc,none": 0.675611681136543,
+          "acc_stderr,none": 0.013157225726641643,
+          "alias": "winogrande"
+        }
+      },
+      "27": {
+        "winogrande": {
+          "acc,none": 0.6535122336227308,
+          "acc_stderr,none": 0.013373773411685648,
+          "alias": "winogrande"
+        }
+      },
+      "28": {
+        "winogrande": {
+          "acc,none": 0.6629834254143646,
+          "acc_stderr,none": 0.01328495576939525,
+          "alias": "winogrande"
+        }
+      },
+      "29": {
+        "winogrande": {
+          "acc,none": 0.6692975532754538,
+          "acc_stderr,none": 0.013222435887002684,
+          "alias": "winogrande"
+        }
+      },
+      "30": {
+        "winogrande": {
+          "acc,none": 0.6685082872928176,
+          "acc_stderr,none": 0.013230397198964657,
+          "alias": "winogrande"
+        }
+      },
+      "31": {
+        "winogrande": {
+          "acc,none": 0.6614048934490924,
+          "acc_stderr,none": 0.01330016986584241,
+          "alias": "winogrande"
+        }
+      }
+    },
+    "self_attn.q_proj,self_attn.k_proj": {
+      "0": {
+        "winogrande": {
+          "acc,none": 0.6582478295185478,
+          "acc_stderr,none": 0.013330103018622853,
+          "alias": "winogrande"
+        }
+      },
+      "1": {
+        "winogrande": {
+          "acc,none": 0.6243093922651933,
+          "acc_stderr,none": 0.013611257508380444,
+          "alias": "winogrande"
+        }
+      },
+      "2": {
+        "winogrande": {
+          "acc,none": 0.5911602209944752,
+          "acc_stderr,none": 0.0138169542951357,
+          "alias": "winogrande"
+        }
+      },
+      "3": {
+        "winogrande": {
+          "acc,none": 0.5998421468034728,
+          "acc_stderr,none": 0.01376947266046499,
+          "alias": "winogrande"
+        }
+      },
+      "4": {
+        "winogrande": {
+          "acc,none": 0.569060773480663,
+          "acc_stderr,none": 0.013917796623335962,
+          "alias": "winogrande"
+        }
+      },
+      "5": {
+        "winogrande": {
+          "acc,none": 0.6006314127861089,
+          "acc_stderr,none": 0.013764933546717614,
+          "alias": "winogrande"
+        }
+      },
+      "6": {
+        "winogrande": {
+          "acc,none": 0.6029992107340174,
+          "acc_stderr,none": 0.013751092519806699,
+          "alias": "winogrande"
+        }
+      },
+      "7": {
+        "winogrande": {
+          "acc,none": 0.584846093133386,
+          "acc_stderr,none": 0.013848684086658587,
+          "alias": "winogrande"
+        }
+      },
+      "8": {
+        "winogrande": {
+          "acc,none": 0.6085240726124704,
+          "acc_stderr,none": 0.01371748707129085,
+          "alias": "winogrande"
+        }
+      },
+      "9": {
+        "winogrande": {
+          "acc,none": 0.6029992107340174,
+          "acc_stderr,none": 0.013751092519806699,
+          "alias": "winogrande"
+        }
+      },
+      "10": {
+        "winogrande": {
+          "acc,none": 0.6006314127861089,
+          "acc_stderr,none": 0.013764933546717619,
+          "alias": "winogrande"
+        }
+      },
+      "11": {
+        "winogrande": {
+          "acc,none": 0.6045777426992897,
+          "acc_stderr,none": 0.013741678387545355,
+          "alias": "winogrande"
+        }
+      },
+      "12": {
+        "winogrande": {
+          "acc,none": 0.6093133385951065,
+          "acc_stderr,none": 0.013712536036556673,
+          "alias": "winogrande"
+        }
+      },
+      "13": {
+        "winogrande": {
+          "acc,none": 0.6124704025256511,
+          "acc_stderr,none": 0.013692354636016767,
+          "alias": "winogrande"
+        }
+      },
+      "14": {
+        "winogrande": {
+          "acc,none": 0.6085240726124704,
+          "acc_stderr,none": 0.013717487071290852,
+          "alias": "winogrande"
+        }
+      },
+      "15": {
+        "winogrande": {
+          "acc,none": 0.5982636148382005,
+          "acc_stderr,none": 0.0137784392666495,
+          "alias": "winogrande"
+        }
+      },
+      "16": {
+        "winogrande": {
+          "acc,none": 0.5935280189423836,
+          "acc_stderr,none": 0.013804448697753371,
+          "alias": "winogrande"
+        }
+      },
+      "17": {
+        "winogrande": {
+          "acc,none": 0.5943172849250198,
+          "acc_stderr,none": 0.013800206336014215,
+          "alias": "winogrande"
+        }
+      },
+      "18": {
+        "winogrande": {
+          "acc,none": 0.606156274664562,
+          "acc_stderr,none": 0.01373211447266876,
+          "alias": "winogrande"
+        }
+      },
+      "19": {
+        "winogrande": {
+          "acc,none": 0.6187845303867403,
+          "acc_stderr,none": 0.01365017216416031,
+          "alias": "winogrande"
+        }
+      },
+      "20": {
+        "winogrande": {
+          "acc,none": 0.6029992107340174,
+          "acc_stderr,none": 0.013751092519806699,
+          "alias": "winogrande"
+        }
+      },
+      "21": {
+        "winogrande": {
+          "acc,none": 0.6227308602999211,
+          "acc_stderr,none": 0.013622567928799503,
+          "alias": "winogrande"
+        }
+      },
+      "22": {
+        "winogrande": {
+          "acc,none": 0.6101026045777427,
+          "acc_stderr,none": 0.013707547317008463,
+          "alias": "winogrande"
+        }
+      },
+      "23": {
+        "winogrande": {
+          "acc,none": 0.5919494869771112,
+          "acc_stderr,none": 0.013812822643745011,
+          "alias": "winogrande"
+        }
+      },
+      "24": {
+        "winogrande": {
+          "acc,none": 0.5966850828729282,
+          "acc_stderr,none": 0.013787257285896243,
+          "alias": "winogrande"
+        }
+      },
+      "25": {
+        "winogrande": {
+          "acc,none": 0.6029992107340174,
+          "acc_stderr,none": 0.013751092519806702,
+          "alias": "winogrande"
+        }
+      },
+      "26": {
+        "winogrande": {
+          "acc,none": 0.6140489344909235,
+          "acc_stderr,none": 0.01368203699339741,
+          "alias": "winogrande"
+        }
+      },
+      "27": {
+        "winogrande": {
+          "acc,none": 0.6077348066298343,
+          "acc_stderr,none": 0.013722400462000888,
+          "alias": "winogrande"
+        }
+      },
+      "28": {
+        "winogrande": {
+          "acc,none": 0.580110497237569,
+          "acc_stderr,none": 0.013870943986310391,
+          "alias": "winogrande"
+        }
+      },
+      "29": {
+        "winogrande": {
+          "acc,none": 0.5872138910812944,
+          "acc_stderr,none": 0.013837060648682096,
+          "alias": "winogrande"
+        }
+      },
+      "30": {
+        "winogrande": {
+          "acc,none": 0.585635359116022,
+          "acc_stderr,none": 0.013844846232268561,
+          "alias": "winogrande"
+        }
+      },
+      "31": {
+        "winogrande": {
+          "acc,none": 0.6132596685082873,
+          "acc_stderr,none": 0.013687214761883055,
+          "alias": "winogrande"
+        }
+      }
+    },
+    "mlp.up_proj": {
+      "0": {
+        "winogrande": {
+          "acc,none": 0.4940805051302289,
+          "acc_stderr,none": 0.014051500838485807,
+          "alias": "winogrande"
+        }
+      },
+      "1": {
+        "winogrande": {
+          "acc,none": 0.4877663772691397,
+          "acc_stderr,none": 0.01404827882040562,
+          "alias": "winogrande"
+        }
+      },
+      "2": {
+        "winogrande": {
+          "acc,none": 0.5043409629044988,
+          "acc_stderr,none": 0.014051956064076906,
+          "alias": "winogrande"
+        }
+      },
+      "3": {
+        "winogrande": {
+          "acc,none": 0.48066298342541436,
+          "acc_stderr,none": 0.014041972733712974,
+          "alias": "winogrande"
+        }
+      },
+      "4": {
+        "winogrande": {
+          "acc,none": 0.4980268350434096,
+          "acc_stderr,none": 0.014052376259225632,
+          "alias": "winogrande"
+        }
+      },
+      "5": {
+        "winogrande": {
+          "acc,none": 0.48145224940805054,
+          "acc_stderr,none": 0.014042813708888378,
+          "alias": "winogrande"
+        }
+      },
+      "6": {
+        "winogrande": {
+          "acc,none": 0.48855564325177586,
+          "acc_stderr,none": 0.01404880419985932,
+          "alias": "winogrande"
+        }
+      },
+      "7": {
+        "winogrande": {
+          "acc,none": 0.47987371744277824,
+          "acc_stderr,none": 0.01404109666434433,
+          "alias": "winogrande"
+        }
+      },
+      "8": {
+        "winogrande": {
+          "acc,none": 0.516179952644041,
+          "acc_stderr,none": 0.014045126130978594,
+          "alias": "winogrande"
+        }
+      },
+      "9": {
+        "winogrande": {
+          "acc,none": 0.4964483030781373,
+          "acc_stderr,none": 0.014052131146915867,
+          "alias": "winogrande"
+        }
+      },
+      "10": {
+        "winogrande": {
+          "acc,none": 0.494869771112865,
+          "acc_stderr,none": 0.014051745961790516,
+          "alias": "winogrande"
+        }
+      },
+      "11": {
+        "winogrande": {
+          "acc,none": 0.5011838989739542,
+          "acc_stderr,none": 0.014052446290529022,
+          "alias": "winogrande"
+        }
+      },
+      "12": {
+        "winogrande": {
+          "acc,none": 0.47355958958168903,
+          "acc_stderr,none": 0.014032823874407225,
+          "alias": "winogrande"
+        }
+      },
+      "13": {
+        "winogrande": {
+          "acc,none": 0.5043409629044988,
+          "acc_stderr,none": 0.014051956064076903,
+          "alias": "winogrande"
+        }
+      },
+      "14": {
+        "winogrande": {
+          "acc,none": 0.510655090765588,
+          "acc_stderr,none": 0.014049294536290396,
+          "alias": "winogrande"
+        }
+      },
+      "15": {
+        "winogrande": {
+          "acc,none": 0.48224151539068666,
+          "acc_stderr,none": 0.014043619596174962,
+          "alias": "winogrande"
+        }
+      },
+      "16": {
+        "winogrande": {
+          "acc,none": 0.5011838989739542,
+          "acc_stderr,none": 0.014052446290529022,
+          "alias": "winogrande"
+        }
+      },
+      "17": {
+        "winogrande": {
+          "acc,none": 0.4940805051302289,
+          "acc_stderr,none": 0.014051500838485807,
+          "alias": "winogrande"
+        }
+      },
+      "18": {
+        "winogrande": {
+          "acc,none": 0.5122336227308603,
+          "acc_stderr,none": 0.014048278820405621,
+          "alias": "winogrande"
+        }
+      },
+      "19": {
+        "winogrande": {
+          "acc,none": 0.48855564325177586,
+          "acc_stderr,none": 0.014048804199859329,
+          "alias": "winogrande"
+        }
+      },
+      "20": {
+        "winogrande": {
+          "acc,none": 0.49329123914759276,
+          "acc_stderr,none": 0.014051220692330349,
+          "alias": "winogrande"
+        }
+      },
+      "21": {
+        "winogrande": {
+          "acc,none": 0.5122336227308603,
+          "acc_stderr,none": 0.01404827882040562,
+          "alias": "winogrande"
+        }
+      },
+      "22": {
+        "winogrande": {
+          "acc,none": 0.505130228887135,
+          "acc_stderr,none": 0.014051745961790513,
+          "alias": "winogrande"
+        }
+      },
+      "23": {
+        "winogrande": {
+          "acc,none": 0.4980268350434096,
+          "acc_stderr,none": 0.014052376259225629,
+          "alias": "winogrande"
+        }
+      },
+      "24": {
+        "winogrande": {
+          "acc,none": 0.4925019731649566,
+          "acc_stderr,none": 0.014050905521228577,
+          "alias": "winogrande"
+        }
+      },
+      "25": {
+        "winogrande": {
+          "acc,none": 0.452249408050513,
+          "acc_stderr,none": 0.013988256216606014,
+          "alias": "winogrande"
+        }
+      },
+      "26": {
+        "winogrande": {
+          "acc,none": 0.47434885556432516,
+          "acc_stderr,none": 0.014033980956108557,
+          "alias": "winogrande"
+        }
+      },
+      "27": {
+        "winogrande": {
+          "acc,none": 0.5359116022099447,
+          "acc_stderr,none": 0.014016193433958308,
+          "alias": "winogrande"
+        }
+      },
+      "28": {
+        "winogrande": {
+          "acc,none": 0.48303078137332284,
+          "acc_stderr,none": 0.014044390401612981,
+          "alias": "winogrande"
+        }
+      },
+      "29": {
+        "winogrande": {
+          "acc,none": 0.5019731649565904,
+          "acc_stderr,none": 0.014052376259225632,
+          "alias": "winogrande"
+        }
+      },
+      "30": {
+        "winogrande": {
+          "acc,none": 0.48855564325177586,
+          "acc_stderr,none": 0.014048804199859316,
+          "alias": "winogrande"
+        }
+      },
+      "31": {
+        "winogrande": {
+          "acc,none": 0.494869771112865,
+          "acc_stderr,none": 0.014051745961790516,
+          "alias": "winogrande"
+        }
+      }
+    },
+    "mlp.down_proj": {
+      "0": {
+        "winogrande": {
+          "acc,none": 0.4996053670086819,
+          "acc_stderr,none": 0.014052481306049512,
+          "alias": "winogrande"
+        }
+      },
+      "1": {
+        "winogrande": {
+          "acc,none": 0.4980268350434096,
+          "acc_stderr,none": 0.014052376259225636,
+          "alias": "winogrande"
+        }
+      },
+      "2": {
+        "winogrande": {
+          "acc,none": 0.5146014206787688,
+          "acc_stderr,none": 0.014046492383275839,
+          "alias": "winogrande"
+        }
+      },
+      "3": {
+        "winogrande": {
+          "acc,none": 0.5114443567482242,
+          "acc_stderr,none": 0.01404880419985932,
+          "alias": "winogrande"
+        }
+      },
+      "4": {
+        "winogrande": {
+          "acc,none": 0.4909234411996843,
+          "acc_stderr,none": 0.0140501700944977,
+          "alias": "winogrande"
+        }
+      },
+      "5": {
+        "winogrande": {
+          "acc,none": 0.5067087608524072,
+          "acc_stderr,none": 0.014051220692330349,
+          "alias": "winogrande"
+        }
+      },
+      "6": {
+        "winogrande": {
+          "acc,none": 0.4964483030781373,
+          "acc_stderr,none": 0.014052131146915857,
+          "alias": "winogrande"
+        }
+      },
+      "7": {
+        "winogrande": {
+          "acc,none": 0.494869771112865,
+          "acc_stderr,none": 0.014051745961790516,
+          "alias": "winogrande"
+        }
+      },
+      "8": {
+        "winogrande": {
+          "acc,none": 0.5130228887134964,
+          "acc_stderr,none": 0.014047718393997663,
+          "alias": "winogrande"
+        }
+      },
+      "9": {
+        "winogrande": {
+          "acc,none": 0.494869771112865,
+          "acc_stderr,none": 0.014051745961790516,
+          "alias": "winogrande"
+        }
+      },
+      "10": {
+        "winogrande": {
+          "acc,none": 0.5224940805051302,
+          "acc_stderr,none": 0.014038257824059883,
+          "alias": "winogrande"
+        }
+      },
+      "11": {
+        "winogrande": {
+          "acc,none": 0.4964483030781373,
+          "acc_stderr,none": 0.014052131146915857,
+          "alias": "winogrande"
+        }
+      },
+      "12": {
+        "winogrande": {
+          "acc,none": 0.5074980268350434,
+          "acc_stderr,none": 0.01405090552122858,
+          "alias": "winogrande"
+        }
+      },
+      "13": {
+        "winogrande": {
+          "acc,none": 0.48224151539068666,
+          "acc_stderr,none": 0.01404361959617496,
+          "alias": "winogrande"
+        }
+      },
+      "14": {
+        "winogrande": {
+          "acc,none": 0.4956590370955012,
+          "acc_stderr,none": 0.014051956064076887,
+          "alias": "winogrande"
+        }
+      },
+      "15": {
+        "winogrande": {
+          "acc,none": 0.49329123914759276,
+          "acc_stderr,none": 0.014051220692330346,
+          "alias": "winogrande"
+        }
+      },
+      "16": {
+        "winogrande": {
+          "acc,none": 0.4972375690607735,
+          "acc_stderr,none": 0.014052271211616433,
+          "alias": "winogrande"
+        }
+      },
+      "17": {
+        "winogrande": {
+          "acc,none": 0.4877663772691397,
+          "acc_stderr,none": 0.01404827882040562,
+          "alias": "winogrande"
+        }
+      },
+      "18": {
+        "winogrande": {
+          "acc,none": 0.5059194948697711,
+          "acc_stderr,none": 0.014051500838485807,
+          "alias": "winogrande"
+        }
+      },
+      "19": {
+        "winogrande": {
+          "acc,none": 0.5067087608524072,
+          "acc_stderr,none": 0.014051220692330342,
+          "alias": "winogrande"
+        }
+      },
+      "20": {
+        "winogrande": {
+          "acc,none": 0.49013417521704816,
+          "acc_stderr,none": 0.014049749833367585,
+          "alias": "winogrande"
+        }
+      },
+      "21": {
+        "winogrande": {
+          "acc,none": 0.500394632991318,
+          "acc_stderr,none": 0.014052481306049516,
+          "alias": "winogrande"
+        }
+      },
+      "22": {
+        "winogrande": {
+          "acc,none": 0.5019731649565904,
+          "acc_stderr,none": 0.014052376259225632,
+          "alias": "winogrande"
+        }
+      },
+      "23": {
+        "winogrande": {
+          "acc,none": 0.4988161010260458,
+          "acc_stderr,none": 0.014052446290529022,
+          "alias": "winogrande"
+        }
+      },
+      "24": {
+        "winogrande": {
+          "acc,none": 0.4877663772691397,
+          "acc_stderr,none": 0.01404827882040562,
+          "alias": "winogrande"
+        }
+      },
+      "25": {
+        "winogrande": {
+          "acc,none": 0.47671665351223363,
+          "acc_stderr,none": 0.014037241309573642,
+          "alias": "winogrande"
+        }
+      },
+      "26": {
+        "winogrande": {
+          "acc,none": 0.5098658247829518,
+          "acc_stderr,none": 0.014049749833367589,
+          "alias": "winogrande"
+        }
+      },
+      "27": {
+        "winogrande": {
+          "acc,none": 0.5098658247829518,
+          "acc_stderr,none": 0.014049749833367592,
+          "alias": "winogrande"
+        }
+      },
+      "28": {
+        "winogrande": {
+          "acc,none": 0.5114443567482242,
+          "acc_stderr,none": 0.014048804199859313,
+          "alias": "winogrande"
+        }
+      },
+      "29": {
+        "winogrande": {
+          "acc,none": 0.49171270718232046,
+          "acc_stderr,none": 0.014050555322824194,
+          "alias": "winogrande"
+        }
+      },
+      "30": {
+        "winogrande": {
+          "acc,none": 0.5153906866614049,
+          "acc_stderr,none": 0.01404582678978366,
+          "alias": "winogrande"
+        }
+      },
+      "31": {
+        "winogrande": {
+          "acc,none": 0.5098658247829518,
+          "acc_stderr,none": 0.014049749833367585,
+          "alias": "winogrande"
+        }
+      }
+    },
+    "mlp.gate_proj": {
+      "0": {
+        "winogrande": {
+          "acc,none": 0.5138121546961326,
+          "acc_stderr,none": 0.014047122916440426,
+          "alias": "winogrande"
+        }
+      },
+      "1": {
+        "winogrande": {
+          "acc,none": 0.5059194948697711,
+          "acc_stderr,none": 0.01405150083848581,
+          "alias": "winogrande"
+        }
+      },
+      "2": {
+        "winogrande": {
+          "acc,none": 0.5027624309392266,
+          "acc_stderr,none": 0.014052271211616429,
+          "alias": "winogrande"
+        }
+      },
+      "3": {
+        "winogrande": {
+          "acc,none": 0.4988161010260458,
+          "acc_stderr,none": 0.014052446290529015,
+          "alias": "winogrande"
+        }
+      },
+      "4": {
+        "winogrande": {
+          "acc,none": 0.5311760063141279,
+          "acc_stderr,none": 0.014025142640639513,
+          "alias": "winogrande"
+        }
+      },
+      "5": {
+        "winogrande": {
+          "acc,none": 0.4980268350434096,
+          "acc_stderr,none": 0.014052376259225629,
+          "alias": "winogrande"
+        }
+      },
+      "6": {
+        "winogrande": {
+          "acc,none": 0.5090765588003157,
+          "acc_stderr,none": 0.0140501700944977,
+          "alias": "winogrande"
+        }
+      },
+      "7": {
+        "winogrande": {
+          "acc,none": 0.5082872928176796,
+          "acc_stderr,none": 0.014050555322824194,
+          "alias": "winogrande"
+        }
+      },
+      "8": {
+        "winogrande": {
+          "acc,none": 0.47434885556432516,
+          "acc_stderr,none": 0.01403398095610855,
+          "alias": "winogrande"
+        }
+      },
+      "9": {
+        "winogrande": {
+          "acc,none": 0.46566692975532753,
+          "acc_stderr,none": 0.014019317531542563,
+          "alias": "winogrande"
+        }
+      },
+      "10": {
+        "winogrande": {
+          "acc,none": 0.4940805051302289,
+          "acc_stderr,none": 0.014051500838485807,
+          "alias": "winogrande"
+        }
+      },
+      "11": {
+        "winogrande": {
+          "acc,none": 0.5035516969218626,
+          "acc_stderr,none": 0.014052131146915867,
+          "alias": "winogrande"
+        }
+      },
+      "12": {
+        "winogrande": {
+          "acc,none": 0.5082872928176796,
+          "acc_stderr,none": 0.014050555322824194,
+          "alias": "winogrande"
+        }
+      },
+      "13": {
+        "winogrande": {
+          "acc,none": 0.5019731649565904,
+          "acc_stderr,none": 0.014052376259225643,
+          "alias": "winogrande"
+        }
+      },
+      "14": {
+        "winogrande": {
+          "acc,none": 0.500394632991318,
+          "acc_stderr,none": 0.014052481306049516,
+          "alias": "winogrande"
+        }
+      },
+      "15": {
+        "winogrande": {
+          "acc,none": 0.47908445146014206,
+          "acc_stderr,none": 0.014040185494212959,
+          "alias": "winogrande"
+        }
+      },
+      "16": {
+        "winogrande": {
+          "acc,none": 0.5067087608524072,
+          "acc_stderr,none": 0.014051220692330349,
+          "alias": "winogrande"
+        }
+      },
+      "17": {
+        "winogrande": {
+          "acc,none": 0.48697711128650356,
+          "acc_stderr,none": 0.014047718393997667,
+          "alias": "winogrande"
+        }
+      },
+      "18": {
+        "winogrande": {
+          "acc,none": 0.494869771112865,
+          "acc_stderr,none": 0.014051745961790516,
+          "alias": "winogrande"
+        }
+      },
+      "19": {
+        "winogrande": {
+          "acc,none": 0.5027624309392266,
+          "acc_stderr,none": 0.014052271211616436,
+          "alias": "winogrande"
+        }
+      },
+      "20": {
+        "winogrande": {
+          "acc,none": 0.4988161010260458,
+          "acc_stderr,none": 0.014052446290529009,
+          "alias": "winogrande"
+        }
+      },
+      "21": {
+        "winogrande": {
+          "acc,none": 0.5035516969218626,
+          "acc_stderr,none": 0.014052131146915864,
+          "alias": "winogrande"
+        }
+      },
+      "22": {
+        "winogrande": {
+          "acc,none": 0.4972375690607735,
+          "acc_stderr,none": 0.014052271211616448,
+          "alias": "winogrande"
+        }
+      },
+      "23": {
+        "winogrande": {
+          "acc,none": 0.5098658247829518,
+          "acc_stderr,none": 0.014049749833367592,
+          "alias": "winogrande"
+        }
+      },
+      "24": {
+        "winogrande": {
+          "acc,none": 0.510655090765588,
+          "acc_stderr,none": 0.014049294536290396,
+          "alias": "winogrande"
+        }
+      },
+      "25": {
+        "winogrande": {
+          "acc,none": 0.47829518547750594,
+          "acc_stderr,none": 0.01403923921648463,
+          "alias": "winogrande"
+        }
+      },
+      "26": {
+        "winogrande": {
+          "acc,none": 0.5153906866614049,
+          "acc_stderr,none": 0.01404582678978366,
+          "alias": "winogrande"
+        }
+      },
+      "27": {
+        "winogrande": {
+          "acc,none": 0.48066298342541436,
+          "acc_stderr,none": 0.014041972733712972,
+          "alias": "winogrande"
+        }
+      },
+      "28": {
+        "winogrande": {
+          "acc,none": 0.4980268350434096,
+          "acc_stderr,none": 0.014052376259225627,
+          "alias": "winogrande"
+        }
+      },
+      "29": {
+        "winogrande": {
+          "acc,none": 0.4996053670086819,
+          "acc_stderr,none": 0.014052481306049516,
+          "alias": "winogrande"
+        }
+      },
+      "30": {
+        "winogrande": {
+          "acc,none": 0.489344909234412,
+          "acc_stderr,none": 0.0140492945362904,
+          "alias": "winogrande"
+        }
+      },
+      "31": {
+        "winogrande": {
+          "acc,none": 0.4861878453038674,
+          "acc_stderr,none": 0.014047122916440419,
+          "alias": "winogrande"
+        }
+      }
+    }
+  },
+  "0.25": {
+    "self_attn.q_proj": {
+      "0": {
+        "winogrande": {
+          "acc,none": 0.696921862667719,
+          "acc_stderr,none": 0.012916727462634475,
+          "alias": "winogrande"
+        }
+      },
+      "1": {
+        "winogrande": {
+          "acc,none": 0.7095501183898973,
+          "acc_stderr,none": 0.012758813448064605,
+          "alias": "winogrande"
+        }
+      },
+      "2": {
+        "winogrande": {
+          "acc,none": 0.6732438831886346,
+          "acc_stderr,none": 0.013181997302131368,
+          "alias": "winogrande"
+        }
+      },
+      "3": {
+        "winogrande": {
+          "acc,none": 0.6716653512233622,
+          "acc_stderr,none": 0.013198299449717885,
+          "alias": "winogrande"
+        }
+      },
+      "4": {
+        "winogrande": {
+          "acc,none": 0.6842936069455406,
+          "acc_stderr,none": 0.01306309474300081,
+          "alias": "winogrande"
+        }
+      },
+      "5": {
+        "winogrande": {
+          "acc,none": 0.681136543014996,
+          "acc_stderr,none": 0.013097928420088771,
+          "alias": "winogrande"
+        }
+      },
+      "6": {
+        "winogrande": {
+          "acc,none": 0.6874506708760852,
+          "acc_stderr,none": 0.013027563620748837,
+          "alias": "winogrande"
+        }
+      },
+      "7": {
+        "winogrande": {
+          "acc,none": 0.6771902131018153,
+          "acc_stderr,none": 0.013140498173357933,
+          "alias": "winogrande"
+        }
+      },
+      "8": {
+        "winogrande": {
+          "acc,none": 0.6874506708760852,
+          "acc_stderr,none": 0.01302756362074884,
+          "alias": "winogrande"
+        }
+      },
+      "9": {
+        "winogrande": {
+          "acc,none": 0.6732438831886346,
+          "acc_stderr,none": 0.013181997302131366,
+          "alias": "winogrande"
+        }
+      },
+      "10": {
+        "winogrande": {
+          "acc,none": 0.6771902131018153,
+          "acc_stderr,none": 0.013140498173357936,
+          "alias": "winogrande"
+        }
+      },
+      "11": {
+        "winogrande": {
+          "acc,none": 0.6716653512233622,
+          "acc_stderr,none": 0.013198299449717885,
+          "alias": "winogrande"
+        }
+      },
+      "12": {
+        "winogrande": {
+          "acc,none": 0.675611681136543,
+          "acc_stderr,none": 0.01315722572664164,
+          "alias": "winogrande"
+        }
+      },
+      "13": {
+        "winogrande": {
+          "acc,none": 0.6929755327545383,
+          "acc_stderr,none": 0.012963688616969473,
+          "alias": "winogrande"
+        }
+      },
+      "14": {
+        "winogrande": {
+          "acc,none": 0.6858721389108129,
+          "acc_stderr,none": 0.01304541671607257,
+          "alias": "winogrande"
+        }
+      },
+      "15": {
+        "winogrande": {
+          "acc,none": 0.6827150749802684,
+          "acc_stderr,none": 0.01308059841133212,
+          "alias": "winogrande"
+        }
+      },
+      "16": {
+        "winogrande": {
+          "acc,none": 0.6842936069455406,
+          "acc_stderr,none": 0.01306309474300081,
+          "alias": "winogrande"
+        }
+      },
+      "17": {
+        "winogrande": {
+          "acc,none": 0.6779794790844514,
+          "acc_stderr,none": 0.013132070202071085,
+          "alias": "winogrande"
+        }
+      },
+      "18": {
+        "winogrande": {
+          "acc,none": 0.6748224151539068,
+          "acc_stderr,none": 0.01316552547176437,
+          "alias": "winogrande"
+        }
+      },
+      "19": {
+        "winogrande": {
+          "acc,none": 0.6842936069455406,
+          "acc_stderr,none": 0.01306309474300081,
+          "alias": "winogrande"
+        }
+      },
+      "20": {
+        "winogrande": {
+          "acc,none": 0.6882399368587214,
+          "acc_stderr,none": 0.013018571197638539,
+          "alias": "winogrande"
+        }
+      },
+      "21": {
+        "winogrande": {
+          "acc,none": 0.6850828729281768,
+          "acc_stderr,none": 0.013054277568469237,
+          "alias": "winogrande"
+        }
+      },
+      "22": {
+        "winogrande": {
+          "acc,none": 0.6929755327545383,
+          "acc_stderr,none": 0.012963688616969475,
+          "alias": "winogrande"
+        }
+      },
+      "23": {
+        "winogrande": {
+          "acc,none": 0.6827150749802684,
+          "acc_stderr,none": 0.013080598411332115,
+          "alias": "winogrande"
+        }
+      },
+      "24": {
+        "winogrande": {
+          "acc,none": 0.6732438831886346,
+          "acc_stderr,none": 0.013181997302131366,
+          "alias": "winogrande"
+        }
+      },
+      "25": {
+        "winogrande": {
+          "acc,none": 0.6740331491712708,
+          "acc_stderr,none": 0.013173782636922208,
+          "alias": "winogrande"
+        }
+      },
+      "26": {
+        "winogrande": {
+          "acc,none": 0.681136543014996,
+          "acc_stderr,none": 0.013097928420088771,
+          "alias": "winogrande"
+        }
+      },
+      "27": {
+        "winogrande": {
+          "acc,none": 0.6779794790844514,
+          "acc_stderr,none": 0.013132070202071076,
+          "alias": "winogrande"
+        }
+      },
+      "28": {
+        "winogrande": {
+          "acc,none": 0.6858721389108129,
+          "acc_stderr,none": 0.013045416716072566,
+          "alias": "winogrande"
+        }
+      },
+      "29": {
+        "winogrande": {
+          "acc,none": 0.6740331491712708,
+          "acc_stderr,none": 0.013173782636922201,
+          "alias": "winogrande"
+        }
+      },
+      "30": {
+        "winogrande": {
+          "acc,none": 0.6819258089976322,
+          "acc_stderr,none": 0.013089285079884678,
+          "alias": "winogrande"
+        }
+      },
+      "31": {
+        "winogrande": {
+          "acc,none": 0.6724546172059984,
+          "acc_stderr,none": 0.013190169546797017,
+          "alias": "winogrande"
+        }
+      }
+    },
+    "self_attn.k_proj": {
+      "0": {
+        "winogrande": {
+          "acc,none": 0.6850828729281768,
+          "acc_stderr,none": 0.013054277568469237,
+          "alias": "winogrande"
+        }
+      },
+      "1": {
+        "winogrande": {
+          "acc,none": 0.6771902131018153,
+          "acc_stderr,none": 0.01314049817335794,
+          "alias": "winogrande"
+        }
+      },
+      "2": {
+        "winogrande": {
+          "acc,none": 0.6621941594317285,
+          "acc_stderr,none": 0.013292583502910892,
+          "alias": "winogrande"
+        }
+      },
+      "3": {
+        "winogrande": {
+          "acc,none": 0.6740331491712708,
+          "acc_stderr,none": 0.013173782636922197,
+          "alias": "winogrande"
+        }
+      },
+      "4": {
+        "winogrande": {
+          "acc,none": 0.6771902131018153,
+          "acc_stderr,none": 0.01314049817335794,
+          "alias": "winogrande"
+        }
+      },
+      "5": {
+        "winogrande": {
+          "acc,none": 0.6874506708760852,
+          "acc_stderr,none": 0.013027563620748838,
+          "alias": "winogrande"
+        }
+      },
+      "6": {
+        "winogrande": {
+          "acc,none": 0.6953433307024467,
+          "acc_stderr,none": 0.012935646499325302,
+          "alias": "winogrande"
+        }
+      },
+      "7": {
+        "winogrande": {
+          "acc,none": 0.6842936069455406,
+          "acc_stderr,none": 0.01306309474300081,
+          "alias": "winogrande"
+        }
+      },
+      "8": {
+        "winogrande": {
+          "acc,none": 0.6803472770323599,
+          "acc_stderr,none": 0.013106528517665132,
+          "alias": "winogrande"
+        }
+      },
+      "9": {
+        "winogrande": {
+          "acc,none": 0.6771902131018153,
+          "acc_stderr,none": 0.013140498173357933,
+          "alias": "winogrande"
+        }
+      },
+      "10": {
+        "winogrande": {
+          "acc,none": 0.6819258089976322,
+          "acc_stderr,none": 0.01308928507988468,
+          "alias": "winogrande"
+        }
+      },
+      "11": {
+        "winogrande": {
+          "acc,none": 0.6764009471191792,
+          "acc_stderr,none": 0.013148883320923148,
+          "alias": "winogrande"
+        }
+      },
+      "12": {
+        "winogrande": {
+          "acc,none": 0.6882399368587214,
+          "acc_stderr,none": 0.01301857119763854,
+          "alias": "winogrande"
+        }
+      },
+      "13": {
+        "winogrande": {
+          "acc,none": 0.6819258089976322,
+          "acc_stderr,none": 0.013089285079884683,
+          "alias": "winogrande"
+        }
+      },
+      "14": {
+        "winogrande": {
+          "acc,none": 0.6764009471191792,
+          "acc_stderr,none": 0.01314888332092315,
+          "alias": "winogrande"
+        }
+      },
+      "15": {
+        "winogrande": {
+          "acc,none": 0.6850828729281768,
+          "acc_stderr,none": 0.013054277568469237,
+          "alias": "winogrande"
+        }
+      },
+      "16": {
+        "winogrande": {
+          "acc,none": 0.6827150749802684,
+          "acc_stderr,none": 0.013080598411332117,
+          "alias": "winogrande"
+        }
+      },
+      "17": {
+        "winogrande": {
+          "acc,none": 0.6827150749802684,
+          "acc_stderr,none": 0.013080598411332113,
+          "alias": "winogrande"
+        }
+      },
+      "18": {
+        "winogrande": {
+          "acc,none": 0.6929755327545383,
+          "acc_stderr,none": 0.012963688616969475,
+          "alias": "winogrande"
+        }
+      },
+      "19": {
+        "winogrande": {
+          "acc,none": 0.6866614048934491,
+          "acc_stderr,none": 0.013036512096747983,
+          "alias": "winogrande"
+        }
+      },
+      "20": {
+        "winogrande": {
+          "acc,none": 0.6819258089976322,
+          "acc_stderr,none": 0.013089285079884685,
+          "alias": "winogrande"
+        }
+      },
+      "21": {
+        "winogrande": {
+          "acc,none": 0.6764009471191792,
+          "acc_stderr,none": 0.013148883320923142,
+          "alias": "winogrande"
+        }
+      },
+      "22": {
+        "winogrande": {
+          "acc,none": 0.6708760852407262,
+          "acc_stderr,none": 0.01320638708909147,
+          "alias": "winogrande"
+        }
+      },
+      "23": {
+        "winogrande": {
+          "acc,none": 0.6850828729281768,
+          "acc_stderr,none": 0.013054277568469237,
+          "alias": "winogrande"
+        }
+      },
+      "24": {
+        "winogrande": {
+          "acc,none": 0.6906077348066298,
+          "acc_stderr,none": 0.012991329330822995,
+          "alias": "winogrande"
+        }
+      },
+      "25": {
+        "winogrande": {
+          "acc,none": 0.6779794790844514,
+          "acc_stderr,none": 0.013132070202071076,
+          "alias": "winogrande"
+        }
+      },
+      "26": {
+        "winogrande": {
+          "acc,none": 0.6937647987371744,
+          "acc_stderr,none": 0.012954385972802462,
+          "alias": "winogrande"
+        }
+      },
+      "27": {
+        "winogrande": {
+          "acc,none": 0.664561957379637,
+          "acc_stderr,none": 0.013269575904851422,
+          "alias": "winogrande"
+        }
+      },
+      "28": {
+        "winogrande": {
+          "acc,none": 0.6732438831886346,
+          "acc_stderr,none": 0.01318199730213137,
+          "alias": "winogrande"
+        }
+      },
+      "29": {
+        "winogrande": {
+          "acc,none": 0.691397000789266,
+          "acc_stderr,none": 0.012982160200926582,
+          "alias": "winogrande"
+        }
+      },
+      "30": {
+        "winogrande": {
+          "acc,none": 0.6795580110497238,
+          "acc_stderr,none": 0.013115085457681717,
+          "alias": "winogrande"
+        }
+      },
+      "31": {
+        "winogrande": {
+          "acc,none": 0.681136543014996,
+          "acc_stderr,none": 0.013097928420088771,
+          "alias": "winogrande"
+        }
+      }
+    },
+    "self_attn.q_proj,self_attn.k_proj": {
+      "0": {
+        "winogrande": {
+          "acc,none": 0.6787687450670876,
+          "acc_stderr,none": 0.013123599324558297,
+          "alias": "winogrande"
+        }
+      },
+      "1": {
+        "winogrande": {
+          "acc,none": 0.6779794790844514,
+          "acc_stderr,none": 0.013132070202071067,
+          "alias": "winogrande"
+        }
+      },
+      "2": {
+        "winogrande": {
+          "acc,none": 0.6574585635359116,
+          "acc_stderr,none": 0.013337483579075927,
+          "alias": "winogrande"
+        }
+      },
+      "3": {
+        "winogrande": {
+          "acc,none": 0.6503551696921863,
+          "acc_stderr,none": 0.013402073680850514,
+          "alias": "winogrande"
+        }
+      },
+      "4": {
+        "winogrande": {
+          "acc,none": 0.6582478295185478,
+          "acc_stderr,none": 0.013330103018622847,
+          "alias": "winogrande"
+        }
+      },
+      "5": {
+        "winogrande": {
+          "acc,none": 0.6661404893449092,
+          "acc_stderr,none": 0.013254029695143348,
+          "alias": "winogrande"
+        }
+      },
+      "6": {
+        "winogrande": {
+          "acc,none": 0.65982636148382,
+          "acc_stderr,none": 0.013315218762417399,
+          "alias": "winogrande"
+        }
+      },
+      "7": {
+        "winogrande": {
+          "acc,none": 0.6606156274664562,
+          "acc_stderr,none": 0.01330771492894175,
+          "alias": "winogrande"
+        }
+      },
+      "8": {
+        "winogrande": {
+          "acc,none": 0.6637726913970008,
+          "acc_stderr,none": 0.013277286593993444,
+          "alias": "winogrande"
+        }
+      },
+      "9": {
+        "winogrande": {
+          "acc,none": 0.6566692975532754,
+          "acc_stderr,none": 0.013344823185358002,
+          "alias": "winogrande"
+        }
+      },
+      "10": {
+        "winogrande": {
+          "acc,none": 0.6692975532754538,
+          "acc_stderr,none": 0.013222435887002686,
+          "alias": "winogrande"
+        }
+      },
+      "11": {
+        "winogrande": {
+          "acc,none": 0.6550907655880032,
+          "acc_stderr,none": 0.013359379805033692,
+          "alias": "winogrande"
+        }
+      },
+      "12": {
+        "winogrande": {
+          "acc,none": 0.6685082872928176,
+          "acc_stderr,none": 0.01323039719896465,
+          "alias": "winogrande"
+        }
+      },
+      "13": {
+        "winogrande": {
+          "acc,none": 0.6661404893449092,
+          "acc_stderr,none": 0.01325402969514335,
+          "alias": "winogrande"
+        }
+      },
+      "14": {
+        "winogrande": {
+          "acc,none": 0.6621941594317285,
+          "acc_stderr,none": 0.013292583502910892,
+          "alias": "winogrande"
+        }
+      },
+      "15": {
+        "winogrande": {
+          "acc,none": 0.664561957379637,
+          "acc_stderr,none": 0.01326957590485143,
+          "alias": "winogrande"
+        }
+      },
+      "16": {
+        "winogrande": {
+          "acc,none": 0.6566692975532754,
+          "acc_stderr,none": 0.013344823185358018,
+          "alias": "winogrande"
+        }
+      },
+      "17": {
+        "winogrande": {
+          "acc,none": 0.6582478295185478,
+          "acc_stderr,none": 0.013330103018622846,
+          "alias": "winogrande"
+        }
+      },
+      "18": {
+        "winogrande": {
+          "acc,none": 0.659037095501184,
+          "acc_stderr,none": 0.013322681435934793,
+          "alias": "winogrande"
+        }
+      },
+      "19": {
+        "winogrande": {
+          "acc,none": 0.6724546172059984,
+          "acc_stderr,none": 0.013190169546797017,
+          "alias": "winogrande"
+        }
+      },
+      "20": {
+        "winogrande": {
+          "acc,none": 0.67008681925809,
+          "acc_stderr,none": 0.013214432542517555,
+          "alias": "winogrande"
+        }
+      },
+      "21": {
+        "winogrande": {
+          "acc,none": 0.6637726913970008,
+          "acc_stderr,none": 0.01327728659399344,
+          "alias": "winogrande"
+        }
+      },
+      "22": {
+        "winogrande": {
+          "acc,none": 0.6661404893449092,
+          "acc_stderr,none": 0.013254029695143351,
+          "alias": "winogrande"
+        }
+      },
+      "23": {
+        "winogrande": {
+          "acc,none": 0.6629834254143646,
+          "acc_stderr,none": 0.013284955769395252,
+          "alias": "winogrande"
+        }
+      },
+      "24": {
+        "winogrande": {
+          "acc,none": 0.6606156274664562,
+          "acc_stderr,none": 0.01330771492894175,
+          "alias": "winogrande"
+        }
+      },
+      "25": {
+        "winogrande": {
+          "acc,none": 0.6637726913970008,
+          "acc_stderr,none": 0.013277286593993435,
+          "alias": "winogrande"
+        }
+      },
+      "26": {
+        "winogrande": {
+          "acc,none": 0.6677190213101816,
+          "acc_stderr,none": 0.01323831655423653,
+          "alias": "winogrande"
+        }
+      },
+      "27": {
+        "winogrande": {
+          "acc,none": 0.6479873717442778,
+          "acc_stderr,none": 0.013422874824929716,
+          "alias": "winogrande"
+        }
+      },
+      "28": {
+        "winogrande": {
+          "acc,none": 0.6511444356748224,
+          "acc_stderr,none": 0.013395059320137332,
+          "alias": "winogrande"
+        }
+      },
+      "29": {
+        "winogrande": {
+          "acc,none": 0.6550907655880032,
+          "acc_stderr,none": 0.013359379805033692,
+          "alias": "winogrande"
+        }
+      },
+      "30": {
+        "winogrande": {
+          "acc,none": 0.6511444356748224,
+          "acc_stderr,none": 0.013395059320137336,
+          "alias": "winogrande"
+        }
+      },
+      "31": {
+        "winogrande": {
+          "acc,none": 0.6495659037095501,
+          "acc_stderr,none": 0.01340904767667019,
+          "alias": "winogrande"
+        }
+      }
+    },
+    "mlp.up_proj": {
+      "0": {
+        "winogrande": {
+          "acc,none": 0.5335438042620363,
+          "acc_stderr,none": 0.014020826677598101,
+          "alias": "winogrande"
+        }
+      },
+      "1": {
+        "winogrande": {
+          "acc,none": 0.5074980268350434,
+          "acc_stderr,none": 0.014050905521228573,
+          "alias": "winogrande"
+        }
+      },
+      "2": {
+        "winogrande": {
+          "acc,none": 0.5185477505919495,
+          "acc_stderr,none": 0.014042813708888378,
+          "alias": "winogrande"
+        }
+      },
+      "3": {
+        "winogrande": {
+          "acc,none": 0.5303867403314917,
+          "acc_stderr,none": 0.014026510839428727,
+          "alias": "winogrande"
+        }
+      },
+      "4": {
+        "winogrande": {
+          "acc,none": 0.5217048145224941,
+          "acc_stderr,none": 0.014039239216484627,
+          "alias": "winogrande"
+        }
+      },
+      "5": {
+        "winogrande": {
+          "acc,none": 0.55327545382794,
+          "acc_stderr,none": 0.013972488371616689,
+          "alias": "winogrande"
+        }
+      },
+      "6": {
+        "winogrande": {
+          "acc,none": 0.5224940805051302,
+          "acc_stderr,none": 0.014038257824059885,
+          "alias": "winogrande"
+        }
+      },
+      "7": {
+        "winogrande": {
+          "acc,none": 0.5714285714285714,
+          "acc_stderr,none": 0.0139083538146067,
+          "alias": "winogrande"
+        }
+      },
+      "8": {
+        "winogrande": {
+          "acc,none": 0.5311760063141279,
+          "acc_stderr,none": 0.01402514264063952,
+          "alias": "winogrande"
+        }
+      },
+      "9": {
+        "winogrande": {
+          "acc,none": 0.5217048145224941,
+          "acc_stderr,none": 0.01403923921648463,
+          "alias": "winogrande"
+        }
+      },
+      "10": {
+        "winogrande": {
+          "acc,none": 0.5367008681925809,
+          "acc_stderr,none": 0.01401457845884326,
+          "alias": "winogrande"
+        }
+      },
+      "11": {
+        "winogrande": {
+          "acc,none": 0.505130228887135,
+          "acc_stderr,none": 0.014051745961790516,
+          "alias": "winogrande"
+        }
+      },
+      "12": {
+        "winogrande": {
+          "acc,none": 0.505130228887135,
+          "acc_stderr,none": 0.01405174596179052,
+          "alias": "winogrande"
+        }
+      },
+      "13": {
+        "winogrande": {
+          "acc,none": 0.49329123914759276,
+          "acc_stderr,none": 0.014051220692330346,
+          "alias": "winogrande"
+        }
+      },
+      "14": {
+        "winogrande": {
+          "acc,none": 0.5035516969218626,
+          "acc_stderr,none": 0.014052131146915852,
+          "alias": "winogrande"
+        }
+      },
+      "15": {
+        "winogrande": {
+          "acc,none": 0.4964483030781373,
+          "acc_stderr,none": 0.01405213114691586,
+          "alias": "winogrande"
+        }
+      },
+      "16": {
+        "winogrande": {
+          "acc,none": 0.4980268350434096,
+          "acc_stderr,none": 0.014052376259225627,
+          "alias": "winogrande"
+        }
+      },
+      "17": {
+        "winogrande": {
+          "acc,none": 0.5327545382794001,
+          "acc_stderr,none": 0.014022300570434139,
+          "alias": "winogrande"
+        }
+      },
+      "18": {
+        "winogrande": {
+          "acc,none": 0.5011838989739542,
+          "acc_stderr,none": 0.014052446290529022,
+          "alias": "winogrande"
+        }
+      },
+      "19": {
+        "winogrande": {
+          "acc,none": 0.5090765588003157,
+          "acc_stderr,none": 0.0140501700944977,
+          "alias": "winogrande"
+        }
+      },
+      "20": {
+        "winogrande": {
+          "acc,none": 0.5059194948697711,
+          "acc_stderr,none": 0.014051500838485807,
+          "alias": "winogrande"
+        }
+      },
+      "21": {
+        "winogrande": {
+          "acc,none": 0.4972375690607735,
+          "acc_stderr,none": 0.014052271211616453,
+          "alias": "winogrande"
+        }
+      },
+      "22": {
+        "winogrande": {
+          "acc,none": 0.5082872928176796,
+          "acc_stderr,none": 0.014050555322824192,
+          "alias": "winogrande"
+        }
+      },
+      "23": {
+        "winogrande": {
+          "acc,none": 0.5169692186266772,
+          "acc_stderr,none": 0.014044390401612981,
+          "alias": "winogrande"
+        }
+      },
+      "24": {
+        "winogrande": {
+          "acc,none": 0.48697711128650356,
+          "acc_stderr,none": 0.014047718393997663,
+          "alias": "winogrande"
+        }
+      },
+      "25": {
+        "winogrande": {
+          "acc,none": 0.5177584846093133,
+          "acc_stderr,none": 0.014043619596174959,
+          "alias": "winogrande"
+        }
+      },
+      "26": {
+        "winogrande": {
+          "acc,none": 0.49013417521704816,
+          "acc_stderr,none": 0.014049749833367596,
+          "alias": "winogrande"
+        }
+      },
+      "27": {
+        "winogrande": {
+          "acc,none": 0.5224940805051302,
+          "acc_stderr,none": 0.014038257824059883,
+          "alias": "winogrande"
+        }
+      },
+      "28": {
+        "winogrande": {
+          "acc,none": 0.5382794001578532,
+          "acc_stderr,none": 0.014011242594964123,
+          "alias": "winogrande"
+        }
+      },
+      "29": {
+        "winogrande": {
+          "acc,none": 0.5232833464877664,
+          "acc_stderr,none": 0.014037241309573645,
+          "alias": "winogrande"
+        }
+      },
+      "30": {
+        "winogrande": {
+          "acc,none": 0.5272296764009471,
+          "acc_stderr,none": 0.014031631629827696,
+          "alias": "winogrande"
+        }
+      },
+      "31": {
+        "winogrande": {
+          "acc,none": 0.5217048145224941,
+          "acc_stderr,none": 0.01403923921648463,
+          "alias": "winogrande"
+        }
+      }
+    },
+    "mlp.down_proj": {
+      "0": {
+        "winogrande": {
+          "acc,none": 0.5067087608524072,
+          "acc_stderr,none": 0.014051220692330349,
+          "alias": "winogrande"
+        }
+      },
+      "1": {
+        "winogrande": {
+          "acc,none": 0.5185477505919495,
+          "acc_stderr,none": 0.014042813708888378,
+          "alias": "winogrande"
+        }
+      },
+      "2": {
+        "winogrande": {
+          "acc,none": 0.49329123914759276,
+          "acc_stderr,none": 0.014051220692330349,
+          "alias": "winogrande"
+        }
+      },
+      "3": {
+        "winogrande": {
+          "acc,none": 0.4925019731649566,
+          "acc_stderr,none": 0.014050905521228573,
+          "alias": "winogrande"
+        }
+      },
+      "4": {
+        "winogrande": {
+          "acc,none": 0.5082872928176796,
+          "acc_stderr,none": 0.014050555322824194,
+          "alias": "winogrande"
+        }
+      },
+      "5": {
+        "winogrande": {
+          "acc,none": 0.5027624309392266,
+          "acc_stderr,none": 0.014052271211616441,
+          "alias": "winogrande"
+        }
+      },
+      "6": {
+        "winogrande": {
+          "acc,none": 0.4972375690607735,
+          "acc_stderr,none": 0.014052271211616445,
+          "alias": "winogrande"
+        }
+      },
+      "7": {
+        "winogrande": {
+          "acc,none": 0.4964483030781373,
+          "acc_stderr,none": 0.014052131146915867,
+          "alias": "winogrande"
+        }
+      },
+      "8": {
+        "winogrande": {
+          "acc,none": 0.5043409629044988,
+          "acc_stderr,none": 0.014051956064076892,
+          "alias": "winogrande"
+        }
+      },
+      "9": {
+        "winogrande": {
+          "acc,none": 0.48855564325177586,
+          "acc_stderr,none": 0.014048804199859337,
+          "alias": "winogrande"
+        }
+      },
+      "10": {
+        "winogrande": {
+          "acc,none": 0.5067087608524072,
+          "acc_stderr,none": 0.014051220692330349,
+          "alias": "winogrande"
+        }
+      },
+      "11": {
+        "winogrande": {
+          "acc,none": 0.47592738752959746,
+          "acc_stderr,none": 0.014036189665395132,
+          "alias": "winogrande"
+        }
+      },
+      "12": {
+        "winogrande": {
+          "acc,none": 0.4940805051302289,
+          "acc_stderr,none": 0.01405150083848581,
+          "alias": "winogrande"
+        }
+      },
+      "13": {
+        "winogrande": {
+          "acc,none": 0.4846093133385951,
+          "acc_stderr,none": 0.01404582678978366,
+          "alias": "winogrande"
+        }
+      },
+      "14": {
+        "winogrande": {
+          "acc,none": 0.49171270718232046,
+          "acc_stderr,none": 0.014050555322824192,
+          "alias": "winogrande"
+        }
+      },
+      "15": {
+        "winogrande": {
+          "acc,none": 0.5035516969218626,
+          "acc_stderr,none": 0.014052131146915867,
+          "alias": "winogrande"
+        }
+      },
+      "16": {
+        "winogrande": {
+          "acc,none": 0.510655090765588,
+          "acc_stderr,none": 0.014049294536290396,
+          "alias": "winogrande"
+        }
+      },
+      "17": {
+        "winogrande": {
+          "acc,none": 0.4956590370955012,
+          "acc_stderr,none": 0.014051956064076906,
+          "alias": "winogrande"
+        }
+      },
+      "18": {
+        "winogrande": {
+          "acc,none": 0.4988161010260458,
+          "acc_stderr,none": 0.014052446290529019,
+          "alias": "winogrande"
+        }
+      },
+      "19": {
+        "winogrande": {
+          "acc,none": 0.5027624309392266,
+          "acc_stderr,none": 0.014052271211616441,
+          "alias": "winogrande"
+        }
+      },
+      "20": {
+        "winogrande": {
+          "acc,none": 0.516179952644041,
+          "acc_stderr,none": 0.0140451261309786,
+          "alias": "winogrande"
+        }
+      },
+      "21": {
+        "winogrande": {
+          "acc,none": 0.48224151539068666,
+          "acc_stderr,none": 0.014043619596174962,
+          "alias": "winogrande"
+        }
+      },
+      "22": {
+        "winogrande": {
+          "acc,none": 0.5019731649565904,
+          "acc_stderr,none": 0.01405237625922564,
+          "alias": "winogrande"
+        }
+      },
+      "23": {
+        "winogrande": {
+          "acc,none": 0.4980268350434096,
+          "acc_stderr,none": 0.014052376259225636,
+          "alias": "winogrande"
+        }
+      },
+      "24": {
+        "winogrande": {
+          "acc,none": 0.5011838989739542,
+          "acc_stderr,none": 0.014052446290529019,
+          "alias": "winogrande"
+        }
+      },
+      "25": {
+        "winogrande": {
+          "acc,none": 0.516179952644041,
+          "acc_stderr,none": 0.014045126130978603,
+          "alias": "winogrande"
+        }
+      },
+      "26": {
+        "winogrande": {
+          "acc,none": 0.4925019731649566,
+          "acc_stderr,none": 0.01405090552122858,
+          "alias": "winogrande"
+        }
+      },
+      "27": {
+        "winogrande": {
+          "acc,none": 0.5067087608524072,
+          "acc_stderr,none": 0.014051220692330346,
+          "alias": "winogrande"
+        }
+      },
+      "28": {
+        "winogrande": {
+          "acc,none": 0.48303078137332284,
+          "acc_stderr,none": 0.014044390401612981,
+          "alias": "winogrande"
+        }
+      },
+      "29": {
+        "winogrande": {
+          "acc,none": 0.5122336227308603,
+          "acc_stderr,none": 0.01404827882040562,
+          "alias": "winogrande"
+        }
+      },
+      "30": {
+        "winogrande": {
+          "acc,none": 0.4996053670086819,
+          "acc_stderr,none": 0.014052481306049516,
+          "alias": "winogrande"
+        }
+      },
+      "31": {
+        "winogrande": {
+          "acc,none": 0.5138121546961326,
+          "acc_stderr,none": 0.014047122916440422,
+          "alias": "winogrande"
+        }
+      }
+    },
+    "mlp.gate_proj": {
+      "0": {
+        "winogrande": {
+          "acc,none": 0.6187845303867403,
+          "acc_stderr,none": 0.013650172164160307,
+          "alias": "winogrande"
+        }
+      },
+      "1": {
+        "winogrande": {
+          "acc,none": 0.5935280189423836,
+          "acc_stderr,none": 0.013804448697753371,
+          "alias": "winogrande"
+        }
+      },
+      "2": {
+        "winogrande": {
+          "acc,none": 0.5998421468034728,
+          "acc_stderr,none": 0.013769472660464993,
+          "alias": "winogrande"
+        }
+      },
+      "3": {
+        "winogrande": {
+          "acc,none": 0.5966850828729282,
+          "acc_stderr,none": 0.013787257285896241,
+          "alias": "winogrande"
+        }
+      },
+      "4": {
+        "winogrande": {
+          "acc,none": 0.5998421468034728,
+          "acc_stderr,none": 0.013769472660464991,
+          "alias": "winogrande"
+        }
+      },
+      "5": {
+        "winogrande": {
+          "acc,none": 0.5808997632202052,
+          "acc_stderr,none": 0.01386732519221012,
+          "alias": "winogrande"
+        }
+      },
+      "6": {
+        "winogrande": {
+          "acc,none": 0.5974743488555643,
+          "acc_stderr,none": 0.013782866831703051,
+          "alias": "winogrande"
+        }
+      },
+      "7": {
+        "winogrande": {
+          "acc,none": 0.5572217837411207,
+          "acc_stderr,none": 0.013960157350784973,
+          "alias": "winogrande"
+        }
+      },
+      "8": {
+        "winogrande": {
+          "acc,none": 0.55327545382794,
+          "acc_stderr,none": 0.01397248837161669,
+          "alias": "winogrande"
+        }
+      },
+      "9": {
+        "winogrande": {
+          "acc,none": 0.5509076558800315,
+          "acc_stderr,none": 0.013979459389140839,
+          "alias": "winogrande"
+        }
+      },
+      "10": {
+        "winogrande": {
+          "acc,none": 0.5588003157063931,
+          "acc_stderr,none": 0.013954975072834728,
+          "alias": "winogrande"
+        }
+      },
+      "11": {
+        "winogrande": {
+          "acc,none": 0.5493291239147593,
+          "acc_stderr,none": 0.01398392886904024,
+          "alias": "winogrande"
+        }
+      },
+      "12": {
+        "winogrande": {
+          "acc,none": 0.590370955011839,
+          "acc_stderr,none": 0.013821049109655481,
+          "alias": "winogrande"
+        }
+      },
+      "13": {
+        "winogrande": {
+          "acc,none": 0.5808997632202052,
+          "acc_stderr,none": 0.01386732519221012,
+          "alias": "winogrande"
+        }
+      },
+      "14": {
+        "winogrande": {
+          "acc,none": 0.5524861878453039,
+          "acc_stderr,none": 0.013974847640536208,
+          "alias": "winogrande"
+        }
+      },
+      "15": {
+        "winogrande": {
+          "acc,none": 0.6093133385951065,
+          "acc_stderr,none": 0.013712536036556677,
+          "alias": "winogrande"
+        }
+      },
+      "16": {
+        "winogrande": {
+          "acc,none": 0.595895816890292,
+          "acc_stderr,none": 0.01379161066467085,
+          "alias": "winogrande"
+        }
+      },
+      "17": {
+        "winogrande": {
+          "acc,none": 0.5769534333070244,
+          "acc_stderr,none": 0.013885055359056485,
+          "alias": "winogrande"
+        }
+      },
+      "18": {
+        "winogrande": {
+          "acc,none": 0.5785319652722968,
+          "acc_stderr,none": 0.013878072377497599,
+          "alias": "winogrande"
+        }
+      },
+      "19": {
+        "winogrande": {
+          "acc,none": 0.5651144435674822,
+          "acc_stderr,none": 0.013932814110418038,
+          "alias": "winogrande"
+        }
+      },
+      "20": {
+        "winogrande": {
+          "acc,none": 0.5666929755327546,
+          "acc_stderr,none": 0.013926915052757335,
+          "alias": "winogrande"
+        }
+      },
+      "21": {
+        "winogrande": {
+          "acc,none": 0.5659037095501184,
+          "acc_stderr,none": 0.013929882555694058,
+          "alias": "winogrande"
+        }
+      },
+      "22": {
+        "winogrande": {
+          "acc,none": 0.5706393054459353,
+          "acc_stderr,none": 0.01391153749996917,
+          "alias": "winogrande"
+        }
+      },
+      "23": {
+        "winogrande": {
+          "acc,none": 0.5603788476716653,
+          "acc_stderr,none": 0.013949649776015703,
+          "alias": "winogrande"
+        }
+      },
+      "24": {
+        "winogrande": {
+          "acc,none": 0.5564325177584846,
+          "acc_stderr,none": 0.013962694907620405,
+          "alias": "winogrande"
+        }
+      },
+      "25": {
+        "winogrande": {
+          "acc,none": 0.5706393054459353,
+          "acc_stderr,none": 0.013911537499969163,
+          "alias": "winogrande"
+        }
+      },
+      "26": {
+        "winogrande": {
+          "acc,none": 0.5651144435674822,
+          "acc_stderr,none": 0.01393281411041803,
+          "alias": "winogrande"
+        }
+      },
+      "27": {
+        "winogrande": {
+          "acc,none": 0.5706393054459353,
+          "acc_stderr,none": 0.013911537499969179,
+          "alias": "winogrande"
+        }
+      },
+      "28": {
+        "winogrande": {
+          "acc,none": 0.5548539857932123,
+          "acc_stderr,none": 0.013967662954355484,
+          "alias": "winogrande"
+        }
+      },
+      "29": {
+        "winogrande": {
+          "acc,none": 0.5572217837411207,
+          "acc_stderr,none": 0.013960157350784973,
+          "alias": "winogrande"
+        }
+      },
+      "30": {
+        "winogrande": {
+          "acc,none": 0.5777426992896606,
+          "acc_stderr,none": 0.013881582030658552,
+          "alias": "winogrande"
+        }
+      },
+      "31": {
+        "winogrande": {
+          "acc,none": 0.5588003157063931,
+          "acc_stderr,none": 0.01395497507283473,
+          "alias": "winogrande"
+        }
+      }
+    }
+  }
+}

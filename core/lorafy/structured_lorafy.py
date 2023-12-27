@@ -3,7 +3,7 @@ import torch as th
 import torch.nn as nn
 from core.lorafy.lorafy_model import LoRAfyParameterConfig, lorafy_model
 from core.utils import Verbosity, log_warn
-from typing import TypeVar, Iterable
+from typing import TypeVar, Iterable, Mapping
 from tqdm import tqdm
 
 
@@ -87,7 +87,7 @@ def lorafy_parameters_layerwise(
     layers: T,
     ranks: int | float | Iterable[int | float],
     param_names: str | Iterable[str],
-    mapping: dict[int, int],
+    param_mappings: Iterable[Mapping[int, int]] | Mapping[int, int],
     inplace: bool = True,
     cache_path: os.PathLike | str | None = None,
     verbosity: Verbosity = Verbosity.INFO,
@@ -105,6 +105,11 @@ def lorafy_parameters_layerwise(
     :return: LoRAfied model
     """
 
+    if isinstance(param_mappings, Iterable):
+        assert len(param_mappings) == len(param_names)
+    else:  # Otherwise broadcast the mapping to all params
+        param_mappings = [param_mappings] * len(param_names)
+
     if isinstance(param_names, str):
         param_names = [param_names]
 
@@ -117,7 +122,7 @@ def lorafy_parameters_layerwise(
     lorafied_layers = layers
 
     first_param: bool = True
-    for param_name, rank in zip(param_names, ranks):
+    for param_name, mapping, rank in zip(param_names, param_mappings, ranks):
         cache_file = os.path.join(cache_path, f"{param_name}.pt") if cache_path else None
         lorafied_layers = lorafy_parameter_layerwise(
             lorafied_layers,
