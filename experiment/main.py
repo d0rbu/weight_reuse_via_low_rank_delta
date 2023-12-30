@@ -11,7 +11,7 @@ from lm_eval.tasks import initialize_tasks
 from lm_eval.models.huggingface import HFLM
 from hashlib import md5
 from itertools import product, chain, combinations
-from typing import Iterable, Callable, Collection
+from typing import Iterable, Callable, Collection, Mapping
 
 
 def powerset(iterable: Iterable, include_null_set: bool = False):
@@ -36,9 +36,10 @@ def get_model_tokenizer_and_layers(
 def lorafy_lm_parameter_grid_eval(
     output_dir: os.PathLike | str,
     get_model_and_tokenizer: Callable[[], tuple[PreTrainedModel, PreTrainedTokenizer]],
+    num_layers_and_model_name: tuple[int, str] | None = None,
     blocks_name: str = "model.layers",
     ranks: Iterable[int | float] = (1/16, 1/8, 1/4),
-    param_name_combinations: Iterable[str] = powerset(("self_attn.q_proj", "self_attn.k_proj")),
+    param_name_combinations: Iterable[Iterable[str]] = powerset(("self_attn.q_proj", "self_attn.k_proj")),
     mappings: Collection[dict[int, int]] | None = None,
     raw_results_dir: os.PathLike | str = "raw_results",
     lorafied_model_cache_dir: os.PathLike | str = ".lorafied_model_cache",
@@ -54,14 +55,18 @@ def lorafy_lm_parameter_grid_eval(
     log_info(f"Tasks: {tasks}", verbosity)
     os.makedirs(os.path.join(output_dir, raw_results_dir), exist_ok=True)
 
-    log_info("Initializing model and tokenizer to get model name and number of layers...", verbosity)
-    model, tokenizer, layers = get_model_tokenizer_and_layers(get_model_and_tokenizer, blocks_name)
-    num_layers = len(layers)
-    model_name = model.__class__.__name__
-    log_info_1(f"Model:\n{model}", verbosity)
-    log_info_1(f"Tokenizer:\n{tokenizer}", verbosity)
-    log_info_1(f"Model Layers:\n{layers}", verbosity)
-    del model, tokenizer, layers
+    if num_layers_and_model_name:
+        num_layers, model_name = num_layers_and_model_name
+        log_info(f"Got num_layers {num_layers} and model_name {model_name}", verbosity)
+    else:
+        log_info("Initializing model and tokenizer to get model name and number of layers...", verbosity)
+        model, tokenizer, layers = get_model_tokenizer_and_layers(get_model_and_tokenizer, blocks_name)
+        num_layers = len(layers)
+        model_name = model.__class__.__name__
+        log_info_1(f"Model:\n{model}", verbosity)
+        log_info_1(f"Tokenizer:\n{tokenizer}", verbosity)
+        log_info_1(f"Model Layers:\n{layers}", verbosity)
+        del model, tokenizer, layers
 
     if mappings is None:
         log_info("Initializing layer mappings...", verbosity)
@@ -69,22 +74,34 @@ def lorafy_lm_parameter_grid_eval(
         log_info_1(str(mappings), verbosity)
 
     full_results = {}
-    for rank, param_names, (mapping_idx, mapping_possibilities) in product(ranks, param_name_combinations, enumerate(mappings)):
-        for param_mappings in product(*([mapping_possibilities] * len(param_names))):
-            if len(param_mappings) == 1:
+    for rank, param_names, mapping_idx in product(ranks, param_name_combinations, range(len(mappings))):
+        for param_mappings in product(*([mappings] * len(param_names))):
+            assert len(param_mappings) > 0, f"Length of param_mappings is 0, did you pass proper mappings?"
+
+            # if all parameter mappings are equal, compress it down to one. it will be broadcasted later
+            if len(param_mappings) == 1 or all(prev_param_mapping == next_param_mapping
+                                               for prev_param_mapping, next_param_mapping
+                                               in zip(param_mappings[:-1], param_mappings[1:])):
                 param_mappings = param_mappings[0]
 
             log_info(f"Evaluating the following config:\nRank: {rank}\nParameters: {param_names}", verbosity)
             log_info_1(f"Mappings: {param_mappings}", verbosity)
-            mapping_json = json.dumps(param_mappings, sort_keys=True)
-            experiment_hash = int(md5(str.encode(f"{rank}{param_names}{mapping_json}")).hexdigest(), 16)
-            lorafied_params_hash = int(md5(str.encode(f"{model_name}{rank}{mapping_json}")).hexdigest(), 16)
-            log_info_1(f"Experiment hash: {experiment_hash}\nLoRAfied parameter cache hash: {lorafied_params_hash}", verbosity)
 
-            cache_path = os.path.join(
-                lorafied_model_cache_dir,
-                str(lorafied_params_hash),  # so we can reuse lorafied params across multiple experiments
-            )
+            if isinstance(param_mappings, Mapping):  # if it is just a single mapping
+                mapping_jsons = [json.dumps(param_mappings, sort_keys=True)] * len(param_names)
+            else:
+                mapping_jsons = [json.dumps(param_mapping, sort_keys=True) for param_mapping in param_mappings]
+            full_mapping_json = json.dumps(param_mappings, sort_keys=True)
+            experiment_hash = int(md5(str.encode(f"{rank}{param_names}{full_mapping_json}")).hexdigest(), 16)
+            lorafied_params_hashes = [int(md5(str.encode(f"{model_name}{rank}{mapping_json}")).hexdigest(), 16) for mapping_json in mapping_jsons]
+            log_info_1(f"Experiment hash: {experiment_hash}\nLoRAfied parameter cache hashes: {lorafied_params_hashes}", verbosity)
+
+            cache_paths = [
+                os.path.join(
+                    lorafied_model_cache_dir,
+                    str(lorafied_params_hash),  # so we can reuse lorafied params across multiple experiments
+                ) for lorafied_params_hash in lorafied_params_hashes
+            ]
             raw_output_filepath = os.path.join(
                 output_dir,
                 raw_results_dir,
@@ -92,7 +109,7 @@ def lorafy_lm_parameter_grid_eval(
             )
 
             if len(param_names) == 1:
-                second_experiment_hash = int(md5(str.encode(f"{rank}{param_names[0]}{mapping_json}")).hexdigest(), 16)
+                second_experiment_hash = int(md5(str.encode(f"{rank}{param_names[0]}{full_mapping_json}")).hexdigest(), 16)
                 second_raw_output_filepath = os.path.join(
                     output_dir,
                     raw_results_dir,
@@ -122,7 +139,7 @@ def lorafy_lm_parameter_grid_eval(
                     param_names,
                     param_mappings,
                     inplace = True,
-                    cache_path = cache_path,
+                    cache_paths = cache_paths,
                     verbosity = verbosity,
                     move_device = move_device,
                 )
@@ -155,7 +172,7 @@ def lorafy_lm_parameter_grid_eval(
 
             results = results["results"]
             param_names_str = param_names if isinstance(param_names, str) else ",".join(param_names)
-            if len(mappings) == num_layers:  # if there's only one base layer per mapping
+            if len(mappings) == num_layers and len(param_names) == 1:  # if there's only one base layer per mapping
                 if rank not in full_results:
                     full_results[rank] = {
                         param_names_str: {}
@@ -188,7 +205,6 @@ def llama_2_7b_model_and_tokenizer(device_map: str = "cpu") -> tuple[PreTrainedM
 
 
 if __name__ == "__main__":
-    param_combinations = list(powerset(("self_attn.q_proj", "self_attn.k_proj")))
-    param_combinations.extend([(param_name,) for param_name in ("mlp.up_proj", "mlp.down_proj", "mlp.gate_proj", "self_attn.v_proj", "self_attn.o_proj")])
+    param_combinations = (("self_attn.q_proj", "self_attn.k_proj"),)
 
-    lorafy_lm_parameter_grid_eval("outputs/", llama_2_7b_model_and_tokenizer, param_name_combinations=param_combinations, move_device="cuda:0")
+    lorafy_lm_parameter_grid_eval("outputs/", llama_2_7b_model_and_tokenizer, num_layers_and_model_name=(32, "LlamaForCausalLM"), param_name_combinations=param_combinations, move_device="cuda:0")

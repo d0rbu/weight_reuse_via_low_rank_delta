@@ -2,7 +2,7 @@ import os
 import torch as th
 import torch.nn as nn
 from core.lorafy.lorafy_model import LoRAfyParameterConfig, lorafy_model
-from core.utils import Verbosity, log_warn
+from core.utils import Verbosity, log_warn, log_info
 from typing import TypeVar, Iterable, Mapping
 from tqdm import tqdm
 
@@ -71,6 +71,7 @@ def lorafy_parameter_layerwise(
         first_mapping = False
 
     if load_from_cache:
+        log_info("Found cached parameters, loading...", verbosity)
         updated_state_dict = lorafied_layers.state_dict()
         updated_state_dict.update(cached_state_dict)
 
@@ -89,7 +90,7 @@ def lorafy_parameters_layerwise(
     param_names: str | Iterable[str],
     param_mappings: Iterable[Mapping[int, int]] | Mapping[int, int],
     inplace: bool = True,
-    cache_path: os.PathLike | str | None = None,
+    cache_paths: Iterable[os.PathLike | str] | os.PathLike | str | None = None,
     verbosity: Verbosity = Verbosity.INFO,
     move_device: str | None = None,
 ) -> T:
@@ -101,28 +102,33 @@ def lorafy_parameters_layerwise(
     :param param_names: Name of parameter(s) to LoRAfy. should be consistent across all layers.
     :param mapping: Mapping from derived to base parameter by layer index
     :param inplace: Whether to modify model in-place or return a new model
-    :param cache_path: Directory to cache LoRAfied parameters
+    :param cache_paths: Directories to cached LoRAfied parameters
     :return: LoRAfied model
     """
-
-    if isinstance(param_mappings, Iterable):
-        assert len(param_mappings) == len(param_names)
-    else:  # Otherwise broadcast the mapping to all params
-        param_mappings = [param_mappings] * len(param_names)
 
     if isinstance(param_names, str):
         param_names = [param_names]
 
-    if isinstance(ranks, int) or isinstance(ranks, float):
-        ranks = [ranks] * len(param_names)
+    if isinstance(cache_paths, Iterable):
+        assert len(cache_paths) == len(param_names), "#cache_paths does not match #param_names!"
+    elif isinstance(cache_paths, os.PathLike) or isinstance(cache_paths, str):
+        cache_paths = [cache_paths] * len(param_names)
 
-    assert len(ranks) == len(param_names), "rank and param_names should have same length"
+    if isinstance(param_mappings, Iterable):
+        assert len(param_mappings) == len(param_names), "#param_mappings does not match #param_names!"
+    else:  # Otherwise broadcast the mapping to all params
+        param_mappings = [param_mappings] * len(param_names)
+
+    if isinstance(ranks, Iterable):
+        assert len(ranks) == len(param_names), "#ranks does not match #param_names!"
+    else:
+        ranks = [ranks] * len(param_names)
     # hi there! thanks for checking out my code! my discord is d0rb if u wanna talk!
 
     lorafied_layers = layers
 
     first_param: bool = True
-    for param_name, mapping, rank in zip(param_names, param_mappings, ranks):
+    for param_name, cache_path, mapping, rank in zip(param_names, cache_paths, param_mappings, ranks):
         cache_file = os.path.join(cache_path, f"{param_name}.pt") if cache_path else None
         lorafied_layers = lorafy_parameter_layerwise(
             lorafied_layers,
