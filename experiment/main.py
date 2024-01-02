@@ -74,7 +74,7 @@ def lorafy_lm_parameter_grid_eval(
         log_info_1(str(mappings), verbosity)
 
     full_results = {}
-    for rank, param_names, mapping_idx in product(ranks, param_name_combinations, range(len(mappings))):
+    for rank, param_names in product(ranks, param_name_combinations):
         for param_mappings in product(*([mappings] * len(param_names))):
             assert len(param_mappings) > 0, f"Length of param_mappings is 0, did you pass proper mappings?"
 
@@ -89,8 +89,10 @@ def lorafy_lm_parameter_grid_eval(
 
             if isinstance(param_mappings, Mapping):  # if it is just a single mapping
                 mapping_jsons = [json.dumps(param_mappings, sort_keys=True)] * len(param_names)
+                base_params = sorted(list(set(param_mappings.values())))
             else:
                 mapping_jsons = [json.dumps(param_mapping, sort_keys=True) for param_mapping in param_mappings]
+                base_params = sorted(list(set(chain.from_iterable([mapping.values() for mapping in param_mappings]))))
             full_mapping_json = json.dumps(param_mappings, sort_keys=True)
             experiment_hash = int(md5(str.encode(f"{rank}{param_names}{full_mapping_json}")).hexdigest(), 16)
             lorafied_params_hashes = [int(md5(str.encode(f"{model_name}{rank}{mapping_json}")).hexdigest(), 16) for mapping_json in mapping_jsons]
@@ -160,7 +162,7 @@ def lorafy_lm_parameter_grid_eval(
                 results["lorafy_config"] = {
                     "rank": rank,
                     "param_names": param_names,
-                    "base_params": sorted(list(set([mapping.values() for mapping in param_mappings]))),
+                    "base_params": base_params,
                     "param_mappings": param_mappings
                 }
 
@@ -179,7 +181,8 @@ def lorafy_lm_parameter_grid_eval(
                     }
                 elif param_names_str not in full_results[rank]:
                     full_results[rank][param_names_str] = {}
-
+                
+                mapping_idx = mappings.values()[0]
                 full_results[rank][param_names_str][mapping_idx] = results
             else:
                 if rank not in full_results:
