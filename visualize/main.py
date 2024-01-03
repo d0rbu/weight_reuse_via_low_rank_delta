@@ -56,7 +56,9 @@ def single_param_rank_layer_graph(full_results: Mapping) -> None:
         plt.ylabel("Rank")
         plt.xticks(range(0, num_layers, 4))
         plt.yticks(range(num_ranks), ranks)
+        plt.clim(0, 1)
         plt.colorbar()
+        plt.set_cmap("hot")
         plt.show()
 
 def two_param_layer_layer_graph(full_results: Mapping) -> None:
@@ -86,7 +88,9 @@ def two_param_layer_layer_graph(full_results: Mapping) -> None:
             plt.ylabel(params[1])
             plt.xticks(range(0, num_layers, 4))
             plt.yticks(range(0, num_layers, 4))
+            plt.clim(0, 1)
             plt.colorbar()
+            plt.set_cmap("hot")
             plt.show()
 
 # Clean and split up full results based on number of parameters
