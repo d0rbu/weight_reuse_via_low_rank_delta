@@ -80,6 +80,9 @@ def lorafy_lm_parameter_grid_eval(
 
     full_results = {}
     for rank, param_names in product(ranks, param_name_combinations):
+        if not isinstance(param_names, tuple):
+            param_names = tuple(param_names)
+
         for param_mappings in product(*([mappings] * len(param_names))):
             assert len(param_mappings) > 0, f"Length of param_mappings is 0, did you pass proper mappings?"
 
