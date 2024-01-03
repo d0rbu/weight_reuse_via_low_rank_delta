@@ -45,6 +45,7 @@ def lorafy_lm_parameter_grid_eval(
     move_device: str | None = None,
     ignore_uncached_results: bool = False,
 ) -> None:
+    output_path = os.path.join(output_dir, "results.json")
     verbosity = Verbosity[verbosity]
 
     if not ignore_uncached_results:
@@ -79,6 +80,24 @@ def lorafy_lm_parameter_grid_eval(
         log_info_1(str(mappings), verbosity)
 
     full_results = {}
+    if os.path.exists(output_path):
+        with open(output_path, "r", encoding="utf-8") as output_file:
+            raw_full_results = json.load(output_file)
+
+        for rank_str, raw_rank_results in raw_full_results.items():
+            rank = float(rank_str)
+            rank_results = {}
+            for param_names_str, raw_param_results in raw_rank_results.items():
+                param_results = {}
+                for mapping_str, raw_task_results in raw_param_results.items():
+                    mapping = int(mapping_str) if mapping_str.isdigit() else mapping_str
+                    param_results[mapping] = raw_task_results
+                
+                rank_results[param_names_str] = param_results
+            full_results[rank] = rank_results
+        
+        del raw_full_results
+
     for rank, param_names in product(ranks, param_name_combinations):
         if not isinstance(param_names, tuple):
             param_names = tuple(param_names)
@@ -117,6 +136,9 @@ def lorafy_lm_parameter_grid_eval(
                 raw_results_dir,
                 f"{experiment_hash}.json"
             )
+            param_names_str = param_names if isinstance(param_names, str) else ",".join(param_names)
+            one_base_layer = len(mappings) == num_layers and len(param_names) == 1
+            mapping_idx = next(iter(param_mappings.values())) if one_base_layer else None  # get a random value from the dictionary
 
             if len(param_names) == 1:
                 second_experiment_hash = int(md5(str.encode(f"{rank}{param_names[0]}{full_mapping_json}")).hexdigest(), 16)
@@ -133,9 +155,18 @@ def lorafy_lm_parameter_grid_eval(
             else:
                 cached_output_file = None
 
+            cached_output_results = False
+            if rank in full_results and param_names_str in full_results[rank]:
+                results_key = mapping_idx if one_base_layer else full_mapping_json
+                if results_key in full_results[rank][param_names_str]:
+                    cached_output_results = True
+
             log_info(f"Checking results cache...", verbosity)
-            if cached_output_file:
-                log_info(f"Found results in cache, loading...", verbosity)
+            if cached_output_results:
+                log_info(f"Found results in full results cache...", verbosity)
+                continue
+            elif cached_output_file:
+                log_info(f"Found results in raw output cache, loading...", verbosity)
                 with open(cached_output_file, "r", encoding="utf-8") as f:
                     results = json.load(f)
             elif ignore_uncached_results:
@@ -187,8 +218,7 @@ def lorafy_lm_parameter_grid_eval(
                 log_info_1(f"Raw output written to {raw_output_filepath}", verbosity)
 
             results = results["results"]
-            param_names_str = param_names if isinstance(param_names, str) else ",".join(param_names)
-            if len(mappings) == num_layers and len(param_names) == 1:  # if there's only one base layer per mapping
+            if one_base_layer:  # if there's only one base layer per mapping
                 if rank not in full_results:
                     full_results[rank] = {
                         param_names_str: {}
@@ -196,7 +226,6 @@ def lorafy_lm_parameter_grid_eval(
                 elif param_names_str not in full_results[rank]:
                     full_results[rank][param_names_str] = {}
 
-                mapping_idx = next(iter(param_mappings.values()))  # get a random value from the dictionary
                 full_results[rank][param_names_str][mapping_idx] = results
             else:
                 if rank not in full_results:
@@ -208,7 +237,7 @@ def lorafy_lm_parameter_grid_eval(
 
                 full_results[rank][param_names_str][json.dumps(param_mappings, sort_keys=True)] = results
 
-    with open(os.path.join(output_dir, "results.json"), "w", encoding="utf-8") as f:
+    with open(output_path, "w", encoding="utf-8") as f:
         json.dump(full_results, f, indent=2)
     log_info(f"Wrote full results to {output_dir}", verbosity)
 
