@@ -7,9 +7,6 @@ from accelerate import dispatch_model, infer_auto_device_map
 from core.lorafy.mappings import layer_mappings
 from core.lorafy.structured_lorafy import lorafy_parameters_layerwise
 from core.utils import get_param_ancestors, log_error, log_warn, log_info, log_info_1, Verbosity
-from lm_eval import evaluator
-from lm_eval.tasks import initialize_tasks
-from lm_eval.models.huggingface import HFLM
 from hashlib import md5
 from itertools import product, chain, combinations
 from typing import Iterable, Callable, Collection, Mapping
@@ -50,8 +47,14 @@ def lorafy_lm_parameter_grid_eval(
 ) -> None:
     verbosity = Verbosity[verbosity]
 
-    log_info("Initializing tasks...", verbosity)
-    initialize_tasks(verbosity = "INFO")
+    if not ignore_uncached_results:
+        log_info("Initializing tasks...", verbosity)
+
+        from lm_eval import evaluator
+        from lm_eval.tasks import initialize_tasks
+        from lm_eval.models.huggingface import HFLM
+
+        initialize_tasks(verbosity = "INFO")
 
     tasks = ["winogrande"]
     log_info(f"Tasks: {tasks}", verbosity)
@@ -189,8 +192,8 @@ def lorafy_lm_parameter_grid_eval(
                     }
                 elif param_names_str not in full_results[rank]:
                     full_results[rank][param_names_str] = {}
-                
-                mapping_idx = mappings.values()[0]
+
+                mapping_idx = next(iter(param_mappings.values()))  # get a random value from the dictionary
                 full_results[rank][param_names_str][mapping_idx] = results
             else:
                 if rank not in full_results:
@@ -214,7 +217,7 @@ def llama_2_7b_model_and_tokenizer(device_map: str = "cpu") -> tuple[PreTrainedM
 
     return model, tokenizer
 
-CONFIG_DIR = os.PathLike("configs")
+CONFIG_DIR = os.path.join("experiment", "configs")
 
 
 if __name__ == "__main__":
