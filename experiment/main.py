@@ -1,5 +1,6 @@
 import os
 import json
+import yaml
 import torch.nn as nn
 from transformers import AutoModelForCausalLM, AutoTokenizer, PreTrainedModel, PreTrainedTokenizer
 from accelerate import dispatch_model, infer_auto_device_map
@@ -14,7 +15,7 @@ from itertools import product, chain, combinations
 from typing import Iterable, Callable, Collection, Mapping
 
 
-def powerset(iterable: Iterable, include_null_set: bool = False):
+def powerset(iterable: Iterable, include_null_set: bool = False) -> Iterable:
     full_set = list(iterable)
     return chain.from_iterable(
         combinations(full_set, num_elements)
@@ -34,8 +35,8 @@ def get_model_tokenizer_and_layers(
 
 
 def lorafy_lm_parameter_grid_eval(
-    output_dir: os.PathLike | str,
     get_model_and_tokenizer: Callable[[], tuple[PreTrainedModel, PreTrainedTokenizer]],
+    output_dir: os.PathLike | str = "outputs/",
     num_layers_and_model_name: tuple[int, str] | None = None,
     blocks_name: str = "model.layers",
     ranks: Iterable[int | float] = (1/16, 1/8, 1/4),
@@ -45,6 +46,7 @@ def lorafy_lm_parameter_grid_eval(
     lorafied_model_cache_dir: os.PathLike | str = ".lorafied_model_cache",
     verbosity: str = "INFO",
     move_device: str | None = None,
+    ignore_uncached_results: bool = False,
 ) -> None:
     verbosity = Verbosity[verbosity]
 
@@ -130,6 +132,12 @@ def lorafy_lm_parameter_grid_eval(
                 log_info(f"Found results in cache, loading...", verbosity)
                 with open(cached_output_file, "r", encoding="utf-8") as f:
                     results = json.load(f)
+            elif ignore_uncached_results:
+                log_info(f"Did not find results in cache, ignoring this experiment", verbosity)
+
+                results = {
+                    "results": None
+                }
             else:
                 log_info(f"Initializing model and tokenizer...", verbosity)
                 model, tokenizer, layers = get_model_tokenizer_and_layers(get_model_and_tokenizer, blocks_name)
@@ -206,8 +214,15 @@ def llama_2_7b_model_and_tokenizer(device_map: str = "cpu") -> tuple[PreTrainedM
 
     return model, tokenizer
 
+CONFIG_DIR = os.PathLike("configs")
+
 
 if __name__ == "__main__":
-    param_combinations = (("self_attn.q_proj", "self_attn.k_proj"),)
+    experiment_config_path = os.path.join(CONFIG_DIR, "main.yaml")
+    if os.path.exists(experiment_config_path):
+        with open(experiment_config_path, "r") as experiment_config_file:
+            experiment_config = yaml.safe_load(experiment_config_file)
+    else:
+        experiment_config = {}
 
-    lorafy_lm_parameter_grid_eval("outputs/", llama_2_7b_model_and_tokenizer, num_layers_and_model_name=(32, "LlamaForCausalLM"), param_name_combinations=param_combinations, move_device="cuda:0")
+    lorafy_lm_parameter_grid_eval(llama_2_7b_model_and_tokenizer, **experiment_config)

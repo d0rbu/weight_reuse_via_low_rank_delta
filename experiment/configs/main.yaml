@@ -1,0 +1,12 @@
+num_layers_and_model_name: [32, "LlamaForCausalLM"]
+param_name_combinations:
+  - ["self_attn.q_proj"]
+  - ["self_attn.k_proj"]
+  - ["self_attn.q_proj", "self_attn.k_proj"]
+  - ["self_attn.v_proj"]
+  - ["self_attn.o_proj"]
+  - ["mlp.up_proj"]
+  - ["mlp.down_proj"]
+  - ["mlp.gate_proj"]
+move_device: "cuda:0"
+ignore_uncached_results: true
