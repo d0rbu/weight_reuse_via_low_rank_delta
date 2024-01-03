@@ -3,12 +3,15 @@ import json
 import math
 import matplotlib.pyplot as plt
 import numpy as np
-from typing import Mapping, Tuple
+from typing import Mapping
 
 
 ACCURACY_NAMES = ["acc", "acc,none"]
 
-def get_avg_accuracy(task_results: Mapping) -> float:
+def get_avg_accuracy(task_results: Mapping | None) -> float:
+    if task_results is None:
+        return 0.
+
     num_accs = 0
     sum_accs = 0
     for task, results in task_results.items():
@@ -18,12 +21,16 @@ def get_avg_accuracy(task_results: Mapping) -> float:
                 sum_accs += results[acc_name]
                 break
 
-    return sum_accs / num_accs
+    return sum_accs / num_accs if num_accs > 0 else 0.
+
+# Number of experiments per set of parameters
+def get_num_exp_per_params(full_results: Mapping) -> int:
+    return len(next(iter(next(iter(full_results.values())).values())))
 
 def single_param_rank_layer_graph(full_results: Mapping) -> None:
     param_heatmaps = {}
     num_ranks = len(full_results)
-    num_layers = len(next(iter(full_results.values())))
+    num_layers = get_num_exp_per_params(full_results)  # Since there is only one param, # experiments = # num layers
     ranks = sorted(full_results.keys())
     ranks_idx = {rank: idx for idx, rank in enumerate(ranks)}
 
@@ -56,7 +63,7 @@ def two_param_layer_layer_graph(full_results: Mapping) -> None:
     rank_param_heatmaps = {
         rank: {} for rank in full_results
     }
-    num_layers = round(math.sqrt(len(next(iter(full_results.values())))))
+    num_layers = round(math.sqrt(get_num_exp_per_params(full_results)))
 
     for rank, rank_results in full_results.items():
         for params, param_results in rank_results.items():
@@ -83,7 +90,7 @@ def two_param_layer_layer_graph(full_results: Mapping) -> None:
             plt.show()
 
 # Clean and split up full results based on number of parameters
-def clean_and_split_by_num_params(full_results: Mapping) -> Mapping[Mapping]:
+def clean_and_split_by_num_params(full_results: Mapping) -> Mapping[str, Mapping]:
     split_results = {}
 
     for rank_str, rank_results in full_results.items():
