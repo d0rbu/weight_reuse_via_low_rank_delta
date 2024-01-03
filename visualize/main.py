@@ -51,10 +51,10 @@ def single_param_rank_layer_graph(full_results: Mapping) -> None:
 
     for param, heatmap in param_heatmaps.items():
         plt.imshow(heatmap)
-        plt.title(f"{param} Avg Acc")
+        plt.title(f"{param} avg acc")
         plt.xlabel("Base layer")
         plt.ylabel("Rank")
-        plt.xticks(range(num_layers))
+        plt.xticks(range(0, num_layers, 4))
         plt.yticks(range(num_ranks), ranks)
         plt.colorbar()
         plt.show()
@@ -81,11 +81,11 @@ def two_param_layer_layer_graph(full_results: Mapping) -> None:
     for rank, param_heatmaps in rank_param_heatmaps.items():
         for params, heatmap in param_heatmaps.items():
             plt.imshow(heatmap)
-            plt.title(f"Rank {rank} Avg Acc")
+            plt.title(f"rank {rank} avg acc")
             plt.xlabel(params[0])
             plt.ylabel(params[1])
-            plt.xticks(range(num_layers))
-            plt.yticks(range(num_layers))
+            plt.xticks(range(0, num_layers, 4))
+            plt.yticks(range(0, num_layers, 4))
             plt.colorbar()
             plt.show()
 

@@ -1,7 +1,7 @@
 import os
 import json
 import yaml
-import torch.nn as nn
+from torch.nn import ModuleList, Sequential
 from transformers import AutoModelForCausalLM, AutoTokenizer, PreTrainedModel, PreTrainedTokenizer
 from accelerate import dispatch_model, infer_auto_device_map
 from core.lorafy.mappings import layer_mappings
@@ -23,7 +23,7 @@ def powerset(iterable: Iterable, include_null_set: bool = False) -> Iterable:
 def get_model_tokenizer_and_layers(
     get_model_and_tokenizer: Callable[[], tuple[PreTrainedModel, PreTrainedTokenizer]],
     blocks_name: str,
-) -> tuple[PreTrainedModel, PreTrainedTokenizer, nn.ModuleList | nn.Sequential]:
+) -> tuple[PreTrainedModel, PreTrainedTokenizer, ModuleList | Sequential]:
     model, tokenizer = get_model_and_tokenizer()
     layers_ancestors, _ = get_param_ancestors(model, blocks_name)
     layers = layers_ancestors[-1]
