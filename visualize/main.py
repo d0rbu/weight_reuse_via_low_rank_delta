@@ -8,9 +8,11 @@ from typing import Mapping
 
 ACCURACY_NAMES = ["acc", "acc,none"]
 
-def get_avg_accuracy(task_results: Mapping | None) -> float:
+def get_task_accuracies_and_avg(task_results: Mapping | None) -> tuple[Mapping[str, float], float]:
     if task_results is None:
-        return 0.
+        return {}, 0.
+    
+    task_accuracies = {}
 
     num_accs = 0
     sum_accs = 0
@@ -19,9 +21,10 @@ def get_avg_accuracy(task_results: Mapping | None) -> float:
             if acc_name in results:
                 num_accs += 1
                 sum_accs += results[acc_name]
+                task_accuracies[task] = results[acc_name]
                 break
 
-    return sum_accs / num_accs if num_accs > 0 else 0.
+    return task_accuracies, sum_accs / num_accs if num_accs > 0 else 0.
 
 # Number of experiments per set of parameters
 def get_num_exp_per_params(full_results: Mapping) -> int:
@@ -39,27 +42,43 @@ def single_param_rank_layer_graph(full_results: Mapping) -> None:
             param: str = param[0]
             rank_idx: int = ranks_idx[rank]
             if param in param_heatmaps:
-                heatmap = param_heatmaps[param]
+                avg_heatmap = param_heatmaps[param]["avg"]
+                task_heatmaps = {
+                    task: heatmap for task, heatmap in param_heatmaps[param].items() if task != "avg"
+                }
             else:
-                heatmap = np.empty((num_ranks, num_layers))
-                param_heatmaps[param] = heatmap
+                avg_heatmap = np.empty((num_ranks, num_layers))
+                task_heatmaps = {
+                    task: np.empty((num_ranks, num_layers)) for task in param_results[next(iter(param_results))].keys()
+                }
+                param_heatmaps[param] = {
+                    "avg": avg_heatmap,
+                }
 
             for base_layer, task_results in param_results.items():
                 base_layer: int = base_layer[0]
-                avg_accuracy = get_avg_accuracy(task_results)
-                heatmap[rank_idx, base_layer] = avg_accuracy
+                task_accuracies, avg_accuracy = get_task_accuracies_and_avg(task_results)
+                avg_heatmap[rank_idx, base_layer] = avg_accuracy
+                for task, task_accuracy in task_accuracies.items():
+                    task_heatmaps[task][rank_idx, base_layer] = task_accuracy
+    
+    show_task_heatmaps = input("Show task heatmaps? (y/n): ").lower() == "y"
 
-    for param, heatmap in param_heatmaps.items():
-        plt.imshow(heatmap)
-        plt.title(f"{param} avg acc")
-        plt.xlabel("Base layer")
-        plt.ylabel("Rank")
-        plt.xticks(range(0, num_layers, 4))
-        plt.yticks(range(num_ranks), ranks)
-        plt.clim(0, 1)
-        plt.colorbar()
-        plt.set_cmap("hot")
-        plt.show()
+    for param, heatmaps in param_heatmaps.items():
+        for task, heatmap in heatmaps.items():
+            if not (show_task_heatmaps or task == "avg"):
+                continue
+
+            plt.imshow(heatmap)
+            plt.title(f"{param} {task} acc")
+            plt.xlabel("Base layer")
+            plt.ylabel("Rank")
+            plt.xticks(range(0, num_layers, 4))
+            plt.yticks(range(num_ranks), ranks)
+            plt.clim(0, 1)
+            plt.colorbar()
+            plt.set_cmap("hot")
+            plt.show()
 
 def two_param_layer_layer_graph(full_results: Mapping) -> None:
     rank_param_heatmaps = {
