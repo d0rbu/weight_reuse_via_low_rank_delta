@@ -20,11 +20,22 @@ def powerset(iterable: Iterable, include_null_set: bool = False) -> Iterable:
     )
 
 
+def get_model_and_tokenizer(
+    model_name: str = "meta-llama/Llama-2-7b-hf",
+    device_map: str = "cpu"
+) -> tuple[PreTrainedModel, PreTrainedTokenizer]:
+    model = AutoModelForCausalLM.from_pretrained(model_name, device_map=device_map)
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
+
+    return model, tokenizer
+
+
 def get_model_tokenizer_and_layers(
-    get_model_and_tokenizer: Callable[[], tuple[PreTrainedModel, PreTrainedTokenizer]],
-    blocks_name: str,
+    model_name: str = "meta-llama/Llama-2-7b-hf",
+    device_map: str = "cpu",
+    blocks_name: str = "model.layers",
 ) -> tuple[PreTrainedModel, PreTrainedTokenizer, ModuleList | Sequential]:
-    model, tokenizer = get_model_and_tokenizer()
+    model, tokenizer = get_model_and_tokenizer(model_name, device_map)
     layers_ancestors, _ = get_param_ancestors(model, blocks_name)
     layers = layers_ancestors[-1]
 
@@ -32,9 +43,8 @@ def get_model_tokenizer_and_layers(
 
 
 def lorafy_lm_parameter_grid_eval(
-    get_model_and_tokenizer: Callable[[], tuple[PreTrainedModel, PreTrainedTokenizer]],
     output_dir: os.PathLike | str = "outputs/",
-    num_layers_and_model_name: tuple[int, str] | None = None,
+    num_layers_and_model_name: tuple[int, str] = (32, "meta-llama/Llama-2-7b-hf"),
     blocks_name: str = "model.layers",
     ranks: Iterable[int | float] = (1/16, 1/8, 1/4),
     param_name_combinations: Iterable[Iterable[str]] = powerset(("self_attn.q_proj", "self_attn.k_proj")),
@@ -43,9 +53,13 @@ def lorafy_lm_parameter_grid_eval(
     lorafied_model_cache_dir: os.PathLike | str = ".lorafied_model_cache",
     verbosity: str = "INFO",
     move_device: str | None = None,
+    tasks: Iterable[str] | str = ("winogrande",),
     ignore_uncached_results: bool = False,
 ) -> None:
-    output_path = os.path.join(output_dir, "results.json")
+    # yes the num_layers can be inferred, but i dont wanna spend compute loading the model just to get that one int
+    num_layers, model_name = num_layers_and_model_name
+
+    output_path = os.path.join(output_dir, model_name, "results.json")
     verbosity = Verbosity[verbosity]
 
     if not ignore_uncached_results:
@@ -57,22 +71,11 @@ def lorafy_lm_parameter_grid_eval(
 
         initialize_tasks(verbosity = "INFO")
 
-    tasks = ["winogrande"]
+    tasks = (tasks,) if isinstance(tasks, str) else tasks
     log_info(f"Tasks: {tasks}", verbosity)
     os.makedirs(os.path.join(output_dir, raw_results_dir), exist_ok=True)
 
-    if num_layers_and_model_name:
-        num_layers, model_name = num_layers_and_model_name
-        log_info(f"Got num_layers {num_layers} and model_name {model_name}", verbosity)
-    else:
-        log_info("Initializing model and tokenizer to get model name and number of layers...", verbosity)
-        model, tokenizer, layers = get_model_tokenizer_and_layers(get_model_and_tokenizer, blocks_name)
-        num_layers = len(layers)
-        model_name = model.__class__.__name__
-        log_info_1(f"Model:\n{model}", verbosity)
-        log_info_1(f"Tokenizer:\n{tokenizer}", verbosity)
-        log_info_1(f"Model Layers:\n{layers}", verbosity)
-        del model, tokenizer, layers
+    log_info(f"Got num_layers {num_layers} and model_name {model_name}", verbosity)
 
     if mappings is None:
         log_info("Initializing layer mappings...", verbosity)
@@ -177,7 +180,7 @@ def lorafy_lm_parameter_grid_eval(
                 }
             else:
                 log_info(f"Initializing model and tokenizer...", verbosity)
-                model, tokenizer, layers = get_model_tokenizer_and_layers(get_model_and_tokenizer, blocks_name)
+                model, tokenizer, layers = get_model_tokenizer_and_layers(model_name, blocks_name)
 
                 log_info(f"LoRAfying the parameters...", verbosity)
                 lorafy_parameters_layerwise(
@@ -242,13 +245,6 @@ def lorafy_lm_parameter_grid_eval(
     log_info(f"Wrote full results to {output_dir}", verbosity)
 
 
-def llama_2_7b_model_and_tokenizer(device_map: str = "cpu") -> tuple[PreTrainedModel, PreTrainedTokenizer]:
-    model_name = "meta-llama/Llama-2-7b-hf"
-    model = AutoModelForCausalLM.from_pretrained(model_name, device_map=device_map)
-    tokenizer = AutoTokenizer.from_pretrained(model_name)
-
-    return model, tokenizer
-
 CONFIG_DIR = os.path.join("experiment", "configs")
 
 
@@ -260,4 +256,4 @@ if __name__ == "__main__":
     else:
         experiment_config = {}
 
-    lorafy_lm_parameter_grid_eval(llama_2_7b_model_and_tokenizer, **experiment_config)
+    lorafy_lm_parameter_grid_eval(**experiment_config)
