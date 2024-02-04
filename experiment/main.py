@@ -32,8 +32,8 @@ def get_model_and_tokenizer(
 
 def get_model_tokenizer_and_layers(
     model_name: str = "meta-llama/Llama-2-7b-hf",
-    device_map: str = "cpu",
     blocks_name: str = "model.layers",
+    device_map: str = "cpu",
 ) -> tuple[PreTrainedModel, PreTrainedTokenizer, ModuleList | Sequential]:
     model, tokenizer = get_model_and_tokenizer(model_name, device_map)
     layers_ancestors, _ = get_param_ancestors(model, blocks_name)
