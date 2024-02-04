@@ -1,4 +1,4 @@
-num_layers_and_model_name: [32, "LlamaForCausalLM"]
+num_layers_and_model_name: [40, "meta-llama/Llama-2-13b-hf"]
 param_name_combinations:
   - ["self_attn.q_proj"]
   - ["self_attn.k_proj"]
