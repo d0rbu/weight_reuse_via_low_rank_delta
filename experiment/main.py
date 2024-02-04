@@ -159,7 +159,7 @@ def lorafy_lm_parameter_grid_eval(
             if rank in full_results and param_names_str in full_results[rank]:
                 results_key = mapping_idx if one_base_layer else full_mapping_json
                 if results_key in full_results[rank][param_names_str]:
-                    cached_output_results = True
+                    cached_output_results = full_results[rank][param_names_str][results_key] is not None
 
             log_info(f"Checking results cache...", verbosity)
             if cached_output_results:
