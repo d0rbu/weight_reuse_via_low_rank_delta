@@ -12,9 +12,10 @@ class LoRAfyParameterConfig:
     rank: int | float
 
 
+WEIGHT_SUFFIX = ".weight"
 def remove_weight_from_name(param_name: str) -> str:
-    if param_name.endswith(".weight"):
-        return param_name[:-len(".weight")]
+    if param_name.endswith(WEIGHT_SUFFIX):
+        return param_name[:-len(WEIGHT_SUFFIX)]
 
     return param_name
 

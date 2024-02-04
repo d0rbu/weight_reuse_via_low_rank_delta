@@ -9,4 +9,4 @@ param_name_combinations:
   - ["mlp.down_proj"]
   - ["mlp.gate_proj"]
 move_device: "cuda:0"
-ignore_uncached_results: true
+ignore_uncached_results: false
