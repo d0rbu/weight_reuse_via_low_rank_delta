@@ -59,7 +59,8 @@ def lorafy_lm_parameter_grid_eval(
     # yes the num_layers can be inferred, but i dont wanna spend compute loading the model just to get that one int
     num_layers, model_name = num_layers_and_model_name
 
-    output_path = os.path.join(output_dir, model_name, "results.json")
+    output_dir = os.path.join(output_dir, model_name)
+    output_path = os.path.join(output_dir, "results.json")
     verbosity = Verbosity[verbosity]
 
     if not ignore_uncached_results:
@@ -95,10 +96,10 @@ def lorafy_lm_parameter_grid_eval(
                 for mapping_str, raw_task_results in raw_param_results.items():
                     mapping = int(mapping_str) if mapping_str.isdigit() else mapping_str
                     param_results[mapping] = raw_task_results
-                
+
                 rank_results[param_names_str] = param_results
             full_results[rank] = rank_results
-        
+
         del raw_full_results
 
     for rank, param_names in product(ranks, param_name_combinations):
