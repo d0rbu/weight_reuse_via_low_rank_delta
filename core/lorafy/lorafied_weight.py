@@ -64,7 +64,6 @@ class LoRAfiedLinear(nn.Module):
             if move_device:
                 derived_weight = derived.weight.to(move_device)
                 base_weight = base.weight.to(move_device)
-                del derived, base
 
                 weight_delta = (derived_weight - base_weight).detach()
 
@@ -72,6 +71,8 @@ class LoRAfiedLinear(nn.Module):
             else:
                 assert base.weight.device == derived.weight.device, "base and derived should be on same device"
                 weight_delta = (derived.weight - base.weight).detach()
+
+            del derived
 
             U, S, Vh = th.linalg.svd(weight_delta, full_matrices=False)
 
