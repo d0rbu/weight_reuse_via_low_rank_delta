@@ -1,4 +1,5 @@
-num_layers_and_model_name: [40, "meta-llama/Llama-2-13b-hf"]
+# num_layers_and_model_name: [40, "meta-llama/Llama-2-13b-hf"]
+num_layers_and_model_name: [32, "meta-llama/Llama-2-7b-hf"]
 param_name_combinations:
   - ["self_attn.q_proj"]
   - ["self_attn.k_proj"]
@@ -9,4 +10,5 @@ param_name_combinations:
   - ["mlp.down_proj"]
   - ["mlp.gate_proj"]
 # move_device: "cuda:0"
+tasks: ["winogrande", "wikitext"]
 ignore_uncached_results: false

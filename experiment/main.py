@@ -113,7 +113,7 @@ def lorafy_lm_parameter_grid_eval(
     lorafied_model_cache_dir: os.PathLike | str = ".lorafied_model_cache",
     verbosity: str = "INFO",
     move_device: str | None = None,
-    tasks: Iterable[str] | str = ["winogrande"],
+    tasks: list[str] | str = ["winogrande"],
     ignore_uncached_results: bool = False,
 ) -> None:
     # yes the num_layers can be inferred, but i dont wanna spend compute loading the model just to get that one int

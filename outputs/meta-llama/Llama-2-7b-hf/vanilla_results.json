@@ -1,0 +1,7 @@
+{
+  "winogrande": {
+    "acc,none": 0.691397000789266,
+    "acc_stderr,none": 0.012982160200926584,
+    "alias": "winogrande"
+  }
+}
