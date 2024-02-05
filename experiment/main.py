@@ -246,7 +246,7 @@ def lorafy_lm_parameter_grid_eval(
             
             uncached_tasks = list(set(tasks) - set(cached_task_results.keys()))
 
-            if ignore_uncached_results:
+            if ignore_uncached_results or len(uncached_tasks) <= 0:
                 if len(uncached_tasks) > 0:
                     log_info(f"Did not find full results in cache, ignoring this experiment for the following tasks:\n"
                              f"{uncached_tasks}", verbosity)
