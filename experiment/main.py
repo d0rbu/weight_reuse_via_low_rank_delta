@@ -42,6 +42,22 @@ def get_model_tokenizer_and_layers(
     return model, tokenizer, layers
 
 
+def vanilla_lm_eval(
+    evaluator,
+    output_dir: os.PathLike | str,
+    model_name: str,
+    tasks: Iterable[str] | str,
+    device_map_option: str = "auto",
+) -> None:
+    output_path = os.path.join(output_dir, "vanilla_results.json")
+    results = evaluator.simple_evaluate(
+        model = "hf",
+        model_args = f"parallelize=True,pretrained={model_name},device_map_option={device_map_option}",
+        tasks = tasks,
+        batch_size="auto",
+    )
+
+
 def lorafy_lm_parameter_grid_eval(
     output_dir: os.PathLike | str = "outputs/",
     num_layers_and_model_name: tuple[int, str] = (32, "meta-llama/Llama-2-7b-hf"),
@@ -151,6 +167,8 @@ def lorafy_lm_parameter_grid_eval(
                     raw_results_dir,
                     f"{second_experiment_hash}.json"
                 )
+            
+            cached_task_results = {}
 
             if os.path.exists(raw_output_filepath):
                 cached_output_file = raw_output_filepath
@@ -162,22 +180,32 @@ def lorafy_lm_parameter_grid_eval(
             cached_output_results = False
             if rank in full_results and param_names_str in full_results[rank]:
                 results_key = mapping_idx if one_base_layer else full_mapping_json
-                if results_key in full_results[rank][param_names_str]:
-                    cached_output_results = full_results[rank][param_names_str][results_key] is not None
+                if results_key in full_results[rank][param_names_str] and full_results[rank][param_names_str][results_key] is not None:
+                    cached_output_results = True
 
-            log_info(f"Checking results cache...", verbosity)
+            log_info(f"Checking results caches...", verbosity)
             if cached_output_results:
                 log_info(f"Found results in full results cache...", verbosity)
-                continue
-            elif cached_output_file:
-                log_info(f"Found results in raw output cache, loading...", verbosity)
+                cached_task_results.update(full_results[rank][param_names_str][results_key])
+                if set(tasks).issubset(cached_task_results.keys()):
+                    continue
+
+            if cached_output_file:
+                log_info(f"Found results in raw output cache...", verbosity)
                 with open(cached_output_file, "r", encoding="utf-8") as f:
                     results = json.load(f)
-            elif ignore_uncached_results:
-                log_info(f"Did not find results in cache, ignoring this experiment", verbosity)
+
+                cached_task_results.update(results["results"])
+            
+            uncached_tasks = list(set(tasks) - set(cached_task_results.keys()))
+
+            if ignore_uncached_results:
+                if len(uncached_tasks) > 0:
+                    log_info(f"Did not find full results in cache, ignoring this experiment for the following tasks:\n"
+                             f"{uncached_tasks}", verbosity)
 
                 results = {
-                    "results": None
+                    "results": cached_task_results
                 }
             else:
                 log_info(f"Initializing model and tokenizer...", verbosity)
@@ -204,10 +232,11 @@ def lorafy_lm_parameter_grid_eval(
                 log_info_1(f"Wrapping LoRAfied model in lm-evaluation-harness HFLM API...", verbosity)
                 lm = HFLM(pretrained=model, tokenizer=tokenizer)
 
-                log_info(f"Evaluating LoRAfied model...", verbosity)
+                log_info(f"Evaluating LoRAfied model on the following tasks:\n"
+                         f"{uncached_tasks}", verbosity)
                 results = evaluator.simple_evaluate(
                     model = lm,
-                    tasks = tasks,
+                    tasks = uncached_tasks,
                     batch_size="auto",
                 )
                 results["lorafy_config"] = {
@@ -231,17 +260,22 @@ def lorafy_lm_parameter_grid_eval(
                     }
                 elif param_names_str not in full_results[rank]:
                     full_results[rank][param_names_str] = {}
+                elif mapping_idx not in full_results[rank][param_names_str]:
+                    full_results[rank][param_names_str][mapping_idx] = {}
 
-                full_results[rank][param_names_str][mapping_idx] = results
+                full_results[rank][param_names_str][mapping_idx].update(results)
             else:
+                mapping_key = json.dumps(param_mappings, sort_keys=True)
                 if rank not in full_results:
                     full_results[rank] = {
                         param_names_str: {}
                     }
                 elif param_names_str not in full_results[rank]:
                     full_results[rank][param_names_str] = {}
+                elif mapping_idx not in full_results[rank][param_names_str]:
+                    full_results[rank][param_names_str][mapping_key] = {}
 
-                full_results[rank][param_names_str][json.dumps(param_mappings, sort_keys=True)] = results
+                full_results[rank][param_names_str][mapping_key].update(results)
 
     with open(output_path, "w", encoding="utf-8") as f:
         json.dump(full_results, f, indent=2)
