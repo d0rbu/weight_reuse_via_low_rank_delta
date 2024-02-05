@@ -109,7 +109,7 @@ def lorafy_parameters_layerwise(
     if isinstance(param_names, str):
         param_names = [param_names]
 
-    if cache_path is None or isinstance(cache_paths, os.PathLike) or isinstance(cache_paths, str):
+    if cache_paths is None or isinstance(cache_paths, os.PathLike) or isinstance(cache_paths, str):
         cache_paths = [cache_paths] * len(param_names)
     else:
         assert len(cache_paths) == len(param_names), "#cache_paths does not match #param_names!"
