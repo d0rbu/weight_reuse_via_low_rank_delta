@@ -7,7 +7,7 @@ def dispatch(
     model: PreTrainedModel,
     num_layers: int = 0,
     num_devices: int = 0,
-) -> PreTrainedModel:
+) -> None:
     pre_layers, blocks, post_layers = find_blocks(model, num_layers)
 
     num_devices = num_devices if num_devices else th.cuda.device_count()

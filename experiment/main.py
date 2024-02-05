@@ -259,7 +259,7 @@ def lorafy_lm_parameter_grid_eval(
                 model, tokenizer, layers = get_model_tokenizer_and_layers(model_name, blocks_name)
 
                 log_info(f"Dispatching model to devices...", verbosity)
-                model = dispatch(model, num_layers)
+                dispatch(model, num_layers)
                 # need to dispatch manually because if we do device_map="auto" or "balanced"
                 # when loading the model, it will also add pesky hooks to align devices
                 # which messes with my home grown solution
