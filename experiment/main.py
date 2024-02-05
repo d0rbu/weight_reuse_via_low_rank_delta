@@ -69,9 +69,9 @@ def vanilla_lm_eval(
         uncached_tasks = list(set(uncached_tasks) - cached_task_results.keys())
 
     if os.path.exists(raw_output_path) and len(uncached_tasks) > 0:
-        log_info(f"Found cached raw vanilla results in {output_path}, loading...", verbosity)
+        log_info(f"Found cached raw vanilla results in {raw_output_path}, loading...", verbosity)
 
-        with open(output_path, "r", encoding="utf-8") as f:
+        with open(raw_output_path, "r", encoding="utf-8") as f:
             cached_raw_results = json.load(f)
         cached_raw_task_results.update(cached_raw_results)
         cached_task_results.update(cached_raw_results["results"])
@@ -86,7 +86,7 @@ def vanilla_lm_eval(
         results = evaluator.simple_evaluate(
             model = "hf",
             model_args = f"parallelize=True,pretrained={model_name},device_map_option={device_map_option}",
-            tasks = tasks,
+            tasks = uncached_tasks,
             batch_size="auto",
         )
         cached_task_results.update(results["results"])

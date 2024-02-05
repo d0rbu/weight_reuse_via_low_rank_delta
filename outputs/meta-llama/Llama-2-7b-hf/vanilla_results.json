@@ -3,5 +3,14 @@
     "acc,none": 0.691397000789266,
     "acc_stderr,none": 0.012982160200926584,
     "alias": "winogrande"
+  },
+  "wikitext": {
+    "word_perplexity,none": 8.791994736844332,
+    "word_perplexity_stderr,none": "N/A",
+    "byte_perplexity,none": 1.5015820452027422,
+    "byte_perplexity_stderr,none": "N/A",
+    "bits_per_byte,none": 0.5864833047141436,
+    "bits_per_byte_stderr,none": "N/A",
+    "alias": "wikitext"
   }
 }
