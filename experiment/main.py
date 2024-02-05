@@ -46,16 +46,60 @@ def vanilla_lm_eval(
     evaluator,
     output_dir: os.PathLike | str,
     model_name: str,
-    tasks: Iterable[str] | str,
+    tasks: list[str],
     device_map_option: str = "auto",
+    verbosity: str = "INFO"
 ) -> None:
+    log_info(f"Getting vanilla results for {model_name}...", verbosity)
+
+    raw_output_path = os.path.join(output_dir, "raw_vanilla_results.json")
     output_path = os.path.join(output_dir, "vanilla_results.json")
-    results = evaluator.simple_evaluate(
-        model = "hf",
-        model_args = f"parallelize=True,pretrained={model_name},device_map_option={device_map_option}",
-        tasks = tasks,
-        batch_size="auto",
-    )
+
+    cached_task_results = {}
+    cached_raw_task_results = {
+        "results": cached_task_results
+    }
+    uncached_tasks = tasks.copy()
+
+    if os.path.exists(output_path):
+        log_info(f"Found cached vanilla results in {output_path}, loading...", verbosity)
+        with open(output_path, "r", encoding="utf-8") as f:
+            cached_task_results.update(json.load(f))
+
+        uncached_tasks = list(set(uncached_tasks) - cached_task_results.keys())
+
+    if os.path.exists(raw_output_path) and len(uncached_tasks) > 0:
+        log_info(f"Found cached raw vanilla results in {output_path}, loading...", verbosity)
+
+        with open(output_path, "r", encoding="utf-8") as f:
+            cached_raw_results = json.load(f)
+        cached_raw_task_results.update(cached_raw_results)
+        cached_task_results.update(cached_raw_results["results"])
+        cached_task_results["results"] = cached_task_results
+
+        uncached_tasks = list(set(uncached_tasks) - cached_task_results.keys())
+    
+    if len(uncached_tasks) <= 0:
+        log_info(f"Found all results in cache, skipping vanilla evaluation", verbosity)
+    else:
+        log_info(f"Running vanilla evaluation on the following tasks:\n{uncached_tasks}", verbosity)
+        results = evaluator.simple_evaluate(
+            model = "hf",
+            model_args = f"parallelize=True,pretrained={model_name},device_map_option={device_map_option}",
+            tasks = tasks,
+            batch_size="auto",
+        )
+        cached_task_results.update(results["results"])
+        results.update(cached_raw_task_results)
+        results["results"] = cached_task_results
+
+    with open(raw_output_path, "w", encoding="utf-8") as f:
+        json.dump(results, f, indent=2)
+
+    with open(output_path, "w", encoding="utf-8") as f:
+        json.dump(results["results"], f, indent=2)
+
+    log_info(f"Wrote raw and vanilla results to {output_dir}", verbosity)
 
 
 def lorafy_lm_parameter_grid_eval(
@@ -87,6 +131,8 @@ def lorafy_lm_parameter_grid_eval(
         from lm_eval.models.huggingface import HFLM
 
         initialize_tasks(verbosity = "INFO")
+
+        vanilla_lm_eval(evaluator, output_dir, model_name, tasks, verbosity=verbosity)
 
     tasks = [tasks] if isinstance(tasks, str) else tasks
     log_info(f"Tasks: {tasks}", verbosity)
