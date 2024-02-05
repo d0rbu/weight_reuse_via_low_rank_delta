@@ -62,17 +62,11 @@ class LoRAfiedLinear(nn.Module):
 
         if approximate_lora:  # If we want to project the delta down to lower rank to approximate the LoRAized matrix
             if move_device:
-                original_base_device = base.weight.device
-
                 derived_weight = derived.weight.to(move_device)
                 base_weight = base.weight.to(move_device)
-
                 del derived, base
 
                 weight_delta = (derived_weight - base_weight).detach()
-
-                derived.weight = derived.weight.to(original_derived_device)
-                base.weight = base_weight.to(original_base_device)
 
                 del derived_weight, base_weight
             else:
