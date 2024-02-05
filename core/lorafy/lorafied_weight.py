@@ -67,6 +67,8 @@ class LoRAfiedLinear(nn.Module):
                 derived_weight = derived.weight.to(move_device)
                 base_weight = base.weight.to(move_device)
 
+                del derived, base
+
                 weight_delta = (derived_weight - base_weight).detach()
 
                 derived.weight = derived.weight.to(original_derived_device)

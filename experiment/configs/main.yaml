@@ -9,6 +9,6 @@ param_name_combinations:
   - ["mlp.up_proj"]
   - ["mlp.down_proj"]
   - ["mlp.gate_proj"]
-# move_device: "cuda:0"
+move_device: "cuda:0"
 tasks: ["winogrande", "wikitext"]
 ignore_uncached_results: false
