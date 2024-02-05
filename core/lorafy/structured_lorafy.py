@@ -3,7 +3,7 @@ import torch as th
 import torch.nn as nn
 from core.lorafy.lorafy_model import LoRAfyParameterConfig, lorafy_model
 from core.utils import Verbosity, log_warn, log_info
-from typing import TypeVar, Iterable, Mapping
+from typing import TypeVar, Iterable, Mapping, Sequence
 from tqdm import tqdm
 
 
@@ -109,12 +109,12 @@ def lorafy_parameters_layerwise(
     if isinstance(param_names, str):
         param_names = [param_names]
 
-    if isinstance(cache_paths, Iterable):
-        assert len(cache_paths) == len(param_names), "#cache_paths does not match #param_names!"
-    elif isinstance(cache_paths, os.PathLike) or isinstance(cache_paths, str):
+    if cache_path is None or isinstance(cache_paths, os.PathLike) or isinstance(cache_paths, str):
         cache_paths = [cache_paths] * len(param_names)
+    else:
+        assert len(cache_paths) == len(param_names), "#cache_paths does not match #param_names!"
 
-    if isinstance(param_mappings, Iterable):
+    if isinstance(param_mappings, Sequence):
         assert len(param_mappings) == len(param_names), "#param_mappings does not match #param_names!"
     else:  # Otherwise broadcast the mapping to all params
         param_mappings = [param_mappings] * len(param_names)
