@@ -3,13 +3,13 @@ import json
 import yaml
 from torch.nn import ModuleList, Sequential
 from transformers import AutoModelForCausalLM, AutoTokenizer, PreTrainedModel, PreTrainedTokenizer
-from accelerate import dispatch_model, infer_auto_device_map
 from core.lorafy.mappings import layer_mappings
 from core.lorafy.structured_lorafy import lorafy_parameters_layerwise
+from core.dispatch import dispatch
 from core.utils import get_param_ancestors, log_error, log_warn, log_info, log_info_1, Verbosity
 from hashlib import md5
 from itertools import product, chain, combinations
-from typing import Iterable, Callable, Collection, Mapping
+from typing import Iterable, Collection, Mapping
 
 
 def powerset(iterable: Iterable, include_null_set: bool = False) -> Iterable:
@@ -53,7 +53,7 @@ def lorafy_lm_parameter_grid_eval(
     lorafied_model_cache_dir: os.PathLike | str = ".lorafied_model_cache",
     verbosity: str = "INFO",
     move_device: str | None = None,
-    tasks: Iterable[str] | str = ("winogrande",),
+    tasks: Iterable[str] | str = ["winogrande"],
     ignore_uncached_results: bool = False,
 ) -> None:
     # yes the num_layers can be inferred, but i dont wanna spend compute loading the model just to get that one int
@@ -72,7 +72,7 @@ def lorafy_lm_parameter_grid_eval(
 
         initialize_tasks(verbosity = "INFO")
 
-    tasks = (tasks,) if isinstance(tasks, str) else tasks
+    tasks = [tasks] if isinstance(tasks, str) else tasks
     log_info(f"Tasks: {tasks}", verbosity)
     os.makedirs(os.path.join(output_dir, raw_results_dir), exist_ok=True)
 
@@ -183,6 +183,12 @@ def lorafy_lm_parameter_grid_eval(
                 log_info(f"Initializing model and tokenizer...", verbosity)
                 model, tokenizer, layers = get_model_tokenizer_and_layers(model_name, blocks_name)
 
+                log_info(f"Dispatching model to devices...", verbosity)
+                model = dispatch(model, num_layers)
+                # need to dispatch manually because if we do device_map="auto" or "balanced"
+                # when loading the model, it will also add pesky hooks to align devices
+                # which messes with my home grown solution
+
                 log_info(f"LoRAfying the parameters...", verbosity)
                 lorafy_parameters_layerwise(
                     layers,
@@ -194,10 +200,6 @@ def lorafy_lm_parameter_grid_eval(
                     verbosity = verbosity,
                     move_device = move_device,
                 )
-
-                # new_device_map = infer_auto_device_map(model)
-                # model = dispatch_model(model, new_device_map)
-                model = model.cuda()
 
                 log_info_1(f"Wrapping LoRAfied model in lm-evaluation-harness HFLM API...", verbosity)
                 lm = HFLM(pretrained=model, tokenizer=tokenizer)

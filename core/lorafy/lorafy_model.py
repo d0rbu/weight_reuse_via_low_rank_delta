@@ -1,3 +1,4 @@
+import torch as th
 import torch.nn as nn
 from copy import deepcopy
 from dataclasses import dataclass
@@ -69,5 +70,7 @@ def lorafy_model(
                 f"{derived_param_ancestor_names[-1]}_original",
                 derived_param_ancestors[-1]
             )
+
+        th.cuda.empty_cache()
 
     return lorafied_model
