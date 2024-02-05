@@ -81,6 +81,7 @@ def vanilla_lm_eval(
     
     if len(uncached_tasks) <= 0:
         log_info(f"Found all results in cache, skipping vanilla evaluation", verbosity)
+        results = cached_raw_task_results
     else:
         log_info(f"Running vanilla evaluation on the following tasks:\n{uncached_tasks}", verbosity)
         results = evaluator.simple_evaluate(

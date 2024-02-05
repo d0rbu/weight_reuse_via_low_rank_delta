@@ -11,13 +11,13 @@ def dispatch(
     pre_layers, blocks, post_layers = find_blocks(model, num_layers)
 
     num_devices = num_devices if num_devices else th.cuda.device_count()
-    block_mappings = th.linspace(0, num_devices + 1, num_layers + 1).int()
+    block_mappings = th.linspace(0, num_devices, num_layers + 1)[:-1].int()
 
     for pre_layer_parent, pre_layer_name, pre_layer in pre_layers:
         setattr(pre_layer_parent, pre_layer_name, pre_layer.to(0))
 
     for i, device in enumerate(block_mappings):
-        blocks[i] = blocks[i].to(device)
+        blocks[i] = blocks[i].to(int(device))
     
     for post_layer_parent, post_layer_name, post_layer in post_layers:
         setattr(post_layer_parent, post_layer_name, post_layer.to(num_devices - 1))
