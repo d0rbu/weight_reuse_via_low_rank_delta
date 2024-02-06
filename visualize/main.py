@@ -8,34 +8,65 @@ from typing import Mapping
 
 ACCURACY_NAMES = ["acc", "acc,none"]
 
-def get_task_accuracies_and_avg(task_results: Mapping | None) -> tuple[Mapping[str, float], float]:
+def get_task_accuracies_and_avg(
+    task_results: Mapping | None,
+    vanilla_results: Mapping | None = None,  # if this is passed in, the accuracies will be relative to the vanilla results
+    vanilla_acc: float | None = None,
+) -> tuple[Mapping[str, float], float]:
+    if vanilla_results is not None and vanilla_acc is None:
+        num_accs = 0
+        sum_accs = 0
+
+        for task, results in vanilla_results.items():
+            for acc_name in ACCURACY_NAMES:
+                if acc_name in results:
+                    num_accs += 1
+                    sum_accs += results[acc_name]
+                    break
+
+        vanilla_acc = sum_accs / num_accs if num_accs > 0 else None
+
     if task_results is None:
-        return {}, 0.
-    
+        return {}, 0., vanilla_acc
+
     task_accuracies = {}
 
     num_accs = 0
     sum_accs = 0
+
     for task, results in task_results.items():
+        if vanilla_results is not None:
+            assert task in vanilla_results, f"Task {task} not found in vanilla results!"
+            vanilla_task_results = vanilla_results[task]
+        else:
+            vanilla_task_results = {acc_name: 0. for acc_name in ACCURACY_NAMES}
+
         for acc_name in ACCURACY_NAMES:
             if acc_name in results:
+                acc = results[acc_name] - vanilla_task_results[acc_name]
+
                 num_accs += 1
-                sum_accs += results[acc_name]
-                task_accuracies[task] = results[acc_name]
+                sum_accs += acc
+                task_accuracies[task] = acc
                 break
 
-    return task_accuracies, sum_accs / num_accs if num_accs > 0 else 0.
+    return task_accuracies, sum_accs / num_accs if num_accs > 0 else 0., vanilla_acc
 
 # Number of experiments per set of parameters
 def get_num_exp_per_params(full_results: Mapping) -> int:
     return len(next(iter(next(iter(full_results.values())).values())))
 
-def single_param_rank_layer_graph(full_results: Mapping) -> None:
+def single_param_rank_layer_graph(
+    full_results: Mapping,
+    vanilla_results: Mapping
+) -> None:
     param_heatmaps = {}
     num_ranks = len(full_results)
     num_layers = get_num_exp_per_params(full_results)  # Since there is only one param, # experiments = # num layers
     ranks = sorted(full_results.keys())
     ranks_idx = {rank: idx for idx, rank in enumerate(ranks)}
+    extreme = 0
+    vanilla_acc = None
 
     for rank, rank_results in full_results.items():
         for param, param_results in rank_results.items():
@@ -53,64 +84,106 @@ def single_param_rank_layer_graph(full_results: Mapping) -> None:
                 }
                 param_heatmaps[param] = {
                     "avg": avg_heatmap,
+                    **task_heatmaps,
                 }
 
             for base_layer, task_results in param_results.items():
                 base_layer: int = base_layer[0]
-                task_accuracies, avg_accuracy = get_task_accuracies_and_avg(task_results)
+                task_accuracies, avg_accuracy, vanilla_acc = get_task_accuracies_and_avg(task_results, vanilla_results, vanilla_acc)
                 avg_heatmap[rank_idx, base_layer] = avg_accuracy
+                extreme = max(extreme, abs(avg_accuracy))
                 for task, task_accuracy in task_accuracies.items():
+                    extreme = max(extreme, abs(task_accuracy))
                     task_heatmaps[task][rank_idx, base_layer] = task_accuracy
     
     show_task_heatmaps = input("Show task heatmaps? (y/n): ").lower() == "y"
 
-    for param, heatmaps in param_heatmaps.items():
-        for task, heatmap in heatmaps.items():
+    for param, task_heatmaps in param_heatmaps.items():
+        for task, heatmap in task_heatmaps.items():
             if not (show_task_heatmaps or task == "avg"):
                 continue
 
             plt.imshow(heatmap)
-            plt.title(f"{param} {task} acc")
             plt.xlabel("Base layer")
             plt.ylabel("Rank")
             plt.xticks(range(0, num_layers, 4))
             plt.yticks(range(num_ranks), ranks)
-            plt.clim(0, 1)
             plt.colorbar()
-            plt.set_cmap("hot")
+
+            if vanilla_results is None:
+                plt.title(f"{param} {task}")
+                plt.set_cmap("hot")
+                plt.clim(0, 1)
+            else:
+                plt.title(f"{param} {task}, {vanilla_acc:.3f} vanilla")
+                plt.set_cmap("RdYlGn")
+                plt.clim(-extreme, extreme)
+
             plt.show()
 
-def two_param_layer_layer_graph(full_results: Mapping) -> None:
+def two_param_layer_layer_graph(
+    full_results: Mapping,
+    vanilla_results: Mapping,
+) -> None:
     rank_param_heatmaps = {
         rank: {} for rank in full_results
     }
     num_layers = round(math.sqrt(get_num_exp_per_params(full_results)))
+    extreme = 0
+    vanilla_acc = None
 
     for rank, rank_results in full_results.items():
         for params, param_results in rank_results.items():
             if params in rank_param_heatmaps[rank]:
-                heatmap = rank_param_heatmaps[rank][params]
+                avg_heatmap = rank_param_heatmaps[rank][params]["avg"]
+                task_heatmaps = {
+                    task: heatmap for task, heatmap in param_heatmaps[params].items() if task != "avg"
+                }
             else:
-                heatmap = np.empty((num_layers, num_layers))
-                rank_param_heatmaps[rank][params] = heatmap
+                avg_heatmap = np.empty((num_layers, num_layers))
+                task_heatmaps = {
+                    task: np.empty((num_layers, num_layers)) for task in param_results[next(iter(param_results))].keys()
+                }
+                rank_param_heatmaps[rank][params] = {
+                    "avg": avg_heatmap,
+                    **task_heatmaps,
+                }
 
             for base_layers, task_results in param_results.items():
                 first_base_layer, second_base_layer = base_layers
-                avg_accuracy = get_avg_accuracy(task_results)
-                heatmap[first_base_layer, second_base_layer] = avg_accuracy
+                task_accuracies, avg_accuracy, vanilla_acc = get_task_accuracies_and_avg(task_results, vanilla_results, vanilla_acc)
+                avg_heatmap[first_base_layer, second_base_layer] = avg_accuracy
+                extreme = max(extreme, abs(avg_accuracy))
+
+                for task, task_accuracy in task_accuracies.items():
+                    task_heatmaps[task][first_base_layer, second_base_layer] = task_accuracy
+                    extreme = max(extreme, abs(task_accuracy))
+    
+    show_task_heatmaps = input("Show task heatmaps? (y/n): ").lower() == "y"
 
     for rank, param_heatmaps in rank_param_heatmaps.items():
-        for params, heatmap in param_heatmaps.items():
-            plt.imshow(heatmap)
-            plt.title(f"rank {rank} avg acc")
-            plt.xlabel(params[0])
-            plt.ylabel(params[1])
-            plt.xticks(range(0, num_layers, 4))
-            plt.yticks(range(0, num_layers, 4))
-            plt.clim(0, 1)
-            plt.colorbar()
-            plt.set_cmap("hot")
-            plt.show()
+        for params, task_heatmaps in param_heatmaps.items():
+            for task, heatmap in task_heatmaps.items():
+                if not (show_task_heatmaps or task == "avg"):
+                    continue
+
+                plt.imshow(heatmap)
+                plt.xlabel(params[0])
+                plt.ylabel(params[1])
+                plt.xticks(range(0, num_layers, 4))
+                plt.yticks(range(0, num_layers, 4))
+                plt.colorbar()
+
+                if vanilla_results is None:
+                    plt.title(f"rank {rank} {task}")
+                    plt.set_cmap("hot")
+                    plt.clim(0, 1)
+                else:
+                    plt.title(f"rank {rank} {task}, {vanilla_acc:.3f} vanilla")
+                    plt.set_cmap("RdYlGn")
+                    plt.clim(-extreme, extreme)
+
+                plt.show()
 
 # Clean and split up full results based on number of parameters
 def clean_and_split_by_num_params(full_results: Mapping) -> Mapping[str, Mapping]:
@@ -148,19 +221,35 @@ def clean_and_split_by_num_params(full_results: Mapping) -> Mapping[str, Mapping
     
     return split_results
 
+RESULTS_FILE = "results.json"
+VANILLA_RESULTS_FILE = "vanilla_results.json"
 
-def visualize(results_path: os.PathLike | str = os.path.join("outputs", "results.json")) -> None:
+def visualize(
+    output_dir: os.PathLike | str = "outputs/",
+    model_name: str = "meta-llama/Llama-2-7b-hf",
+    relative_to_vanilla: bool = True,
+) -> None:
+    results_dir = os.path.join(output_dir, model_name)
+    results_path = os.path.join(results_dir, RESULTS_FILE)
+    vanilla_results_path = os.path.join(results_dir, VANILLA_RESULTS_FILE)
+
     with open(results_path, "r") as results_file:
         full_results = json.load(results_file)
+    
+    if relative_to_vanilla:
+        with open(vanilla_results_path, "r") as vanilla_results_file:
+            vanilla_results = json.load(vanilla_results_file)
+    else:
+        vanilla_results = None
     
     split_results = clean_and_split_by_num_params(full_results)
 
     if 1 in split_results:
         single_param_results = split_results.pop(1)
-        single_param_rank_layer_graph(single_param_results)
+        single_param_rank_layer_graph(single_param_results, vanilla_results)
     if 2 in split_results:
         two_param_results = split_results.pop(2)
-        two_param_layer_layer_graph(two_param_results)
+        two_param_layer_layer_graph(two_param_results, vanilla_results)
     if len(split_results) > 0:
         raise ValueError(f"No code written to visualize experiments of these many parameters: {split_results.keys()}")
 
