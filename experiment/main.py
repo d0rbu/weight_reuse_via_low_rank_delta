@@ -1,6 +1,7 @@
 import os
 import json
 import yaml
+import time
 from torch.nn import ModuleList, Sequential
 from transformers import AutoModelForCausalLM, AutoTokenizer, PreTrainedModel, PreTrainedTokenizer
 from core.lorafy.mappings import layer_mappings
@@ -101,6 +102,9 @@ def vanilla_lm_eval(
         json.dump(results["results"], f, indent=2)
 
     log_info(f"Wrote raw and vanilla results to {output_dir}", verbosity)
+
+
+PROCESS_TIMEOUT = 3600  # if an in-progress raw output file was started over an hour ago, assume it died
 
 
 def lorafy_lm_parameter_grid_eval(
@@ -238,11 +242,20 @@ def lorafy_lm_parameter_grid_eval(
                     continue
 
             if cached_output_file:
-                log_info(f"Found results in raw output cache...", verbosity)
                 with open(cached_output_file, "r", encoding="utf-8") as f:
                     results = json.load(f)
+                
+                actual_results = results["results"]
 
-                cached_task_results.update(results["results"])
+                if actual_results is not None:
+                    log_info(f"Found results in raw output cache...", verbosity)
+
+                    cached_task_results.update(actual_results)
+                elif results["timestamp"] <= time.time() - PROCESS_TIMEOUT:
+                    log_info(f"Raw output cache indicates results started being computed, "
+                             f"but process has timed out so we will assume it died. Continuing...", verbosity)
+                else:
+                    log_info(f"Raw output cache indicates results are in progress, skipping...", verbosity)
             
             uncached_tasks = list(set(tasks) - set(cached_task_results.keys()))
 
@@ -255,6 +268,13 @@ def lorafy_lm_parameter_grid_eval(
                     "results": cached_task_results
                 }
             else:
+                log_info(f"Writing placeholder to raw output file...", verbosity)
+                with open(raw_output_filepath, "w", encoding="utf-8") as f:
+                    json.dump({
+                        "timestamp": time.time(),
+                        "result": None,
+                    }, f, indent=2)
+
                 log_info(f"Initializing model and tokenizer...", verbosity)
                 model, tokenizer, layers = get_model_tokenizer_and_layers(model_name, blocks_name)
 
