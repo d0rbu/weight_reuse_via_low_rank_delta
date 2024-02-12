@@ -2,6 +2,8 @@ import os
 import json
 import yaml
 import time
+import torch as th
+from mpi4py import MPI
 from torch.nn import ModuleList, Sequential
 from transformers import AutoModelForCausalLM, AutoTokenizer, PreTrainedModel, PreTrainedTokenizer
 from core.lorafy.mappings import layer_mappings
@@ -11,6 +13,11 @@ from core.utils import get_param_ancestors, log_error, log_warn, log_info, log_i
 from hashlib import md5
 from itertools import product, chain, combinations
 from typing import Iterable, Collection, Mapping
+
+
+COMM = MPI.COMM_WORLD
+RANK = COMM.Get_rank()
+WORLD_SIZE = COMM.Get_size()
 
 
 def powerset(iterable: Iterable, include_null_set: bool = False) -> Iterable:
@@ -127,6 +134,8 @@ def lorafy_lm_parameter_grid_eval(
     output_dir = os.path.join(output_dir, model_name)
     output_path = os.path.join(output_dir, "results.json")
     verbosity = Verbosity[verbosity]
+    available_devices = th.linspace(0, WORLD_SIZE, th.cuda.device_count() + 1)[:-1].int()
+    available_devices = (available_devices == RANK).nonzero().flatten()
 
     if not ignore_uncached_results:
         log_info("Initializing tasks...", verbosity)
@@ -169,11 +178,16 @@ def lorafy_lm_parameter_grid_eval(
 
         del raw_full_results
 
+    exp_idx = -1
     for rank, param_names in product(ranks, param_name_combinations):
         if not isinstance(param_names, tuple):
             param_names = tuple(param_names)
 
         for param_mappings in product(*([mappings] * len(param_names))):
+            exp_idx += 1
+            if exp_idx % WORLD_SIZE != RANK:
+                continue
+
             assert len(param_mappings) > 0, f"Length of param_mappings is 0, did you pass proper mappings?"
 
             # if all parameter mappings are equal, compress it down to one. it will be broadcasted later
@@ -279,7 +293,7 @@ def lorafy_lm_parameter_grid_eval(
                 model, tokenizer, layers = get_model_tokenizer_and_layers(model_name, blocks_name)
 
                 log_info(f"Dispatching model to devices...", verbosity)
-                dispatch(model, num_layers)
+                dispatch(model, num_layers, available_devices)
                 # need to dispatch manually because if we do device_map="auto" or "balanced"
                 # when loading the model, it will also add pesky hooks to align devices
                 # which messes with my home grown solution
