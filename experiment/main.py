@@ -286,7 +286,7 @@ def lorafy_lm_parameter_grid_eval(
                 with open(raw_output_filepath, "w", encoding="utf-8") as f:
                     json.dump({
                         "timestamp": time.time(),
-                        "result": None,
+                        "results": None,
                     }, f, indent=2)
 
                 log_info(f"Initializing model and tokenizer...", verbosity)
