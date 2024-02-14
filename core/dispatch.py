@@ -13,7 +13,7 @@ def dispatch(
 
     if devices is None:
         devices = [device for device in range(th.cuda.device_count())]
-    devices = th.array(devices)
+    devices = th.tensor(devices)
     num_devices = len(devices)
 
     block_mappings = th.linspace(0, num_devices, num_layers + 1)[:-1].int()  # Split the layers up among 0, 1, 2, ... etc evenly
