@@ -7,27 +7,32 @@ from typing import Mapping
 
 
 ACCURACY_NAMES = ["acc", "acc,none"]
+PERPLEXITY_NAMES = ["word_perplexity,none"]
 
 def get_task_accuracies_and_avg(
     task_results: Mapping | None,
     vanilla_results: Mapping | None = None,  # if this is passed in, the accuracies will be relative to the vanilla results
     vanilla_acc: float | None = None,
-) -> tuple[Mapping[str, float], float]:
+    acc_names: list[str] = ACCURACY_NAMES,
+) -> tuple[Mapping[str, float], float, set[str]]:
+    relevant_tasks = set()
+
     if vanilla_results is not None and vanilla_acc is None:
         num_accs = 0
         sum_accs = 0
 
         for task, results in vanilla_results.items():
-            for acc_name in ACCURACY_NAMES:
+            for acc_name in acc_names:
                 if acc_name in results:
                     num_accs += 1
                     sum_accs += results[acc_name]
+                    relevant_tasks.add(task)
                     break
 
         vanilla_acc = sum_accs / num_accs if num_accs > 0 else None
 
     if task_results is None:
-        return {}, 0., vanilla_acc
+        return {}, 0., vanilla_acc, relevant_tasks
 
     task_accuracies = {}
 
@@ -39,9 +44,9 @@ def get_task_accuracies_and_avg(
             assert task in vanilla_results, f"Task {task} not found in vanilla results!"
             vanilla_task_results = vanilla_results[task]
         else:
-            vanilla_task_results = {acc_name: 0. for acc_name in ACCURACY_NAMES}
+            vanilla_task_results = {acc_name: 0. for acc_name in acc_names}
 
-        for acc_name in ACCURACY_NAMES:
+        for acc_name in acc_names:
             if acc_name in results:
                 acc = results[acc_name] - vanilla_task_results[acc_name]
 
@@ -50,7 +55,7 @@ def get_task_accuracies_and_avg(
                 task_accuracies[task] = acc
                 break
 
-    return task_accuracies, sum_accs / num_accs if num_accs > 0 else 0., vanilla_acc
+    return task_accuracies, sum_accs / num_accs if num_accs > 0 else 0., vanilla_acc, relevant_tasks
 
 # Number of experiments per set of parameters
 def get_num_exp_per_params(full_results: Mapping) -> int:
@@ -58,7 +63,8 @@ def get_num_exp_per_params(full_results: Mapping) -> int:
 
 def single_param_rank_layer_graph(
     full_results: Mapping,
-    vanilla_results: Mapping
+    vanilla_results: Mapping,
+    acc_names: list[str] = ACCURACY_NAMES,
 ) -> None:
     param_heatmaps = {}
     num_ranks = len(full_results)
@@ -67,6 +73,7 @@ def single_param_rank_layer_graph(
     ranks_idx = {rank: idx for idx, rank in enumerate(ranks)}
     extreme = 0
     vanilla_acc = None
+    relevant_tasks = set()
 
     for rank, rank_results in full_results.items():
         for param, param_results in rank_results.items():
@@ -89,7 +96,8 @@ def single_param_rank_layer_graph(
 
             for base_layer, task_results in param_results.items():
                 base_layer: int = base_layer[0]
-                task_accuracies, avg_accuracy, vanilla_acc = get_task_accuracies_and_avg(task_results, vanilla_results, vanilla_acc)
+                task_accuracies, avg_accuracy, vanilla_acc, specific_relevant_tasks = get_task_accuracies_and_avg(task_results, vanilla_results, vanilla_acc, acc_names)
+                relevant_tasks = relevant_tasks.union(specific_relevant_tasks)
                 avg_heatmap[rank_idx, base_layer] = avg_accuracy
                 extreme = max(extreme, abs(avg_accuracy))
                 for task, task_accuracy in task_accuracies.items():
@@ -102,6 +110,9 @@ def single_param_rank_layer_graph(
         for task, heatmap in task_heatmaps.items():
             if not (show_task_heatmaps or task == "avg"):
                 continue
+            
+            if task not in relevant_tasks and task != "avg":
+                continue
 
             plt.imshow(heatmap)
             plt.xlabel("Base layer")
@@ -112,11 +123,14 @@ def single_param_rank_layer_graph(
 
             if vanilla_results is None:
                 plt.title(f"{param} {task}")
-                plt.set_cmap("hot")
-                plt.clim(0, 1)
+                plt.set_cmap(f"hot{'_r' if acc_names == PERPLEXITY_NAMES else ''}")
+                if acc_names == PERPLEXITY_NAMES:
+                    plt.clim(0, extreme)
+                else:
+                    plt.clim(0, 1)
             else:
                 plt.title(f"{param} {task}, {vanilla_acc:.3f} vanilla")
-                plt.set_cmap("RdYlGn")
+                plt.set_cmap(f"RdYlBu{'_r' if acc_names == PERPLEXITY_NAMES else ''}")
                 plt.clim(-extreme, extreme)
 
             plt.show()
@@ -124,6 +138,7 @@ def single_param_rank_layer_graph(
 def two_param_layer_layer_graph(
     full_results: Mapping,
     vanilla_results: Mapping,
+    acc_names: list[str] = ACCURACY_NAMES,
 ) -> None:
     rank_param_heatmaps = {
         rank: {} for rank in full_results
@@ -131,6 +146,7 @@ def two_param_layer_layer_graph(
     num_layers = round(math.sqrt(get_num_exp_per_params(full_results)))
     extreme = 0
     vanilla_acc = None
+    relevant_tasks = set()
 
     for rank, rank_results in full_results.items():
         for params, param_results in rank_results.items():
@@ -151,7 +167,8 @@ def two_param_layer_layer_graph(
 
             for base_layers, task_results in param_results.items():
                 first_base_layer, second_base_layer = base_layers
-                task_accuracies, avg_accuracy, vanilla_acc = get_task_accuracies_and_avg(task_results, vanilla_results, vanilla_acc)
+                task_accuracies, avg_accuracy, vanilla_acc, specific_relevant_tasks = get_task_accuracies_and_avg(task_results, vanilla_results, vanilla_acc, acc_names)
+                relevant_tasks = relevant_tasks.union(specific_relevant_tasks)
                 avg_heatmap[first_base_layer, second_base_layer] = avg_accuracy
                 extreme = max(extreme, abs(avg_accuracy))
 
@@ -167,6 +184,9 @@ def two_param_layer_layer_graph(
                 if not (show_task_heatmaps or task == "avg"):
                     continue
 
+                if task not in relevant_tasks and task != "avg":
+                    continue
+
                 plt.imshow(heatmap)
                 plt.xlabel(params[0])
                 plt.ylabel(params[1])
@@ -176,11 +196,14 @@ def two_param_layer_layer_graph(
 
                 if vanilla_results is None:
                     plt.title(f"rank {rank} {task}")
-                    plt.set_cmap("hot")
-                    plt.clim(0, 1)
+                    plt.set_cmap(f"hot{'_r' if acc_names == PERPLEXITY_NAMES else ''}")
+                    if acc_names == PERPLEXITY_NAMES:
+                        plt.clim(0, extreme)
+                    else:
+                        plt.clim(0, 1)
                 else:
                     plt.title(f"rank {rank} {task}, {vanilla_acc:.3f} vanilla")
-                    plt.set_cmap("RdYlGn")
+                    plt.set_cmap(f"RdYlBu{'_r' if acc_names == PERPLEXITY_NAMES else ''}")
                     plt.clim(-extreme, extreme)
 
                 plt.show()
@@ -246,10 +269,10 @@ def visualize(
 
     if 1 in split_results:
         single_param_results = split_results.pop(1)
-        single_param_rank_layer_graph(single_param_results, vanilla_results)
+        single_param_rank_layer_graph(single_param_results, vanilla_results, PERPLEXITY_NAMES)
     if 2 in split_results:
         two_param_results = split_results.pop(2)
-        two_param_layer_layer_graph(two_param_results, vanilla_results)
+        two_param_layer_layer_graph(two_param_results, vanilla_results, PERPLEXITY_NAMES)
     if len(split_results) > 0:
         raise ValueError(f"No code written to visualize experiments of these many parameters: {split_results.keys()}")
 
