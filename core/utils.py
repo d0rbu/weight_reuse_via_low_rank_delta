@@ -1,6 +1,11 @@
 import torch.nn as nn
+from mpi4py import MPI
 from functools import partial
 from enum import IntEnum
+
+
+COMM = MPI.COMM_WORLD
+RANK = COMM.Get_rank()
 
 
 class Verbosity(IntEnum):
@@ -25,7 +30,10 @@ def get_param_ancestors(model: nn.Module, param_name: str) -> list[nn.Module]:
 def log(msg: str, current_verbosity: Verbosity, msg_verbosity: Verbosity):
     if current_verbosity < msg_verbosity:  # If the current verbosity is not important enough
         return
-    
+
+    if RANK != 0:  # Only print on rank 0
+        return
+
     print(msg)
 
 log_error = partial(log, msg_verbosity = Verbosity.ERROR)

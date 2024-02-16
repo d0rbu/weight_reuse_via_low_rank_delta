@@ -1,6 +1,9 @@
 import os
 import json
 import yaml
+import time
+import torch as th
+from mpi4py import MPI
 from torch.nn import ModuleList, Sequential
 from transformers import AutoModelForCausalLM, AutoTokenizer, PreTrainedModel, PreTrainedTokenizer
 from core.lorafy.mappings import layer_mappings
@@ -10,6 +13,11 @@ from core.utils import get_param_ancestors, log_error, log_warn, log_info, log_i
 from hashlib import md5
 from itertools import product, chain, combinations
 from typing import Iterable, Collection, Mapping
+
+
+COMM = MPI.COMM_WORLD
+RANK = COMM.Get_rank()
+WORLD_SIZE = COMM.Get_size()
 
 
 def powerset(iterable: Iterable, include_null_set: bool = False) -> Iterable:
@@ -103,6 +111,9 @@ def vanilla_lm_eval(
     log_info(f"Wrote raw and vanilla results to {output_dir}", verbosity)
 
 
+PROCESS_TIMEOUT = 3600  # if an in-progress raw output file was started over an hour ago, assume it died
+
+
 def lorafy_lm_parameter_grid_eval(
     output_dir: os.PathLike | str = "outputs/",
     num_layers_and_model_name: tuple[int, str] = (32, "meta-llama/Llama-2-7b-hf"),
@@ -123,6 +134,8 @@ def lorafy_lm_parameter_grid_eval(
     output_dir = os.path.join(output_dir, model_name)
     output_path = os.path.join(output_dir, "results.json")
     verbosity = Verbosity[verbosity]
+    available_devices = th.linspace(0, WORLD_SIZE, th.cuda.device_count() + 1)[:-1].int()
+    available_devices = (available_devices == RANK).nonzero().flatten()
 
     if not ignore_uncached_results:
         log_info("Initializing tasks...", verbosity)
@@ -165,11 +178,16 @@ def lorafy_lm_parameter_grid_eval(
 
         del raw_full_results
 
+    exp_idx = -1
     for rank, param_names in product(ranks, param_name_combinations):
         if not isinstance(param_names, tuple):
             param_names = tuple(param_names)
 
         for param_mappings in product(*([mappings] * len(param_names))):
+            exp_idx += 1
+            if exp_idx % WORLD_SIZE != RANK:
+                continue
+
             assert len(param_mappings) > 0, f"Length of param_mappings is 0, did you pass proper mappings?"
 
             # if all parameter mappings are equal, compress it down to one. it will be broadcasted later
@@ -238,11 +256,20 @@ def lorafy_lm_parameter_grid_eval(
                     continue
 
             if cached_output_file:
-                log_info(f"Found results in raw output cache...", verbosity)
                 with open(cached_output_file, "r", encoding="utf-8") as f:
                     results = json.load(f)
+                
+                actual_results = results["results"]
 
-                cached_task_results.update(results["results"])
+                if actual_results is not None:
+                    log_info(f"Found results in raw output cache...", verbosity)
+
+                    cached_task_results.update(actual_results)
+                elif results["timestamp"] <= time.time() - PROCESS_TIMEOUT:
+                    log_info(f"Raw output cache indicates results started being computed, "
+                             f"but process has timed out so we will assume it died. Continuing...", verbosity)
+                else:
+                    log_info(f"Raw output cache indicates results are in progress, skipping...", verbosity)
             
             uncached_tasks = list(set(tasks) - set(cached_task_results.keys()))
 
@@ -255,11 +282,18 @@ def lorafy_lm_parameter_grid_eval(
                     "results": cached_task_results
                 }
             else:
+                log_info(f"Writing placeholder to raw output file...", verbosity)
+                with open(raw_output_filepath, "w", encoding="utf-8") as f:
+                    json.dump({
+                        "timestamp": time.time(),
+                        "results": None,
+                    }, f, indent=2)
+
                 log_info(f"Initializing model and tokenizer...", verbosity)
                 model, tokenizer, layers = get_model_tokenizer_and_layers(model_name, blocks_name)
 
                 log_info(f"Dispatching model to devices...", verbosity)
-                dispatch(model, num_layers)
+                dispatch(model, num_layers, available_devices)
                 # need to dispatch manually because if we do device_map="auto" or "balanced"
                 # when loading the model, it will also add pesky hooks to align devices
                 # which messes with my home grown solution

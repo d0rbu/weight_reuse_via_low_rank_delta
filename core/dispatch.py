@@ -1,26 +1,32 @@
 import torch as th
 import torch.nn as nn
+from typing import Sequence
 from transformers import AutoModelForCausalLM, AutoTokenizer, PreTrainedModel, PreTrainedTokenizer
 
 
 def dispatch(
     model: PreTrainedModel,
     num_layers: int = 0,
-    num_devices: int = 0,
+    devices: Sequence[int] | None = None
 ) -> None:
     pre_layers, blocks, post_layers = find_blocks(model, num_layers)
 
-    num_devices = num_devices if num_devices else th.cuda.device_count()
-    block_mappings = th.linspace(0, num_devices, num_layers + 1)[:-1].int()
+    if devices is None:
+        devices = [device for device in range(th.cuda.device_count())]
+    devices = devices if isinstance(devices, th.Tensor) else th.tensor(devices)
+    num_devices = len(devices)
+
+    block_mappings = th.linspace(0, num_devices, num_layers + 1)[:-1].int()  # Split the layers up among 0, 1, 2, ... etc evenly
+    block_mappings = devices[block_mappings]  # Index the actual device numbers (usually its just 0, 1, 2, ...)
 
     for pre_layer_parent, pre_layer_name, pre_layer in pre_layers:
-        setattr(pre_layer_parent, pre_layer_name, pre_layer.to(0))
+        setattr(pre_layer_parent, pre_layer_name, pre_layer.to(int(devices[0])))
 
     for i, device in enumerate(block_mappings):
         blocks[i] = blocks[i].to(int(device))
     
     for post_layer_parent, post_layer_name, post_layer in post_layers:
-        setattr(post_layer_parent, post_layer_name, post_layer.to(num_devices - 1))
+        setattr(post_layer_parent, post_layer_name, post_layer.to(int(devices[-1])))
 
     th.cuda.empty_cache()
 
