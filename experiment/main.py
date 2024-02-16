@@ -2,6 +2,7 @@ import os
 import json
 import yaml
 import time
+import argparse
 import torch as th
 from mpi4py import MPI
 from torch.nn import ModuleList, Sequential
@@ -125,7 +126,7 @@ def lorafy_lm_parameter_grid_eval(
     lorafied_model_cache_dir: os.PathLike | str = ".lorafied_model_cache",
     verbosity: str = "INFO",
     move_device: str | None = None,
-    tasks: list[str] | str = ["winogrande"],
+    tasks: list[str] | str = ["winogrande", "wikitext"],
     ignore_uncached_results: bool = False,
 ) -> None:
     # yes the num_layers can be inferred, but i dont wanna spend compute loading the model just to get that one int
@@ -367,11 +368,32 @@ CONFIG_DIR = os.path.join("experiment", "configs")
 
 
 if __name__ == "__main__":
-    experiment_config_path = os.path.join(CONFIG_DIR, "main.yaml")
+    
+    parser = argparse.ArgumentParser(description="Run an experiment")
+    parser.add_argument("--experiment", type=str, default="main", help="Name of the experiment config file")
+    parser.add_argument("--output_dir", type=str, default="outputs/", help="Path to the output directory")
+    parser.add_argument("--num_layers", type=int, default=32, help="Number of layers in the model")
+    parser.add_argument("--model_name", type=str, default="meta-llama/Llama-2-7b-hf", help="Name of the model")
+    parser.add_argument("--blocks_name", type=str, default="model.layers", help="Name of the blocks in the model")
+    parser.add_argument("--ranks", type=float, nargs="+", default=[1/16, 1/8, 1/4], help="Ranks to evaluate")
+    parser.add_argument("--param_name_combinations", type=str, nargs="+", default=powerset(("self_attn.q_proj", "self_attn.k_proj")), help="Parameter name combinations to evaluate")
+    parser.add_argument("--mappings", type=str, default=None, help="Mappings to evaluate")
+    parser.add_argument("--raw_results_dir", type=str, default="raw_results", help="Path to the raw results directory")
+    parser.add_argument("--lorafied_model_cache_dir", type=str, default=".lorafied_model_cache", help="Path to the LoRAfied model cache directory")
+    parser.add_argument("--verbosity", type=str, default="INFO", help="Verbosity level")
+    parser.add_argument("--move_device", type=str, default=None, help="Move device option")
+    parser.add_argument("--tasks", type=str, nargs="+", default=["winogrande", "wikitext"], help="Tasks to evaluate")
+    parser.add_argument("--ignore_uncached_results", action="store_true", help="Ignore uncached results")
+    args = parser.parse_args()
+
+    experiment_config_path = os.path.join(CONFIG_DIR, f"{args.experiment}.yaml")
     if os.path.exists(experiment_config_path):
         with open(experiment_config_path, "r") as experiment_config_file:
             experiment_config = yaml.safe_load(experiment_config_file)
     else:
         experiment_config = {}
+    
+    kwargs = vars(args)
+    kwargs.update(experiment_config)
 
-    lorafy_lm_parameter_grid_eval(**experiment_config)
+    lorafy_lm_parameter_grid_eval(**kwargs)

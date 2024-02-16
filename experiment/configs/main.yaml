@@ -11,4 +11,3 @@ param_name_combinations:
   - ["mlp.gate_proj"]
 move_device: "cuda:0"
 tasks: ["winogrande", "wikitext"]
-ignore_uncached_results: false
