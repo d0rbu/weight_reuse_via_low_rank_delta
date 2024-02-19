@@ -14,6 +14,7 @@ def get_task_accuracies_and_avg(
     vanilla_results: Mapping | None = None,  # if this is passed in, the accuracies will be relative to the vanilla results
     vanilla_acc: float | None = None,
     acc_names: list[str] = ACCURACY_NAMES,
+    log_scale: int = -1,
 ) -> tuple[Mapping[str, float], float, set[str]]:
     relevant_tasks = set()
 
@@ -49,6 +50,8 @@ def get_task_accuracies_and_avg(
         for acc_name in acc_names:
             if acc_name in results:
                 acc = results[acc_name] - vanilla_task_results[acc_name]
+                if log_scale > 0:
+                    acc = math.log(acc, log_scale)
 
                 num_accs += 1
                 sum_accs += acc
@@ -65,6 +68,7 @@ def single_param_rank_layer_graph(
     full_results: Mapping,
     vanilla_results: Mapping,
     acc_names: list[str] = ACCURACY_NAMES,
+    log_scale: int = -1,
 ) -> None:
     param_heatmaps = {}
     num_ranks = len(full_results)
@@ -96,7 +100,7 @@ def single_param_rank_layer_graph(
 
             for base_layer, task_results in param_results.items():
                 base_layer: int = base_layer[0]
-                task_accuracies, avg_accuracy, vanilla_acc, specific_relevant_tasks = get_task_accuracies_and_avg(task_results, vanilla_results, vanilla_acc, acc_names)
+                task_accuracies, avg_accuracy, vanilla_acc, specific_relevant_tasks = get_task_accuracies_and_avg(task_results, vanilla_results, vanilla_acc, acc_names, log_scale)
                 relevant_tasks = relevant_tasks.union(specific_relevant_tasks)
                 avg_heatmap[rank_idx, base_layer] = avg_accuracy
                 extreme = max(extreme, abs(avg_accuracy))
@@ -139,6 +143,7 @@ def two_param_layer_layer_graph(
     full_results: Mapping,
     vanilla_results: Mapping,
     acc_names: list[str] = ACCURACY_NAMES,
+    log_scale: int = -1,
 ) -> None:
     rank_param_heatmaps = {
         rank: {} for rank in full_results
@@ -167,7 +172,7 @@ def two_param_layer_layer_graph(
 
             for base_layers, task_results in param_results.items():
                 first_base_layer, second_base_layer = base_layers
-                task_accuracies, avg_accuracy, vanilla_acc, specific_relevant_tasks = get_task_accuracies_and_avg(task_results, vanilla_results, vanilla_acc, acc_names)
+                task_accuracies, avg_accuracy, vanilla_acc, specific_relevant_tasks = get_task_accuracies_and_avg(task_results, vanilla_results, vanilla_acc, acc_names, log_scale)
                 relevant_tasks = relevant_tasks.union(specific_relevant_tasks)
                 avg_heatmap[first_base_layer, second_base_layer] = avg_accuracy
                 extreme = max(extreme, abs(avg_accuracy))
@@ -251,10 +256,15 @@ def visualize(
     output_dir: os.PathLike | str = "outputs/",
     model_name: str = "meta-llama/Llama-2-7b-hf",
     relative_to_vanilla: bool = True,
+    log_scale: int = -1,
 ) -> None:
     results_dir = os.path.join(output_dir, model_name)
     results_path = os.path.join(results_dir, RESULTS_FILE)
     vanilla_results_path = os.path.join(results_dir, VANILLA_RESULTS_FILE)
+    metric_names = PERPLEXITY_NAMES if input("Perplexity? (y/n): ").lower() == "y" else ACCURACY_NAMES
+    log_scale_input = input("Log scale? Nothing for no, base for yes: ")
+    if log_scale_input:
+        log_scale = int(log_scale_input)
 
     with open(results_path, "r") as results_file:
         full_results = json.load(results_file)
@@ -269,10 +279,10 @@ def visualize(
 
     if 1 in split_results:
         single_param_results = split_results.pop(1)
-        single_param_rank_layer_graph(single_param_results, vanilla_results, PERPLEXITY_NAMES)
+        single_param_rank_layer_graph(single_param_results, vanilla_results, metric_names, log_scale)
     if 2 in split_results:
         two_param_results = split_results.pop(2)
-        two_param_layer_layer_graph(two_param_results, vanilla_results, PERPLEXITY_NAMES)
+        two_param_layer_layer_graph(two_param_results, vanilla_results, metric_names, log_scale)
     if len(split_results) > 0:
         raise ValueError(f"No code written to visualize experiments of these many parameters: {split_results.keys()}")
 
