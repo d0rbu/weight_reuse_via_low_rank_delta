@@ -122,6 +122,9 @@ def lorafy_lm_parameter_grid_eval(
     ranks: Iterable[int | float] = (1/16, 1/8, 1/4),
     param_name_combinations: Iterable[Iterable[str]] = powerset(("self_attn.q_proj", "self_attn.k_proj")),
     mappings: Collection[dict[int, int]] | None = None,
+    base_layers: list[int] | int = 1,
+    num_weight_groups: int = 1,
+    weight_group_dim: int = 0,
     raw_results_dir: os.PathLike | str = "raw_results",
     lorafied_model_cache_dir: os.PathLike | str = ".lorafied_model_cache",
     verbosity: str = "INFO",
@@ -157,7 +160,7 @@ def lorafy_lm_parameter_grid_eval(
 
     if mappings is None:
         log_info("Initializing layer mappings...", verbosity)
-        mappings = layer_mappings(num_layers)
+        mappings = layer_mappings(num_layers, num_weight_groups, base_layers)
         log_info_1(str(mappings), verbosity)
 
     full_results = {}
@@ -378,12 +381,15 @@ if __name__ == "__main__":
     parser.add_argument("--ranks", type=float, nargs="+", default=[1/16, 1/8, 1/4], help="Ranks to evaluate")
     parser.add_argument("--param_name_combinations", type=str, nargs="+", default=powerset(("self_attn.q_proj", "self_attn.k_proj")), help="Parameter name combinations to evaluate")
     parser.add_argument("--mappings", type=str, default=None, help="Mappings to evaluate")
+    parser.add_argument("--base_layers", type=list | int, default=1, help="Either a list of [base_layer, weight_grp], a list of base layers, or the number of base layers; the last will generate all combinations of that many base layers")
     parser.add_argument("--raw_results_dir", type=str, default="raw_results", help="Path to the raw results directory")
     parser.add_argument("--lorafied_model_cache_dir", type=str, default=".lorafied_model_cache", help="Path to the LoRAfied model cache directory")
     parser.add_argument("--verbosity", type=str, default="INFO", help="Verbosity level")
     parser.add_argument("--move_device", type=str, default=None, help="Move device option")
     parser.add_argument("--tasks", type=str, nargs="+", default=["winogrande", "wikitext"], help="Tasks to evaluate")
     parser.add_argument("--ignore_uncached_results", action="store_true", help="Ignore uncached results")
+    parser.add_argument("--num_weight_groups", type=int, default=1, help="Group weight matrices by this number")
+    parser.add_argument("--weight_group_dim", type=int, default=0, help="Dimension to group weight matrices by")
     args = parser.parse_args()
 
     experiment_config_path = os.path.join(CONFIG_DIR, f"{args.experiment}.yaml")
