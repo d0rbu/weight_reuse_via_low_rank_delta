@@ -11,6 +11,8 @@ class LoRAfyParameterConfig:
     base_param: str
     derived_param: str
     rank: int | float
+    num_weight_groups: int = 1
+    weight_group_axis: int = 0
 
 
 WEIGHT_SUFFIX = ".weight"
@@ -57,8 +59,10 @@ def lorafy_model(
             base_param_ancestors[-1],
             derived_param_ancestors[-1],
             param_config.rank,
-            move_device,
-            approximate_lora,
+            num_weight_groups=param_config.num_weight_groups,
+            weight_group_axis=param_config.weight_group_axis,
+            move_device=move_device,
+            approximate_lora=approximate_lora
         )
         setattr(derived_param_ancestors[-2], derived_param_ancestor_names[-1], lorafied_param)
 

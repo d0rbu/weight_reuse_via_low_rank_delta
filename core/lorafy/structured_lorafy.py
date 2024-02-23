@@ -15,6 +15,8 @@ def lorafy_parameter_layerwise(
     rank: int | float,
     param_name: str,
     mapping: dict[int, int],
+    num_weight_groups: int = 1,
+    weight_group_axis: int = 0,
     inplace: bool = True,
     cache_file: os.PathLike | str | None = None,
     verbosity: Verbosity = Verbosity.INFO,
@@ -63,7 +65,7 @@ def lorafy_parameter_layerwise(
 
         lorafied_layers = lorafy_model(
             lorafied_layers,
-            LoRAfyParameterConfig(base_param_name, derived_param_name, rank),
+            LoRAfyParameterConfig(base_param_name, derived_param_name, rank, num_weight_groups, weight_group_axis)
             inplace = inplace or not first_mapping,  # Make a copy the first time and reuse it after
             move_device = move_device,
             approximate_lora = not load_from_cache,  # If we are loading from cache, do not approximate PQ*
@@ -89,6 +91,8 @@ def lorafy_parameters_layerwise(
     ranks: int | float | Iterable[int | float],
     param_names: str | Iterable[str],
     param_mappings: Iterable[Mapping[int, int]] | Mapping[int, int],
+    num_weight_groups: int = 1,
+    weight_group_axis: int = 0,
     inplace: bool = True,
     cache_paths: Iterable[os.PathLike | str] | os.PathLike | str | None = None,
     verbosity: Verbosity = Verbosity.INFO,
@@ -135,6 +139,8 @@ def lorafy_parameters_layerwise(
             rank,
             param_name,
             mapping,
+            num_weight_groups = num_weight_groups,
+            weight_group_axis = weight_group_axis,
             inplace = inplace or not first_param,  # Make a copy the first time and reuse it after
             cache_file = cache_file,
             verbosity = verbosity,

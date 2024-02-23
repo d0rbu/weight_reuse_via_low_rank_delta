@@ -48,15 +48,31 @@ class LoRAfiedLinear(nn.Module):
         base: nn.Linear | Self,
         derived: nn.Linear | Self,
         rank: int | float,
+        num_weight_groups: int | None = None,
+        weight_group_axis: int | None = None,
         move_device: str | None = None,
         approximate_lora: bool = True,
     ) -> Self:
         assert isinstance(base, nn.Linear) or isinstance(base, LoRAfiedLinear), "base should be nn.Linear or LoRAfiedLinear"
         assert isinstance(derived, nn.Linear) or isinstance(derived, LoRAfiedLinear), "derived should be nn.Linear or LoRAfiedLinear"
         assert base.weight.shape == derived.weight.shape, "base and derived should have same shape"
+        assert rank > 0, "rank should be positive"
+        assert approximate_lora or num_weight_groups is None, "num_weight_groups only applicable if approximate_lora=True"
+        assert approximate_lora or weight_group_axis is None, "weight_group_axis only applicable if approximate_lora=True"
+
+        if num_weight_groups is None:
+            num_weight_groups = 1
+        
+        if weight_group_axis is None:
+            weight_group_axis = 0
+        weight_dim = base.weight.shape[weight_group_axis]
+
+        assert weight_dim % num_weight_groups == 0, f"num_weight_groups {num_weight_groups} " \
+                                                    f"should divide the weight dimension along axis {weight_group_axis}, which is {weight_dim}"
 
         if isinstance(rank, float):
             rank = int(rank * min(*base.weight.shape))
+        weight_group_rank = rank // num_weight_groups
         
         original_derived_device = derived.weight.device
 
@@ -74,17 +90,33 @@ class LoRAfiedLinear(nn.Module):
 
             del derived
 
-            U, S, Vh = th.linalg.svd(weight_delta, full_matrices=False)
+            P_grouped = []
+            Qh_grouped = []
+            weight_group_dim = weight_dim // num_weight_groups
 
-            del weight_delta
+            for start in range(0, weight_dim, weight_group_dim):
+                end = start + weight_group_dim  # start and end indices for this weight group, along the given axis
 
-            S = th.diag_embed(S[:rank].sqrt())
+                # slice to extract this particular weight group
+                group_slice = (slice(None) * 2)
+                group_slice[weight_group_axis] = slice(start, end)
 
-            # Low-rank approximation of weight_delta as P @ Qh
-            P = U[:, :rank] @ S
-            Qh = S @ Vh[:rank]
+                U, S, Vh = th.linalg.svd(weight_delta[group_slice], full_matrices=False)
+                S = th.diag_embed(S[:weight_group_rank].sqrt())
 
-            del S
+                # Low-rank approximation of this weight group as P @ Qh
+                P = U[:, :weight_group_rank] @ S
+                Qh = S @ Vh[:weight_group_rank]
+
+                P_grouped.append(P)
+                Qh_grouped.append(Qh)
+
+            del weight_delta, U, S, Vh
+
+            P = th.cat(P_grouped, dim=weight_group_axis)
+            Qh = th.cat(Qh_grouped, dim=weight_group_axis)
+
+            del P_grouped, Qh_grouped
         else:
             P = th.empty(base.weight.shape[0], rank)
             Qh = th.empty(rank, base.weight.shape[1])

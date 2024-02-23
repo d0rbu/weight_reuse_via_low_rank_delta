@@ -124,7 +124,7 @@ def lorafy_lm_parameter_grid_eval(
     mappings: Collection[dict[int, int]] | None = None,
     base_layers: list[int] | int = 1,
     num_weight_groups: int = 1,
-    weight_group_dim: int = 0,
+    weight_group_axis: int = 0,
     raw_results_dir: os.PathLike | str = "raw_results",
     lorafied_model_cache_dir: os.PathLike | str = ".lorafied_model_cache",
     verbosity: str = "INFO",
@@ -160,7 +160,7 @@ def lorafy_lm_parameter_grid_eval(
 
     if mappings is None:
         log_info("Initializing layer mappings...", verbosity)
-        mappings = layer_mappings(num_layers, num_weight_groups, base_layers)
+        mappings = layer_mappings(num_layers, base_layers)
         log_info_1(str(mappings), verbosity)
 
     full_results = {}
@@ -308,6 +308,8 @@ def lorafy_lm_parameter_grid_eval(
                     rank,
                     param_names,
                     param_mappings,
+                    num_weight_groups = num_weight_groups,
+                    weight_group_axis = weight_group_axis,
                     inplace = True,
                     cache_paths = cache_paths,
                     verbosity = verbosity,
@@ -389,7 +391,7 @@ if __name__ == "__main__":
     parser.add_argument("--tasks", type=str, nargs="+", default=["winogrande", "wikitext"], help="Tasks to evaluate")
     parser.add_argument("--ignore_uncached_results", action="store_true", help="Ignore uncached results")
     parser.add_argument("--num_weight_groups", type=int, default=1, help="Group weight matrices by this number")
-    parser.add_argument("--weight_group_dim", type=int, default=0, help="Dimension to group weight matrices by")
+    parser.add_argument("--weight_group_axis", type=int, default=0, help="Dimension to group weight matrices by")
     args = parser.parse_args()
 
     experiment_config_path = os.path.join(CONFIG_DIR, f"{args.experiment}.yaml")
