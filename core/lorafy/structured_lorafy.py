@@ -65,7 +65,7 @@ def lorafy_parameter_layerwise(
 
         lorafied_layers = lorafy_model(
             lorafied_layers,
-            LoRAfyParameterConfig(base_param_name, derived_param_name, rank, num_weight_groups, weight_group_axis)
+            LoRAfyParameterConfig(base_param_name, derived_param_name, rank, num_weight_groups, weight_group_axis),
             inplace = inplace or not first_mapping,  # Make a copy the first time and reuse it after
             move_device = move_device,
             approximate_lora = not load_from_cache,  # If we are loading from cache, do not approximate PQ*
