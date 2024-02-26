@@ -161,3 +161,4 @@ cython_debug/
 
 .lorafied_model_cache/
 outputs/raw_results/
+scripts/
