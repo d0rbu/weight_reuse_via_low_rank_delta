@@ -98,7 +98,7 @@ class LoRAfiedLinear(nn.Module):
                 end = start + weight_group_dim  # start and end indices for this weight group, along the given axis
 
                 # slice to extract this particular weight group
-                group_slice = (slice(None) * 2)
+                group_slice = (slice(None),) * 2
                 group_slice[weight_group_axis] = slice(start, end)
 
                 U, S, Vh = th.linalg.svd(weight_delta[group_slice], full_matrices=False)

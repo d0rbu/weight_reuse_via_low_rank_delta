@@ -6,7 +6,7 @@ import argparse
 import torch as th
 from mpi4py import MPI
 from torch.nn import ModuleList, Sequential
-from transformers import AutoModelForCausalLM, AutoTokenizer, PreTrainedModel, PreTrainedTokenizer
+from transformers import AutoModelForCausalLM, AutoTokenizer, PreTrainedModel, PreTrainedTokenizer, AutoConfig
 from core.lorafy.mappings import layer_mappings
 from core.lorafy.structured_lorafy import lorafy_parameters_layerwise
 from core.dispatch import dispatch
@@ -15,6 +15,7 @@ from hashlib import md5
 from itertools import product, chain, combinations
 from collections import defaultdict
 from typing import Iterable, Collection, Mapping, Literal, Sequence
+from enum import StrEnum
 
 
 COMM = MPI.COMM_WORLD
@@ -113,7 +114,11 @@ def vanilla_lm_eval(
     log_info(f"Wrote raw and vanilla results to {output_dir}", verbosity)
 
 
-NumWeightGroups = int | Literal["heads"]
+class WeightGroups(StrEnum):
+    HEADS = "heads"
+
+
+NumWeightGroups = int | Literal[WeightGroups.HEADS]
 WeightGroupConfig = tuple[NumWeightGroups, int]  # (num_weight_groups, weight_group_axis)
 RecursiveDefaultDict = lambda: defaultdict(RecursiveDefaultDict)
 
@@ -122,7 +127,7 @@ PROCESS_TIMEOUT = 3600  # if an in-progress raw output file was started over an 
 
 def lorafy_lm_parameter_grid_eval(
     output_dir: os.PathLike | str = "outputs/",
-    num_layers_and_model_name: tuple[int, str] = (32, "meta-llama/Llama-2-7b-hf"),
+    model_name: str = "meta-llama/Llama-2-7b-hf",
     blocks_name: str = "model.layers",
     ranks: Iterable[int | float] = (1/16, 1/8, 1/4),
     param_name_combinations: Iterable[Iterable[str]] = powerset(("self_attn.q_proj", "self_attn.k_proj")),
@@ -136,8 +141,8 @@ def lorafy_lm_parameter_grid_eval(
     tasks: list[str] | str = ["winogrande", "wikitext"],
     ignore_uncached_results: bool = False,
 ) -> None:
-    # yes the num_layers can be inferred, but i dont wanna spend the time loading the whole model just to get that one int
-    num_layers, model_name = num_layers_and_model_name
+    config = AutoConfig.from_pretrained(model_name)
+    num_layers = config.num_hidden_layers
 
     assert len(weight_group_configs) > 0, "Specify at least one weight group config! Use (1, 0) if you're unsure"
     if isinstance(weight_group_configs[0], int) or isinstance(weight_group_configs[0], str):
@@ -203,6 +208,8 @@ def lorafy_lm_parameter_grid_eval(
             param_names = tuple(param_names)
         
         num_weight_groups, weight_group_axis = weight_group_config
+        if num_weight_groups == WeightGroups.HEADS:  # does NOT support mqa/gqa
+            num_weight_groups = config.num_attention_heads
 
         for param_mappings in product(*([mappings] * len(param_names))):
             exp_idx += 1
@@ -357,7 +364,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run an experiment")
     parser.add_argument("--experiment", type=str, default="main", help="Name of the experiment config file")
     parser.add_argument("--output_dir", type=str, default="outputs/", help="Path to the output directory")
-    parser.add_argument("--num_layers_and_model_name", type=tuple[int, str], default=(32, "meta-llama/Llama-2-7b-hf"), help="Number of layers in the model and the model name")
+    parser.add_argument("--model_name", type=str, default="meta-llama/Llama-2-7b-hf", help="Huggingface model name")
     parser.add_argument("--blocks_name", type=str, default="model.layers", help="Name of the blocks in the model")
     parser.add_argument("--ranks", type=float, nargs="+", default=[1/16, 1/8, 1/4], help="Ranks to evaluate")
     parser.add_argument("--param_name_combinations", type=str, nargs="+", default=powerset(("self_attn.q_proj", "self_attn.k_proj")), help="Parameter name combinations to evaluate")
@@ -369,7 +376,7 @@ if __name__ == "__main__":
     parser.add_argument("--move_device", type=str, default=None, help="Move device option")
     parser.add_argument("--tasks", type=str, nargs="+", default=["winogrande", "wikitext"], help="Tasks to evaluate")
     parser.add_argument("--ignore_uncached_results", action="store_true", help="Ignore uncached results")
-    parser.add_argument("--weight_group_configs", type=list[tuple[int | str, int]], default=[(1, 0)], help="Weight group configs, tuples of (num_weight_groups, weight_group_axis). num_weight_groups can also be the literal \"heads\" to match number of attention heads.")
+    parser.add_argument("--weight_group_configs", type=list[tuple[int | str, int]], default=[(1, 0)], help=f"Weight group configs, tuples of (num_weight_groups, weight_group_axis). num_weight_groups can also be the literal \"{WeightGroups.HEADS}\" to match number of attention heads.")
     args = parser.parse_args()
 
     kwargs = vars(args)

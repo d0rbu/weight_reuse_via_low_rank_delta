@@ -1,5 +1,4 @@
-# num_layers_and_model_name: [40, "meta-llama/Llama-2-13b-hf"]
-num_layers_and_model_name: [32, "meta-llama/Llama-2-7b-hf"]
+model_name: "meta-llama/Llama-2-7b-hf"
 param_name_combinations:
   - ["self_attn.q_proj"]
   - ["self_attn.k_proj"]
