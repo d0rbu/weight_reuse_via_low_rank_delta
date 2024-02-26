@@ -113,7 +113,8 @@ def vanilla_lm_eval(
     log_info(f"Wrote raw and vanilla results to {output_dir}", verbosity)
 
 
-WeightGroupConfig = tuple[int | Literal["heads"], int]  # (num_weight_groups, weight_group_axis)
+NumWeightGroups = int | Literal["heads"]
+WeightGroupConfig = tuple[NumWeightGroups, int]  # (num_weight_groups, weight_group_axis)
 
 PROCESS_TIMEOUT = 3600  # if an in-progress raw output file was started over an hour ago, assume it died
 
@@ -137,7 +138,8 @@ def lorafy_lm_parameter_grid_eval(
     # yes the num_layers can be inferred, but i dont wanna spend the time loading the whole model just to get that one int
     num_layers, model_name = num_layers_and_model_name
 
-    if isinstance(weight_group_configs, tuple):
+    assert len(weight_group_configs) > 0, "Specify at least one weight group config! Use (1, 0) if you're unsure"
+    if isinstance(weight_group_configs[0], int) or isinstance(weight_group_configs[0], str):
         weight_group_configs = [weight_group_configs]
 
     output_dir = os.path.join(output_dir, model_name)
@@ -187,7 +189,7 @@ def lorafy_lm_parameter_grid_eval(
                         param_results[mapping] = raw_task_results
                     rank_results[param_names_str] = param_results
                 full_results[rank] = rank_results
-            full_results[(num_weight_groups, weight_group_axis)] = weight_group_config_results
+            full_results[weight_group_config] = weight_group_config_results
 
         del raw_full_results
 
@@ -197,6 +199,7 @@ def lorafy_lm_parameter_grid_eval(
             param_names = tuple(param_names)
         
         num_weight_groups, weight_group_axis = weight_group_config
+        weight_group_key = json.dumps(weight_group_config)
 
         for param_mappings in product(*([mappings] * len(param_names))):
             exp_idx += 1
@@ -241,40 +244,26 @@ def lorafy_lm_parameter_grid_eval(
             one_base_layer = len(mappings) == num_layers and len(param_names) == 1
             mapping_idx = next(iter(param_mappings.values())) if one_base_layer else None  # get a random value from the dictionary
 
-            if len(param_names) == 1:
-                second_experiment_hash = int(md5(str.encode(f"{weight_group_config}{rank}{param_names[0]}{full_mapping_json}")).hexdigest(), 16)
-                second_raw_output_filepath = os.path.join(
-                    output_dir,
-                    raw_results_dir,
-                    f"{second_experiment_hash}.json"
-                )
-            
             cached_task_results = {}
-
-            if os.path.exists(raw_output_filepath):
-                cached_output_file = raw_output_filepath
-            elif len(param_names) == 1 and os.path.exists(second_raw_output_filepath):
-                cached_output_file = second_raw_output_filepath
-            else:
-                cached_output_file = None
+            cached_output_file = raw_output_filepath if os.path.exists(raw_output_filepath) else None
 
             cached_output_results = False
-            if weight_group_config in full_results and rank in full_results[weight_group_config] and param_names_str in full_results[weight_group_config][rank]:
+            if weight_group_key in full_results and rank in full_results[weight_group_key] and param_names_str in full_results[weight_group_key][rank]:
                 results_key = mapping_idx if one_base_layer else full_mapping_json
-                if results_key in full_results[weight_group_config][rank][param_names_str] and full_results[weight_group_config][rank][param_names_str][results_key] is not None:
+                if results_key in full_results[weight_group_key][rank][param_names_str] and full_results[weight_group_key][rank][param_names_str][results_key] is not None:
                     cached_output_results = True
 
             log_info(f"Checking results caches...", verbosity)
             if cached_output_results:
                 log_info(f"Found results in full results cache...", verbosity)
-                cached_task_results.update(full_results[weight_group_config][rank][param_names_str][results_key])
+                cached_task_results.update(full_results[weight_group_key][rank][param_names_str][results_key])
                 if set(tasks).issubset(cached_task_results.keys()):
                     continue
 
             if cached_output_file:
                 with open(cached_output_file, "r", encoding="utf-8") as f:
                     results = json.load(f)
-                
+
                 actual_results = results["results"]
 
                 if actual_results is not None:
@@ -286,7 +275,7 @@ def lorafy_lm_parameter_grid_eval(
                              f"but process has timed out so we will assume it died. Continuing...", verbosity)
                 else:
                     log_info(f"Raw output cache indicates results are in progress, skipping...", verbosity)
-            
+
             uncached_tasks = list(set(tasks) - set(cached_task_results.keys()))
 
             if ignore_uncached_results or len(uncached_tasks) <= 0:
@@ -355,16 +344,16 @@ def lorafy_lm_parameter_grid_eval(
 
             results = results["results"]
             mapping_key = mapping_idx if one_base_layer else json.dumps(param_mappings, sort_keys=True)
-            if weight_group_config not in full_results:
-                full_results[weight_group_config] = {}
-            if rank not in full_results[weight_group_config]:
-                full_results[weight_group_config][rank] = {}
-            if param_names_str not in full_results[weight_group_config][rank]:
-                full_results[weight_group_config][rank][param_names_str] = {}
-            if mapping_key not in full_results[weight_group_config][rank][param_names_str]:
-                full_results[weight_group_config][rank][param_names_str][mapping_key] = {}
+            if weight_group_key not in full_results:
+                full_results[weight_group_key] = {}
+            if rank not in full_results[weight_group_key]:
+                full_results[weight_group_key][rank] = {}
+            if param_names_str not in full_results[weight_group_key][rank]:
+                full_results[weight_group_key][rank][param_names_str] = {}
+            if mapping_key not in full_results[weight_group_key][rank][param_names_str]:
+                full_results[weight_group_key][rank][param_names_str][mapping_key] = {}
 
-            full_results[weight_group_config][rank][param_names_str][mapping_key] = results
+            full_results[weight_group_key][rank][param_names_str][mapping_key] = results
 
     with open(output_path, "w", encoding="utf-8") as f:
         json.dump(full_results, f, indent=2)
