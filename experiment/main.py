@@ -177,7 +177,7 @@ def lorafy_lm_parameter_grid_eval(
             raw_full_results = json.load(output_file)
 
         for num_weight_groups_str, raw_num_weight_groups_results in raw_full_results.items():
-            num_weight_groups = int(num_weight_groups_str)
+            num_weight_groups = int(num_weight_groups_str) if num_weight_groups_str.isdigit() else num_weight_groups_str
             num_weight_groups_results = {}
             for weight_group_axis_str, raw_weight_group_axis_results in raw_num_weight_groups_results.items():
                 weight_group_axis = int(weight_group_axis_str)
