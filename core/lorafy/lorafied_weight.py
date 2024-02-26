@@ -116,12 +116,12 @@ class LoRAfiedLinear(nn.Module):
             elif num_weight_groups > 1:
                 # When we split into weight groups, one of the matrices will be block-diagonal
                 if weight_group_axis == 0:
-                    block_diag = th.zeros((base.weight.shape[0], rank), device=weight_delta.device)
+                    block_diag = th.zeros((base.weight.shape[0], rank), device=P_grouped[0].device)
                     blocks = P_grouped
                     Qh = th.cat(Qh_grouped, dim=0)
                 elif weight_group_axis == 1:
                     P = th.cat(P_grouped, dim=1)
-                    block_diag = th.empty((rank, base.weight.shape[1]), device=weight_delta.device)
+                    block_diag = th.empty((rank, base.weight.shape[1]), device=Qh_grouped[0].device)
                     blocks = Qh_grouped
                 del Qh_grouped, P_grouped
 
@@ -142,6 +142,7 @@ class LoRAfiedLinear(nn.Module):
                     block_diag[block_slice] = block
                 del blocks
 
+                # Assign the block diagonal matrix
                 if weight_group_axis == 0:
                     P = block_diag
                 elif weight_group_axis == 1:
