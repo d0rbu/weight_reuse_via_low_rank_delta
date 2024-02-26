@@ -80,15 +80,15 @@ class LoRAfiedLinear(nn.Module):
             if move_device:
                 derived_weight = derived.weight.to(move_device)
                 base_weight = base.weight.to(move_device)
-
-                weight_delta = (derived_weight - base_weight).detach()
-
-                del derived_weight, base_weight
             else:
                 assert base.weight.device == derived.weight.device, "base and derived should be on same device"
-                weight_delta = (derived.weight - base.weight).detach()
+                derived_weight = derived.weight
+                base_weight = base.weight
+            derived_weight, base_weight = derived_weight.detach(), base_weight.detach()
 
-            del derived
+            th.sub(derived_weight, base_weight, out=derived_weight)
+            weight_delta = derived_weight
+            del derived_weight, base_weight, derived
 
             P_grouped = []
             Qh_grouped = []

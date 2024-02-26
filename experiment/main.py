@@ -122,8 +122,6 @@ NumWeightGroups = int | Literal[WeightGroups.HEADS]
 WeightGroupConfig = tuple[NumWeightGroups, int]  # (num_weight_groups, weight_group_axis)
 RecursiveDefaultDict = lambda: defaultdict(RecursiveDefaultDict)
 
-PROCESS_TIMEOUT = 3600  # if an in-progress raw output file was started over an hour ago, assume it died
-
 
 def lorafy_lm_parameter_grid_eval(
     output_dir: os.PathLike | str = "outputs/",
@@ -139,6 +137,7 @@ def lorafy_lm_parameter_grid_eval(
     verbosity: str = "INFO",
     move_device: str | None = None,
     tasks: list[str] | str = ["winogrande", "wikitext"],
+    process_timeout: int = 3600,
     ignore_uncached_results: bool = False,
 ) -> None:
     config = AutoConfig.from_pretrained(model_name)
@@ -275,7 +274,7 @@ def lorafy_lm_parameter_grid_eval(
                     log_info(f"Found results in raw output cache...", verbosity)
 
                     cached_task_results.update(actual_results)
-                elif results["timestamp"] <= time.time() - PROCESS_TIMEOUT:
+                elif results["timestamp"] <= time.time() - process_timeout:
                     log_info(f"Raw output cache indicates results started being computed, "
                              f"but process has timed out so we will assume it died. Continuing...", verbosity)
                 else:
@@ -377,6 +376,7 @@ if __name__ == "__main__":
     parser.add_argument("--tasks", type=str, nargs="+", default=["winogrande", "wikitext"], help="Tasks to evaluate")
     parser.add_argument("--ignore_uncached_results", action="store_true", help="Ignore uncached results")
     parser.add_argument("--weight_group_configs", type=list[tuple[int | str, int]], default=[(1, 0)], help=f"Weight group configs, tuples of (num_weight_groups, weight_group_axis). num_weight_groups can also be the literal \"{WeightGroups.HEADS}\" to match number of attention heads.")
+    parser.add_argument("--process_timeout", type=int, default=3600, help=f"If multiple processes are running and we run into a file being processed by another process, consider the other process dead if it has been at least this many seconds.")
     args = parser.parse_args()
 
     kwargs = vars(args)
