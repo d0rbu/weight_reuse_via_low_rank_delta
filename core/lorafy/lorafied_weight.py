@@ -94,12 +94,9 @@ class LoRAfiedLinear(nn.Module):
             Qh_grouped = []
             weight_group_dim = weight_dim // num_weight_groups
 
-            for start in range(0, weight_dim, weight_group_dim):
-                end = start + weight_group_dim  # start and end indices for this weight group, along the given axis
-
+            for start, end in zip(range(0, weight_dim, weight_group_dim), range(weight_group_dim, weight_dim + weight_group_dim, weight_group_dim)):
                 # slice to extract this particular weight group
-                group_slice = (slice(None),) * 2
-                group_slice[weight_group_axis] = slice(start, end)
+                group_slice = (slice(None), slice(start, end)) if weight_group_axis == 1 else (slice(start, end), slice(None))
 
                 U, S, Vh = th.linalg.svd(weight_delta[group_slice], full_matrices=False)
                 S = th.diag_embed(S[:weight_group_rank].sqrt())
@@ -114,7 +111,7 @@ class LoRAfiedLinear(nn.Module):
             del weight_delta, U, S, Vh
 
             P = th.cat(P_grouped, dim=weight_group_axis)
-            Qh = th.cat(Qh_grouped, dim=weight_group_axis)
+            Qh = th.cat(Qh_grouped, dim=1 - weight_group_axis)
 
             del P_grouped, Qh_grouped
         else:
