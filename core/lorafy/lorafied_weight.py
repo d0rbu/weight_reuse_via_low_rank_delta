@@ -73,7 +73,7 @@ class LoRAfiedLinear(nn.Module):
         if isinstance(rank, float):
             rank = int(rank * min(*base.weight.shape))
         weight_group_rank = rank // num_weight_groups
-        
+
         original_derived_device = derived.weight.device
 
         if approximate_lora:  # If we want to project the delta down to lower rank to approximate the LoRAized matrix
@@ -95,7 +95,7 @@ class LoRAfiedLinear(nn.Module):
             weight_group_dim = weight_dim // num_weight_groups
 
             for start, end in zip(range(0, weight_dim, weight_group_dim), range(weight_group_dim, weight_dim + weight_group_dim, weight_group_dim)):
-                # slice to extract this particular weight group
+                # Slice to extract this particular weight group
                 group_slice = (slice(None), slice(start, end)) if weight_group_axis == 1 else (slice(start, end), slice(None))
 
                 U, S, Vh = th.linalg.svd(weight_delta[group_slice], full_matrices=False)
@@ -110,10 +110,45 @@ class LoRAfiedLinear(nn.Module):
 
             del weight_delta, U, S, Vh
 
-            P = th.cat(P_grouped, dim=weight_group_axis)
-            Qh = th.cat(Qh_grouped, dim=1 - weight_group_axis)
+            if num_weight_groups == 1:
+                P, Qh = P_grouped[0], Qh_grouped[0]
+                del P_grouped, Qh_grouped
+            elif num_weight_groups > 1:
+                # When we split into weight groups, one of the matrices will be block-diagonal
+                if weight_group_axis == 0:
+                    block_diag = th.zeros((base.weight.shape[0], rank), device=weight_delta.device)
+                    blocks = P_grouped
+                    Qh = th.cat(Qh_grouped, dim=0)
+                elif weight_group_axis == 1:
+                    P = th.cat(P_grouped, dim=1)
+                    block_diag = th.empty((rank, base.weight.shape[1]), device=weight_delta.device)
+                    blocks = Qh_grouped
+                del Qh_grouped, P_grouped
 
-            del P_grouped, Qh_grouped
+                # Fill in the block-diagonal entry
+                for i, block in enumerate(blocks):
+                    base_dim_start = i * weight_group_dim
+                    base_dim_end = base_dim_start + weight_group_dim
+
+                    rank_dim_start = i * weight_group_rank
+                    rank_dim_end = rank_dim_start + weight_group_rank
+
+                    block_slice = [slice(base_dim_start, base_dim_end), slice(rank_dim_start, rank_dim_end)]
+                    if weight_group_axis == 0:
+                        block_slice = tuple(block_slice)
+                    elif weight_group_axis == 1:
+                        block_slice = tuple(reversed(block_slice))
+
+                    block_diag[block_slice] = block
+                del blocks
+
+                if weight_group_axis == 0:
+                    P = block_diag
+                elif weight_group_axis == 1:
+                    Qh = block_diag
+                del block_diag
+            else:
+                raise ValueError("num_weight_groups should be a positive integer")
         else:
             P = th.empty(base.weight.shape[0], rank)
             Qh = th.empty(rank, base.weight.shape[1])
