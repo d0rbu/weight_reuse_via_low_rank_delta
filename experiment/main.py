@@ -176,21 +176,24 @@ def lorafy_lm_parameter_grid_eval(
         with open(output_path, "r", encoding="utf-8") as output_file:
             raw_full_results = json.load(output_file)
 
-        for weight_group_config, raw_weight_group_config_results in raw_full_results.items():
-            num_weight_groups, weight_group_axis = json.loads(weight_group_config)
-            weight_group_config_results = {}
-
-            for rank_str, raw_rank_results in raw_weight_group_config_results.items():
-                rank = float(rank_str)
-                rank_results = {}
-                for param_names_str, raw_param_results in raw_rank_results.items():
-                    param_results = {}
-                    for mapping_str, raw_task_results in raw_param_results.items():
-                        mapping = int(mapping_str) if mapping_str.isdigit() else mapping_str
-                        param_results[mapping] = raw_task_results
-                    rank_results[param_names_str] = param_results
-                weight_group_config_results[rank] = rank_results
-            full_results[num_weight_groups][weight_group_axis] = weight_group_config_results
+        for num_weight_groups_str, raw_num_weight_groups_results in raw_full_results.items():
+            num_weight_groups = int(num_weight_groups_str)
+            num_weight_groups_results = {}
+            for weight_group_axis_str, raw_weight_group_axis_results in raw_num_weight_groups_results.items():
+                weight_group_axis = int(weight_group_axis_str)
+                weight_group_axis_results = {}
+                for rank_str, raw_rank_results in raw_weight_group_axis_results.items():
+                    rank = float(rank_str)
+                    rank_results = {}
+                    for param_names_str, raw_param_results in raw_rank_results.items():
+                        param_results = {}
+                        for mapping_str, raw_task_results in raw_param_results.items():
+                            mapping = int(mapping_str) if mapping_str.isdigit() else mapping_str
+                            param_results[mapping] = raw_task_results
+                        rank_results[param_names_str] = param_results
+                    weight_group_axis_results[rank] = rank_results
+                num_weight_groups_results[weight_group_axis] = weight_group_axis_results
+            full_results[num_weight_groups] = num_weight_groups_results
 
         del raw_full_results
 
