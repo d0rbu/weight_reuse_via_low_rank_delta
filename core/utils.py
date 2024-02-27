@@ -1,7 +1,10 @@
 import torch.nn as nn
+from hashlib import md5
 from mpi4py import MPI
 from functools import partial
 from enum import IntEnum
+from typing import Iterable
+from itertools import chain, combinations
 
 
 COMM = MPI.COMM_WORLD
@@ -26,6 +29,16 @@ def get_param_ancestors(model: nn.Module, param_name: str) -> list[nn.Module]:
         ancestors.append(module)
 
     return ancestors, param_hierarchy
+
+def powerset(iterable: Iterable, include_null_set: bool = False) -> Iterable:
+    full_set = list(iterable)
+    return chain.from_iterable(
+        combinations(full_set, num_elements)
+        for num_elements in range(0 if include_null_set else 1, len(full_set) + 1)
+    )
+
+def hash(string: str) -> int:
+    return int(md5(str.encode(string)).hexdigest(), 16)
 
 def log(msg: str, current_verbosity: Verbosity, msg_verbosity: Verbosity):
     if current_verbosity < msg_verbosity:  # If the current verbosity is not important enough
