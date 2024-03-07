@@ -354,6 +354,7 @@ def lorafy_lm_parameter_grid_eval(
                         layers,
                         orthogonalign_mapping,
                         orthogonalign_mode,
+                        num_weight_groups = num_weight_groups,
                         cache_paths = orthogonalign_cache_paths,
                         k_name = orthogonalign_k_name,
                         q_name = orthogonalign_q_name,

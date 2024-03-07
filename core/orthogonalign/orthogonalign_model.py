@@ -16,6 +16,7 @@ class OrthogonalignConfig:
     base_layer: int
     derived_layer: int
     mode: OrthogonalignMode
+    num_weight_groups: int = 1
 
 
 def orthogonalign_layer(
@@ -67,15 +68,28 @@ def orthogonalign_layer(
     base_weight = base_layer_k if config.mode == OrthogonalignMode.K else base_layer_q
     derived_weight, base_weight = derived_weight.weight.data.to(move_device), base_weight.weight.data.to(move_device)
 
-    U, _, Vh = th.linalg.svd(base_weight @ derived_weight.T)
-    M = U @ Vh
+    # Split it up by groups
+    base_weight = base_weight.view(config.num_weight_groups, -1, base_weight.shape[-1])
+    derived_weight = derived_weight.view(config.num_weight_groups, -1, derived_weight.shape[-1])
 
-    del U, Vh
+    # Calculate the orthogonaligned weight groups. assumes same number of groups for both base and derived weights, so no gqa or mqa support for now
+    new_derived_k = th.empty_like(derived_weight)
+    new_derived_q = th.empty_like(derived_weight)
 
-    M = M.to(derived_weight.device)
+    for i in range(config.num_weight_groups):
+        U, _, Vh = th.linalg.svd(base_weight[i] @ derived_weight[i].T)
+        M = U @ Vh
 
-    new_derived_k = M @ derived_weight.weight.data
-    new_derived_q = M @ derived_weight.weight.data
+        del U, Vh
+
+        M = M.to(derived_weight.device)
+
+        new_derived_k[i] = M @ derived_weight[i]
+        new_derived_q[i] = M @ derived_weight[i]
+    
+    new_derived_k = new_derived_k.view(-1, new_derived_k.shape[-1])
+    new_derived_q = new_derived_q.view(-1, new_derived_q.shape[-1])
+
     derived_layer_k.weight.data.copy_(new_derived_k)
     derived_layer_q.weight.data.copy_(new_derived_q)
 
@@ -99,6 +113,7 @@ def orthogonalign_model_layerwise(
     layers: nn.ModuleList | nn.Sequential,
     mapping: dict[int, int],
     mode: OrthogonalignMode | None = None,
+    num_weight_groups: int = 1,
     cache_paths: dict[str, str] = {},  
     k_name: str = "self_attn.k_proj",
     q_name: str = "self_attn.q_proj",
@@ -116,6 +131,7 @@ def orthogonalign_model_layerwise(
                 base_layer = from_layer,
                 derived_layer = to_layer,
                 mode = mode,
+                num_weight_groups = num_weight_groups,
             ),
             cache_path = cache_path,
             k_name = k_name,
