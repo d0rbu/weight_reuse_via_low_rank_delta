@@ -1,6 +1,7 @@
 import threading
 import torch as th
 import torch.nn as nn
+from warnings import warn
 from enum import StrEnum
 from torch.futures import Future
 from typing import Self
@@ -57,8 +58,8 @@ class LoRAfiedLinear(nn.Module):
         assert isinstance(derived, nn.Linear) or isinstance(derived, LoRAfiedLinear), "derived should be nn.Linear or LoRAfiedLinear"
         assert base.weight.shape == derived.weight.shape, "base and derived should have same shape"
         assert rank > 0, "rank should be positive"
-        assert approximate_lora or num_weight_groups is None, "num_weight_groups only applicable if approximate_lora=True"
-        assert approximate_lora or weight_group_axis is None, "weight_group_axis only applicable if approximate_lora=True"
+        if not approximate_lora and (num_weight_groups is not None or weight_group_axis is not None):
+            warn("num_weight_groups or weight_group_axis was specified, but approximate_lora is False so these arguments have no effect.")
 
         if num_weight_groups is None:
             num_weight_groups = 1
