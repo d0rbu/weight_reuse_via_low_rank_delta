@@ -10,6 +10,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer, PreTrainedModel, P
 from core.lorafy.mappings import layer_mappings
 from core.lorafy.structured_lorafy import lorafy_parameters_layerwise
 from core.orthogonalign.orthogonalign_model import orthogonalign_model_layerwise, OrthogonalignMode
+from core.permutalign.permutalign_model import PermutalignMode, permutalign_model
 from core.dispatch import dispatch
 from core.utils import get_param_ancestors, log_error, log_warn, log_info, log_info_1, Verbosity, powerset, hash
 from itertools import product, chain
@@ -126,8 +127,11 @@ def lorafy_lm_parameter_grid_eval(
     base_layers: Sequence[int] | int = (0,),
     weight_group_configs: list[WeightGroupConfig] | WeightGroupConfig = (1, 0),
     orthogonalign: list[OrthogonalignMode] | OrthogonalignMode | None = None,
-    orthogonalign_k_name: str = "self_attn.k_proj",
-    orthogonalign_q_name: str = "self_attn.q_proj",
+    permutalign: list[PermutalignMode] | PermutalignMode = PermutalignMode.IDENTITY,
+    k_name: str = "self_attn.k_proj",
+    q_name: str = "self_attn.q_proj",
+    v_name: str = "self_attn.v_proj",
+    o_name: str = "self_attn.o_proj",
     raw_results_dir: os.PathLike | str = "raw_results",
     cache_dir: os.PathLike | str = ".cache",
     verbosity: str = "INFO",
@@ -147,9 +151,14 @@ def lorafy_lm_parameter_grid_eval(
         orthogonalign = [orthogonalign] * len(mappings)
     elif orthogonalign is None:
         orthogonalign = [None] * len(mappings)
+    
+    if isinstance(permutalign, str):
+        permutalign = [permutalign] * len(mappings)
 
     assert len(orthogonalign) == len(mappings), "#orthogonalign does not match #mappings!"
+    assert len(permutalign) == len(mappings), "#permutalign does not match #mappings!"
     assert all(orthogonalign_mode in OrthogonalignMode.__members__ for orthogonalign_mode in orthogonalign), f"Invalid orthogonalign modes {orthogonalign}"
+    assert all(permutalign_mode in PermutalignMode.__members__ for permutalign_mode in permutalign), f"Invalid permutalign modes {permutalign}"
 
     output_dir = os.path.join(output_dir, model_name)
     output_path = os.path.join(output_dir, "results.json")
@@ -184,33 +193,25 @@ def lorafy_lm_parameter_grid_eval(
         with open(output_path, "r", encoding="utf-8") as output_file:
             raw_full_results = json.load(output_file)
 
-        for orthogonalign_str, raw_orthogonalign_results in raw_full_results.items():
-            orthogonalign_key = None if orthogonalign_str == NONE_STRING else orthogonalign_str
-            orthogonalign_results = {}
-            for num_weight_groups_str, raw_num_weight_groups_results in raw_orthogonalign_results.items():
-                num_weight_groups = int(num_weight_groups_str) if num_weight_groups_str.isdigit() else num_weight_groups_str
-                num_weight_groups_results = {}
-                for weight_group_axis_str, raw_weight_group_axis_results in raw_num_weight_groups_results.items():
-                    weight_group_axis = int(weight_group_axis_str)
-                    weight_group_axis_results = {}
-                    for rank_str, raw_rank_results in raw_weight_group_axis_results.items():
-                        rank = float(rank_str)
-                        rank_results = {}
-                        for param_names_str, raw_param_results in raw_rank_results.items():
-                            param_results = {}
-                            for mapping_str, raw_task_results in raw_param_results.items():
-                                mapping = int(mapping_str) if mapping_str.isdigit() else mapping_str
-                                param_results[mapping] = raw_task_results
-                            rank_results[param_names_str] = param_results
-                        weight_group_axis_results[rank] = rank_results
-                    num_weight_groups_results[weight_group_axis] = weight_group_axis_results
-                orthogonalign_results[num_weight_groups] = num_weight_groups_results
-            full_results[orthogonalign_key] = orthogonalign_results
+        for permutalignment_str, raw_permutalign_results in raw_full_results.items():
+            permutalignment = PermutalignMode(permutalignment_str)
+            for orthogonalign_str, raw_orthogonalign_results in raw_permutalign_results.items():
+                orthogonalign_key = None if orthogonalign_str == NONE_STRING else orthogonalign_str
+                for num_weight_groups_str, raw_num_weight_groups_results in raw_orthogonalign_results.items():
+                    num_weight_groups = int(num_weight_groups_str) if num_weight_groups_str.isdigit() else num_weight_groups_str
+                    for weight_group_axis_str, raw_weight_group_axis_results in raw_num_weight_groups_results.items():
+                        weight_group_axis = int(weight_group_axis_str)
+                        for rank_str, raw_rank_results in raw_weight_group_axis_results.items():
+                            rank = float(rank_str)
+                            for param_names_str, raw_param_results in raw_rank_results.items():
+                                for mapping_str, raw_task_results in raw_param_results.items():
+                                    mapping = int(mapping_str) if mapping_str.isdigit() else mapping_str
+                                    full_results[permutalignment][orthogonalign_key][num_weight_groups][weight_group_axis][rank][param_names_str][mapping] = raw_task_results
 
         del raw_full_results
 
     exp_idx = -1
-    for orthogonalign_mode, weight_group_config, rank, param_names in product(orthogonalign, weight_group_configs, ranks, param_name_combinations):
+    for permutalign_mode, orthogonalign_mode, weight_group_config, rank, param_names in product(permutalign, orthogonalign, weight_group_configs, ranks, param_name_combinations):
         if not isinstance(param_names, tuple):
             param_names = tuple(param_names)
 
@@ -234,9 +235,9 @@ def lorafy_lm_parameter_grid_eval(
             if orthogonalign_mode is not None and not param_mappings_are_equal:
                 log_warn(f"Orthogonalign mode {orthogonalign_mode} is set but parameter mappings are not equal, using the mapping corresponding to the orthogonaligned or first parameter", verbosity)
                 if orthogonalign_mode == OrthogonalignMode.K:
-                    orthogonalign_name = orthogonalign_k_name
+                    orthogonalign_name = k_name
                 elif orthogonalign_mode == OrthogonalignMode.Q:
-                    orthogonalign_name = orthogonalign_q_name
+                    orthogonalign_name = q_name
 
                 if orthogonalign_name in param_names:
                     orthogonalign_mapping_idx = param_mappings[param_names.index(orthogonalign_name)]
@@ -249,8 +250,8 @@ def lorafy_lm_parameter_grid_eval(
                 param_mappings = param_mappings[0]
 
             log_info(f"Evaluating the following config:\nNum weight groups: {num_weight_groups}\n" \
-                     f"Weight group axis: {weight_group_axis}\nRank: {rank}\nParameters: {param_names}" \
-                     f"Orthogonalignment: {orthogonalign_mode}", verbosity)
+                     f"Weight group axis: {weight_group_axis}\nRank: {rank}\nParameters: {param_names}\n" \
+                     f"Orthogonalignment: {orthogonalign_mode}\nPermutalignment: {permutalign_mode}\n", verbosity)
             log_info_1(f"Mappings: {param_mappings}", verbosity)
 
             if isinstance(param_mappings, Mapping):  # if it is just a single mapping
@@ -268,9 +269,11 @@ def lorafy_lm_parameter_grid_eval(
                 (layer_to, layer_from): hash(f"{model_name}{orthogonalign_mode}{layer_from}{layer_to}")
                 for layer_to, layer_from in orthogonalign_mapping.items()
             } if orthogonalign_mode else None
+            permutalign_hash = hash(f"{model_name}{permutalign_mode}")
             log_info_1(f"Experiment hash: {experiment_hash}\n" \
                        f"LoRAfied parameter cache hashes: {lorafied_params_hashes}\n" \
-                       f"Orthogonalign cache hashes:", verbosity)
+                       f"Orthogonalign cache hashes: {orthogonalign_hashes}\n" \
+                       f"Permutalign hash: {permutalign_hash}\n", verbosity)
 
             lorafy_cache_paths = [
                 os.path.join(
@@ -286,6 +289,11 @@ def lorafy_lm_parameter_grid_eval(
                     str(orthogonalign_hash),
                 ) for (layer_to, layer_from), orthogonalign_hash in orthogonalign_hashes.items()
             } if orthogonalign_mode else {}
+            permutalign_cache_path = os.path.join(
+                cache_dir,
+                "permutalign",
+                str(permutalign_hash),
+            )
             raw_output_filepath = os.path.join(
                 output_dir,
                 raw_results_dir,
@@ -300,7 +308,8 @@ def lorafy_lm_parameter_grid_eval(
             cached_output_file = raw_output_filepath if os.path.exists(raw_output_filepath) else None
 
             log_info(f"Checking results caches...", verbosity)
-            if cached_output_results := full_results.get(orthogonalign_mode, {}) \
+            if cached_output_results := full_results.get(permutalign_mode, {}) \
+                                                    .get(orthogonalign_mode, {}) \
                                                     .get(num_weight_groups, {}) \
                                                     .get(weight_group_axis, {}) \
                                                     .get(rank, {}) \
@@ -348,6 +357,16 @@ def lorafy_lm_parameter_grid_eval(
                 log_info(f"Initializing model and tokenizer...", verbosity)
                 model, tokenizer, layers = get_model_tokenizer_and_layers(model_name, blocks_name)
 
+                if permutalign_mode:
+                    log_info(f"Permutaligning the model...", verbosity)
+                    permutalign_model(
+                        layers,
+                        permutalign_mode,
+                        cache_path = permutalign_cache_path,
+                        verbosity = verbosity,
+                        move_device = move_device
+                    )
+
                 if orthogonalign_mode:
                     log_info(f"Orthogonaligning the model...", verbosity)
                     orthogonalign_model_layerwise(
@@ -356,8 +375,8 @@ def lorafy_lm_parameter_grid_eval(
                         orthogonalign_mode,
                         num_weight_groups = num_weight_groups,
                         cache_paths = orthogonalign_cache_paths,
-                        k_name = orthogonalign_k_name,
-                        q_name = orthogonalign_q_name,
+                        k_name = k_name,
+                        q_name = q_name,
                         move_device = move_device
                     )
 
@@ -408,7 +427,7 @@ def lorafy_lm_parameter_grid_eval(
 
             results = results["results"]
 
-            full_results[num_weight_groups][weight_group_axis][rank][param_names_str][mapping_key] = results
+            full_results[permutalign_mode][orthogonalign_mode][num_weight_groups][weight_group_axis][rank][param_names_str][mapping_key] = results
 
     with open(output_path, "w", encoding="utf-8") as f:
         json.dump(full_results, f, indent=2)
@@ -437,9 +456,12 @@ if __name__ == "__main__":
     parser.add_argument("--ignore_uncached_results", action="store_true", help="Ignore uncached results")
     parser.add_argument("--weight_group_configs", type=list[tuple[int | str, int]], default=[(1, 0)], help=f"Weight group configs, tuples of (num_weight_groups, weight_group_axis). num_weight_groups can also be the literal \"{WeightGroups.HEADS}\" to match number of attention heads.")
     parser.add_argument("--process_timeout", type=int, default=3600, help=f"If multiple processes are running and we run into a file being processed by another process, consider the other process dead if it has been at least this many seconds.")
-    parser.add_argument("--orthogonalign_mode", type=list[str] | str, default=None, help="null to keep models as they are, otherwise pass a string literal \"k\"/\"q\" or list of strings corresponding to the mappings. It should tell us which matrix (k or q) to orthogonalign.")
-    parser.add_argument("--orthogonalign_k_name", type=str, default="self_attn.k_proj", help="Name of the k matrix for orthogonalignment")
-    parser.add_argument("--orthogonalign_q_name", type=str, default="self_attn.q_proj", help="Name of the q matrix for orthogonalignment")
+    parser.add_argument("--orthogonalign", type=list[str] | str, default=None, help="null to keep models as they are, otherwise pass a string literal \"k\"/\"q\" or list of strings corresponding to the mappings. It should tell us which matrix (k or q) to orthogonalign.")
+    parser.add_argument("--permutalign", type=list[str] | str, default=PermutalignMode.IDENTITY, help="Either \"identity\" or \"optimize\", or a list of those strings. It should tell us which permutalignment mode(s) to use, identity by default.")
+    parser.add_argument("--k_name", type=str, default="self_attn.k_proj", help="Name of the k matrix for orthogonalignment/permutalignment")
+    parser.add_argument("--q_name", type=str, default="self_attn.q_proj", help="Name of the q matrix for orthogonalignment/permutalignment")
+    parser.add_argument("--v_name", type=str, default="self_attn.v_proj", help="Name of the v matrix for orthogonalignment/permutalignment")
+    parser.add_argument("--o_name", type=str, default="self_attn.o_proj", help="Name of the o matrix for orthogonalignment/permutalignment")
     args = parser.parse_args()
 
     kwargs = vars(args)
