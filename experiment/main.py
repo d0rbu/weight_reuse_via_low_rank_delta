@@ -128,7 +128,7 @@ def lorafy_lm_parameter_grid_eval(
     weight_group_configs: list[WeightGroupConfig] | WeightGroupConfig = (1, 0),
     orthogonalign: list[OrthogonalignMode] | OrthogonalignMode | None = None,
     permutalign: list[PermutalignMode] | PermutalignMode = PermutalignMode.IDENTITY,
-    permutalignment_samples: str = "main",
+    permutalignment_samples: str = "redpajama-tiny",
     k_name: str = "self_attn.k_proj",
     q_name: str = "self_attn.q_proj",
     v_name: str = "self_attn.v_proj",
@@ -476,7 +476,7 @@ if __name__ == "__main__":
     parser.add_argument("--process_timeout", type=int, default=3600, help=f"If multiple processes are running and we run into a file being processed by another process, consider the other process dead if it has been at least this many seconds.")
     parser.add_argument("--orthogonalign", type=list[str] | str, default=None, help="null to keep models as they are, otherwise pass a string literal \"k\"/\"q\" or list of strings corresponding to the mappings. It should tell us which matrix (k or q) to orthogonalign.")
     parser.add_argument("--permutalign", type=list[str] | str, default=PermutalignMode.IDENTITY, help="Either \"identity\" or \"optimize\", or a list of those strings. It should tell us which permutalignment mode(s) to use, identity by default.")
-    parser.add_argument("--permutalignment_samples", type=str, default="main", help="Which samples to use for permutalignment (check experiments/samples directory)")
+    parser.add_argument("--permutalignment_samples", type=str, default="redpajama-tiny", help="Which samples to use for permutalignment (check experiments/samples directory)")
     parser.add_argument("--k_name", type=str, default="self_attn.k_proj", help="Name of the k matrix for orthogonalignment/permutalignment")
     parser.add_argument("--q_name", type=str, default="self_attn.q_proj", help="Name of the q matrix for orthogonalignment/permutalignment")
     parser.add_argument("--v_name", type=str, default="self_attn.v_proj", help="Name of the v matrix for orthogonalignment/permutalignment")
