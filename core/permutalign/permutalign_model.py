@@ -155,7 +155,7 @@ def calculate_permutation_matrices(
 
         similarity = initial_attn_map @ masked_attn_map
 
-        permutation_matrix = pygm.linear_solvers.hungarian(similarity)
+        permutation_matrix = pygm.linear_solvers.hungarian(-similarity)
 
         permutation_matrices.append(permutation_matrix)
     
