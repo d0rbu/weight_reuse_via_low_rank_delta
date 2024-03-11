@@ -156,11 +156,6 @@ def lorafy_lm_parameter_grid_eval(
     if isinstance(permutalign, str):
         permutalign = [permutalign] * len(mappings)
 
-    assert len(orthogonalign) == len(mappings), "#orthogonalign does not match #mappings!"
-    assert len(permutalign) == len(mappings), "#permutalign does not match #mappings!"
-    assert all(orthogonalign_mode in OrthogonalignMode.__members__ for orthogonalign_mode in orthogonalign), f"Invalid orthogonalign modes {orthogonalign}"
-    assert all(permutalign_mode in PermutalignMode.__members__ for permutalign_mode in permutalign), f"Invalid permutalign modes {permutalign}"
-
     output_dir = os.path.join(output_dir, model_name)
     output_path = os.path.join(output_dir, "results.json")
     verbosity = Verbosity[verbosity]
@@ -188,6 +183,11 @@ def lorafy_lm_parameter_grid_eval(
         log_info("Initializing layer mappings...", verbosity)
         mappings = layer_mappings(num_layers, base_layers)
         log_info_1(str(mappings), verbosity)
+
+    assert len(orthogonalign) == len(mappings), f"number of orthogonalignments ({len(orthogonalign)}) does not match number of mappings ({len(mappings)})!"
+    assert len(permutalign) == len(mappings), f"number of permutalignments ({len(permutalign)}) does not match number of mappings ({len(mappings)})!"
+    assert all(orthogonalign_mode in OrthogonalignMode.__members__ for orthogonalign_mode in orthogonalign), f"Invalid orthogonalign modes {orthogonalign}"
+    assert all(permutalign_mode in PermutalignMode.__members__ for permutalign_mode in permutalign), f"Invalid permutalign modes {permutalign}"
 
     full_results = RecursiveDefaultDict()
     if os.path.exists(output_path):
@@ -361,7 +361,7 @@ def lorafy_lm_parameter_grid_eval(
                 if permutalign_mode:
                     log_info(f"Permutaligning the model...", verbosity)
 
-                    with open(os.path.join("experiment", "samples", permutalignment_samples), "r") as f:
+                    with open(os.path.join("experiment", "samples", f"{permutalignment_samples}.json"), "r") as f:
                         samples = json.load(f)  # list of strings
                     input_ids = tokenizer(samples, return_tensors="pt", padding=True, truncation=True)
                     _, attn_maps = model(
@@ -474,8 +474,8 @@ if __name__ == "__main__":
     parser.add_argument("--ignore_uncached_results", action="store_true", help="Ignore uncached results")
     parser.add_argument("--weight_group_configs", type=list[tuple[int | str, int]], default=[(1, 0)], help=f"Weight group configs, tuples of (num_weight_groups, weight_group_axis). num_weight_groups can also be the literal \"{WeightGroups.HEADS}\" to match number of attention heads.")
     parser.add_argument("--process_timeout", type=int, default=3600, help=f"If multiple processes are running and we run into a file being processed by another process, consider the other process dead if it has been at least this many seconds.")
-    parser.add_argument("--orthogonalign", type=list[str] | str, default=None, help="null to keep models as they are, otherwise pass a string literal \"k\"/\"q\" or list of strings corresponding to the mappings. It should tell us which matrix (k or q) to orthogonalign.")
-    parser.add_argument("--permutalign", type=list[str] | str, default=PermutalignMode.IDENTITY, help="Either \"identity\" or \"optimize\", or a list of those strings. It should tell us which permutalignment mode(s) to use, identity by default.")
+    parser.add_argument("--orthogonalign", type=list[str], default=None, help="null to keep models as they are, otherwise pass a string literal \"k\"/\"q\" or list of strings corresponding to the mappings. It should tell us which matrix (k or q) to orthogonalign.")
+    parser.add_argument("--permutalign", type=list[str], default=PermutalignMode.IDENTITY, help="Either \"identity\" or \"optimize\", or a list of those strings. It should tell us which permutalignment mode(s) to use, identity by default.")
     parser.add_argument("--permutalignment_samples", type=str, default="redpajama-tiny", help="Which samples to use for permutalignment (check experiments/samples directory)")
     parser.add_argument("--k_name", type=str, default="self_attn.k_proj", help="Name of the k matrix for orthogonalignment/permutalignment")
     parser.add_argument("--q_name", type=str, default="self_attn.q_proj", help="Name of the q matrix for orthogonalignment/permutalignment")
