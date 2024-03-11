@@ -1,9 +1,12 @@
 import os
 import torch as th
 import torch.nn as nn
+import pygmtools as pygm
 from core.utils import Verbosity, log_warn
 from enum import StrEnum
-from dataclasses import dataclass
+
+
+pygm.set_backend('pytorch')
 
 
 class PermutalignMode(StrEnum):
@@ -13,123 +16,140 @@ class PermutalignMode(StrEnum):
 
 def permutalign_model(
     layers: nn.ModuleList | nn.Sequential,
-    num_weight_groups: int,
+    num_heads: int,
     mode: PermutalignMode = PermutalignMode.OPTIMIZE,
     cache_path: str | None = None,
     k_name: str = "self_attn.k_proj",
     q_name: str = "self_attn.q_proj",
     v_name: str = "self_attn.v_proj",
     o_name: str = "self_attn.o_proj",
+    attn_maps: th.Tensor | None = None,
     verbosity: Verbosity = Verbosity.INFO,
     move_device: str | None = None,
 ) -> None:
-    base_layer = layers[config.base_layer]
-    derived_layer = layers[config.derived_layer]
+    if mode == PermutalignMode.IDENTITY:
+        return
 
-    base_layer_k = getattr(base_layer, k_name)
-    base_layer_q = getattr(base_layer, q_name)
-    derived_layer_k = getattr(derived_layer, k_name)
-    derived_layer_q = getattr(derived_layer, q_name)
-
+    assert attn_maps is not None, "attn_maps must be provided when mode is not identity"
+    permutation_matrices = None
     try:
-        if cache_path and (cached_kq := th.load(cache_path, map_location=move_device or "cpu")):
+        if cache_path and (permutation_matrices := th.load(cache_path, map_location=move_device or "cpu")):
             # Test if we can properly load the cache file
-            assert set(cached_kq.keys()) == {"base", "derived", "mode", OrthogonalignMode.K, OrthogonalignMode.Q}, f"Cache file does not contain the expected keys"
-            assert cached_kq["base"] == config.base_layer, f"Cache file does not contain the expected base layer {config.base_layer}, found {cached_kq['base']} instead"
-            assert cached_kq["derived"] == config.derived_layer, f"Cache file does not contain the expected derived layer {config.derived_layer}, found {cached_kq['derived']} instead"
-            assert cached_kq["mode"] == config.mode, f"Cache file does not contain the expected mode {config.mode}, found {cached_kq['mode']} instead"
-            assert isinstance(cached_kq[OrthogonalignMode.K], th.Tensor), f"Cache file does not contain the expected K weight"
-            assert isinstance(cached_kq[OrthogonalignMode.Q], th.Tensor), f"Cache file does not contain the expected Q weight"
-
-            derived_layer_k.weight.data.copy_(cached_kq[OrthogonalignMode.K])
-            derived_layer_q.weight.data.copy_(cached_kq[OrthogonalignMode.Q])
-
-            del cached_kq[OrthogonalignMode.K], cached_kq[OrthogonalignMode.Q]
-            del cached_kq
-
-            th.cuda.empty_cache()
-
-            return
+            assert len(permutation_matrices) == len(layers), f"Cache file does not contain the expected number of layers"
+            assert all(isinstance(matrix, th.Tensor) for matrix in permutation_matrices), f"Cache file does not contain the expected permutation matrices"
     except RuntimeError as e:
         log_warn(f"Unable to read cache file {cache_path}, recalculating...", verbosity)
         os.remove(cache_path)
+        permutation_matrices = None
 
-    # Solve the procrustes problem:
-    # Minimize ||MA - B||_F subject to M^TM = I
-    # Solution: M = UV^T, where UΣV^T = SVD(BA^T)
-    # https://en.wikipedia.org/wiki/Orthogonal_Procrustes_problem
+    if permutation_matrices is None:
+        permutation_matrices = calculate_permutation_matrices(
+            layers,
+            num_heads,
+            k_name,
+            q_name,
+            v_name,
+            o_name,
+            attn_maps,
+            verbosity,
+            move_device,
+        )
 
-    derived_weight = derived_layer_k if config.mode == OrthogonalignMode.K else derived_layer_q
-    base_weight = base_layer_k if config.mode == OrthogonalignMode.K else base_layer_q
-    derived_weight, base_weight = derived_weight.weight.data.to(move_device), base_weight.weight.data.to(move_device)
+    for layer_idx, layer in enumerate(layers):
+        k = getattr(layer, k_name)
+        q = getattr(layer, q_name)
+        v = getattr(layer, v_name)
+        o = getattr(layer, o_name)
 
-    # Split it up by groups
-    base_weight = base_weight.view(config.num_weight_groups, -1, base_weight.shape[-1])
-    derived_weight = derived_weight.view(config.num_weight_groups, -1, derived_weight.shape[-1])
+        head_dim = k.weight.shape[0] // num_heads
 
-    # Calculate the orthogonaligned weight groups. assumes same number of groups for both base and derived weights, so no gqa or mqa support for now
-    new_derived_k = th.empty_like(derived_weight)
-    new_derived_q = th.empty_like(derived_weight)
+        permutation_matrix = permutation_matrices[layer_idx]
 
-    for i in range(config.num_weight_groups):
-        U, _, Vh = th.linalg.svd(base_weight[i] @ derived_weight[i].T)
-        M = U @ Vh
+        # kronecker product with identity (apply permutation on a head-level)
+        permutation_matrix = th.kron(permutation_matrix, th.eye(head_dim))
 
-        del U, Vh
+        if move_device:
+            permutation_matrix = permutation_matrix.to(move_device)
+            permuted_k = permutation_matrix @ k.weight.data.to(move_device)
+            permuted_q = permutation_matrix @ q.weight.data.to(move_device)
+            permuted_v = permutation_matrix @ v.weight.data.to(move_device)
+            permuted_o = o.weight.data.to(move_device) @ permutation_matrix.T
+        else:
+            permuted_k = permutation_matrix.to(k.weight.device) @ k.weight.data
+            permuted_q = permutation_matrix.to(q.weight.device) @ q.weight.data
+            permuted_v = permutation_matrix.to(v.weight.device) @ v.weight.data
+            permuted_o = o.weight.data @ permutation_matrix.T.to(o.weight.device)
 
-        M = M.to(derived_weight.device)
-
-        new_derived_k[i] = M @ derived_weight[i]
-        new_derived_q[i] = M @ derived_weight[i]
-    
-    new_derived_k = new_derived_k.view(-1, new_derived_k.shape[-1])
-    new_derived_q = new_derived_q.view(-1, new_derived_q.shape[-1])
-
-    derived_layer_k.weight.data.copy_(new_derived_k)
-    derived_layer_q.weight.data.copy_(new_derived_q)
-
-    del new_derived_k, new_derived_q, M
+        # Apply permutation matrices
+        k.weight.data.copy_(permuted_k)
+        q.weight.data.copy_(permuted_q)
+        v.weight.data.copy_(permuted_v)
+        o.weight.data.copy_(permuted_o)
 
     if cache_path:
         os.makedirs(os.path.dirname(cache_path), exist_ok=True)
         th.save(
-            {
-                "base": config.base_layer,
-                "derived": config.derived_layer,
-                "mode": config.mode,
-                OrthogonalignMode.K: new_derived_k,
-                OrthogonalignMode.Q: new_derived_q,
-            },
+            permutation_matrices,
             cache_path,
         )
 
+def calculate_permutation_matrices(
+    layer: nn.ModuleList | nn.Sequential,
+    num_heads: int,
+    k_name: str,
+    q_name: str,
+    v_name: str,
+    o_name: str,
+    attn_maps: th.Tensor,
+    verbosity: Verbosity,
+    move_device: str | None,
+) -> list[th.Tensor]:
+    if move_device is None:
+        move_device = "cpu"
 
-def orthogonalign_model_layerwise(
-    layers: nn.ModuleList | nn.Sequential,
-    mapping: dict[int, int],
-    mode: OrthogonalignMode | None = None,
-    num_weight_groups: int = 1,
-    cache_paths: dict[str, str] = {},  
-    k_name: str = "self_attn.k_proj",
-    q_name: str = "self_attn.q_proj",
-    move_device: str | None = None,
-) -> None:
-    if mode is None:
-        return
+    initial_k = getattr(layer[0], k_name).weight.data
+    initial_q = getattr(layer[0], q_name).weight.data
+    initial_v = getattr(layer[0], v_name).weight.data
+    initial_o = getattr(layer[0], o_name).weight.data
 
-    for to_layer, from_layer in mapping.items():
-        cache_path = cache_paths.get((to_layer, from_layer), None)
+    if move_device:
+        initial_k = initial_k.to(move_device)
+        initial_q = initial_q.to(move_device)
+        initial_v = initial_v.to(move_device)
+        initial_o = initial_o.to(move_device)
+        initial_attn_map = attn_maps[0].to(move_device)
 
-        orthogonalign_layer(
-            layers = layers,
-            orthogonalign_config = OrthogonalignConfig(
-                base_layer = from_layer,
-                derived_layer = to_layer,
-                mode = mode,
-                num_weight_groups = num_weight_groups,
-            ),
-            cache_path = cache_path,
-            k_name = k_name,
-            q_name = q_name,
-            move_device = move_device,
-        )
+    initial_attn_map = initial_attn_map.transpose(0, 1)  # (H, B, T, T)
+    initial_attn_map = initial_attn_map[initial_attn_map > 0.0].view(attn_map.shape[1], -1).transpose(0, 1)  # (H, B, T, T) -> (A, H)
+
+    head_dim = initial_k.shape[0] // num_heads
+    permutation_matrices = [th.eye(head_dim).to(move_device)]  # center around layer 0
+
+    for i, (layer, attn_map) in enumerate(zip(layer[1:], attn_maps[1:]), 1):
+        # solve LAP for permutation matrix
+        k = getattr(layer, k_name).weight.data
+        q = getattr(layer, q_name).weight.data
+        v = getattr(layer, v_name).weight.data
+        o = getattr(layer, o_name).weight.data
+
+        if move_device:
+            k = k.to(move_device)
+            q = q.to(move_device)
+            v = v.to(move_device)
+            o = o.to(move_device)
+        else:
+            initial_k = initial_k.to(k.device)
+            initial_q = initial_q.to(q.device)
+            initial_v = initial_v.to(v.device)
+            initial_o = initial_o.to(o.device)
+
+        masked_attn_map = attn_map.transpose(0, 1)
+        masked_attn_map = masked_attn_map[masked_attn_map > 0.0].view(attn_map.shape[1], -1)  # (H, B, T, T) -> (H, A)
+
+        similarity = initial_attn_map @ masked_attn_map
+
+        permutation_matrix = pygm.linear_solvers.hungarian(similarity)
+
+        permutation_matrices.append(permutation_matrix)
+    
+    return permutation_matrices
