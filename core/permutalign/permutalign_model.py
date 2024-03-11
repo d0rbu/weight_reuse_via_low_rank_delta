@@ -18,6 +18,7 @@ def permutalign_model(
     layers: nn.ModuleList | nn.Sequential,
     num_heads: int,
     mode: PermutalignMode = PermutalignMode.OPTIMIZE,
+    base_layer: int = 0,
     cache_path: str | None = None,
     k_name: str = "self_attn.k_proj",
     q_name: str = "self_attn.q_proj",
@@ -46,11 +47,12 @@ def permutalign_model(
         permutation_matrices = calculate_permutation_matrices(
             layers,
             num_heads,
+            attn_maps,
+            base_layer,
             k_name,
             q_name,
             v_name,
             o_name,
-            attn_maps,
             verbosity,
             move_device,
         )
@@ -96,36 +98,41 @@ def permutalign_model(
 def calculate_permutation_matrices(
     layer: nn.ModuleList | nn.Sequential,
     num_heads: int,
-    k_name: str,
-    q_name: str,
-    v_name: str,
-    o_name: str,
     attn_maps: th.Tensor,
-    verbosity: Verbosity,
-    move_device: str | None,
+    base_layer: int = 0,
+    k_name: str = "self_attn.k_proj",
+    q_name: str = "self_attn.q_proj",
+    v_name: str = "self_attn.v_proj",
+    o_name: str = "self_attn.o_proj",
+    verbosity: Verbosity = Verbosity.INFO,
+    move_device: str | None = None,
 ) -> list[th.Tensor]:
     if move_device is None:
         move_device = "cpu"
 
-    initial_k = getattr(layer[0], k_name).weight.data
-    initial_q = getattr(layer[0], q_name).weight.data
-    initial_v = getattr(layer[0], v_name).weight.data
-    initial_o = getattr(layer[0], o_name).weight.data
+    initial_k = getattr(layer[base_layer], k_name).weight.data
+    initial_q = getattr(layer[base_layer], q_name).weight.data
+    initial_v = getattr(layer[base_layer], v_name).weight.data
+    initial_o = getattr(layer[base_layer], o_name).weight.data
 
     if move_device:
         initial_k = initial_k.to(move_device)
         initial_q = initial_q.to(move_device)
         initial_v = initial_v.to(move_device)
         initial_o = initial_o.to(move_device)
-        initial_attn_map = attn_maps[0].to(move_device)
+        initial_attn_map = attn_maps[base_layer].to(move_device)
 
     initial_attn_map = initial_attn_map.transpose(0, 1)  # (H, B, T, T)
     initial_attn_map = initial_attn_map[initial_attn_map > 0.0].view(attn_map.shape[1], -1).transpose(0, 1)  # (H, B, T, T) -> (A, H)
 
     head_dim = initial_k.shape[0] // num_heads
-    permutation_matrices = [th.eye(head_dim).to(move_device)]  # center around layer 0
+    permutation_matrices = []
 
-    for i, (layer, attn_map) in enumerate(zip(layer[1:], attn_maps[1:]), 1):
+    for i, (layer, attn_map) in enumerate(zip(layer, attn_maps)):
+        if i == base_layer:  # the layer we are aligning to
+            permutation_matrices.append(th.eye(head_dim).to(move_device))
+            continue
+
         # solve LAP for permutation matrix
         k = getattr(layer, k_name).weight.data
         q = getattr(layer, q_name).weight.data

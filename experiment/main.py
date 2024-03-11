@@ -374,6 +374,7 @@ def lorafy_lm_parameter_grid_eval(
                         layers,
                         num_heads = config.num_attention_heads,
                         mode = permutalign_mode,
+                        base_layer = 0,
                         cache_path = permutalign_cache_path,
                         k_name = k_name,
                         q_name = q_name,
