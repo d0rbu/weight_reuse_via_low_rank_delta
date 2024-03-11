@@ -168,7 +168,8 @@ def calculate_model_params_llama(
     
     for param_name in per_layer_weights:
         if param_name in reduced_param_names:
-            per_layer_weights[param_name] *= result.rank * 2
+            per_layer_weights[param_name] *= result.rank
+            per_layer_weights[param_name] += (per_layer_weights[param_name] / result.num_weight_groups)
     
     per_layer_params = sum(per_layer_weights.values())
 
