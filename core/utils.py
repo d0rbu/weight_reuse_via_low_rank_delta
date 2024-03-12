@@ -30,6 +30,14 @@ def get_param_ancestors(model: nn.Module, param_name: str) -> list[nn.Module]:
 
     return ancestors, param_hierarchy
 
+def get_nested(module: nn.Module, name: str) -> nn.Module:
+    name_hierarchy = name.split(".")
+
+    for name in name_hierarchy:
+        module = getattr(module, name)
+
+    return module
+
 def powerset(iterable: Iterable, include_null_set: bool = False) -> Iterable:
     full_set = list(iterable)
     return chain.from_iterable(

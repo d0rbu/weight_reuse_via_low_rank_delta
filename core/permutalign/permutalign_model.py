@@ -2,7 +2,7 @@ import os
 import torch as th
 import torch.nn as nn
 import pygmtools as pygm
-from core.utils import Verbosity, log_warn
+from core.utils import Verbosity, log_warn, get_nested
 from enum import StrEnum
 
 
@@ -34,7 +34,7 @@ def permutalign_model(
     assert attn_maps is not None, "attn_maps must be provided when mode is not identity"
     permutation_matrices = None
     try:
-        if cache_path and (permutation_matrices := th.load(cache_path, map_location=move_device or "cpu")):
+        if cache_path and os.path.exists(cache_path) and (permutation_matrices := th.load(cache_path, map_location=move_device or "cpu")):
             # Test if we can properly load the cache file
             assert len(permutation_matrices) == len(layers), f"Cache file does not contain the expected number of layers"
             assert all(isinstance(matrix, th.Tensor) for matrix in permutation_matrices), f"Cache file does not contain the expected permutation matrices"
@@ -58,10 +58,10 @@ def permutalign_model(
         )
 
     for layer_idx, layer in enumerate(layers):
-        k = getattr(layer, k_name)
-        q = getattr(layer, q_name)
-        v = getattr(layer, v_name)
-        o = getattr(layer, o_name)
+        k = get_nested(layer, k_name)
+        q = get_nested(layer, q_name)
+        v = get_nested(layer, v_name)
+        o = get_nested(layer, o_name)
 
         head_dim = k.weight.shape[0] // num_heads
 
@@ -110,10 +110,10 @@ def calculate_permutation_matrices(
     if move_device is None:
         move_device = "cpu"
 
-    initial_k = getattr(layer[base_layer], k_name).weight.data
-    initial_q = getattr(layer[base_layer], q_name).weight.data
-    initial_v = getattr(layer[base_layer], v_name).weight.data
-    initial_o = getattr(layer[base_layer], o_name).weight.data
+    initial_k = get_nested(layer[base_layer], k_name).weight.data
+    initial_q = get_nested(layer[base_layer], q_name).weight.data
+    initial_v = get_nested(layer[base_layer], v_name).weight.data
+    initial_o = get_nested(layer[base_layer], o_name).weight.data
 
     if move_device:
         initial_k = initial_k.to(move_device)
@@ -134,10 +134,10 @@ def calculate_permutation_matrices(
             continue
 
         # solve LAP for permutation matrix
-        k = getattr(layer, k_name).weight.data
-        q = getattr(layer, q_name).weight.data
-        v = getattr(layer, v_name).weight.data
-        o = getattr(layer, o_name).weight.data
+        k = get_nested(layer, k_name).weight.data
+        q = get_nested(layer, q_name).weight.data
+        v = get_nested(layer, v_name).weight.data
+        o = get_nested(layer, o_name).weight.data
 
         if move_device:
             k = k.to(move_device)

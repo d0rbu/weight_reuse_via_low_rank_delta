@@ -1,7 +1,7 @@
 import os
 import torch as th
 import torch.nn as nn
-from core.utils import Verbosity, log_warn, log_info
+from core.utils import Verbosity, log_warn, get_nested
 from enum import StrEnum
 from dataclasses import dataclass
 
@@ -31,13 +31,13 @@ def orthogonalign_layer(
     base_layer = layers[config.base_layer]
     derived_layer = layers[config.derived_layer]
 
-    base_layer_k = getattr(base_layer, k_name)
-    base_layer_q = getattr(base_layer, q_name)
-    derived_layer_k = getattr(derived_layer, k_name)
-    derived_layer_q = getattr(derived_layer, q_name)
+    base_layer_k = get_nested(base_layer, k_name)
+    base_layer_q = get_nested(base_layer, q_name)
+    derived_layer_k = get_nested(derived_layer, k_name)
+    derived_layer_q = get_nested(derived_layer, q_name)
 
     try:
-        if cache_path and (cached_kq := th.load(cache_path, map_location=move_device or "cpu")):
+        if cache_path and os.path.exists(cache_path) and (cached_kq := th.load(cache_path, map_location=move_device or "cpu")):
             # Test if we can properly load the cache file
             assert set(cached_kq.keys()) == {"base", "derived", "mode", OrthogonalignMode.K, OrthogonalignMode.Q}, f"Cache file does not contain the expected keys"
             assert cached_kq["base"] == config.base_layer, f"Cache file does not contain the expected base layer {config.base_layer}, found {cached_kq['base']} instead"
@@ -86,14 +86,14 @@ def orthogonalign_layer(
 
         new_derived_k[i] = M @ derived_weight[i]
         new_derived_q[i] = M @ derived_weight[i]
+
+    del M
     
     new_derived_k = new_derived_k.view(-1, new_derived_k.shape[-1])
     new_derived_q = new_derived_q.view(-1, new_derived_q.shape[-1])
 
     derived_layer_k.weight.data.copy_(new_derived_k)
     derived_layer_q.weight.data.copy_(new_derived_q)
-
-    del new_derived_k, new_derived_q, M
 
     if cache_path:
         os.makedirs(os.path.dirname(cache_path), exist_ok=True)
@@ -127,7 +127,7 @@ def orthogonalign_model_layerwise(
 
         orthogonalign_layer(
             layers = layers,
-            orthogonalign_config = OrthogonalignConfig(
+            config = OrthogonalignConfig(
                 base_layer = from_layer,
                 derived_layer = to_layer,
                 mode = mode,
