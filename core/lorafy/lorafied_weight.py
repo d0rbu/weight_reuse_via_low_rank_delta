@@ -17,7 +17,13 @@ class LoRAfiedLinear(nn.Module):
     Approximation of a weight matrix as a sum of a base weight matrix and a low-rank matrix.
     Can be computed automatically using from_weight_delta().
     """
-    def __init__(self, base: nn.Module, up_proj: th.Tensor, down_proj: th.Tensor, device: th.device | str = "cuda") -> None:
+    def __init__(
+        self: Self,
+        base: nn.Module,
+        up_proj: th.Tensor,
+        down_proj: th.Tensor,
+        device: th.device | str = "cuda",
+    ) -> None:
         super().__init__()
 
         assert len(up_proj.shape) == 2, "up_proj should be 2D tensor of weights"
@@ -176,13 +182,13 @@ class LoRAfiedLinear(nn.Module):
         elif device == Device.WEIGHT:
             device = self.base.weight.device
 
-        self.base = self.base.to(device)
+        self.base.to(device)
         x = x.to(device)
 
         output = self.base(x)
 
         if move_back:
-            self.base = self.base.to(original_base_device)
+            self.base.to(original_base_device)
             x = x.to(original_input_device)
 
         future.set_result(output)
@@ -206,16 +212,16 @@ class LoRAfiedLinear(nn.Module):
         elif device == Device.WEIGHT:
             device = self.down_proj.weight.device
 
-        self.down_proj = self.down_proj.to(device)
-        self.up_proj = self.up_proj.to(device)
+        self.down_proj.to(device)
+        self.up_proj.to(device)
         x = x.to(device)
 
         hidden = self.down_proj(x)
         output = self.up_proj(hidden)
 
         if move_back:
-            self.down_proj = self.down_proj.to(original_lora_device)
-            self.up_proj = self.up_proj.to(original_lora_device)
+            self.down_proj.to(original_lora_device)
+            self.up_proj.to(original_lora_device)
             x = x.to(original_input_device)
 
         future.set_result(output)
