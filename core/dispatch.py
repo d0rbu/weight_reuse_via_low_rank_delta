@@ -24,12 +24,21 @@ def dispatch(
 
     for i, device in enumerate(block_mappings):
         blocks[i] = blocks[i].to(int(device))
-    
+
     for post_layer_parent, post_layer_name, post_layer in post_layers:
         setattr(post_layer_parent, post_layer_name, post_layer.to(int(devices[-1])))
 
+    # attach hooks to move data between devices only when necessary
+    changed_device_blocks = th.nonzero(devices[1:] != devices[:-1]).squeeze() + 1
+    for i in changed_device_blocks:
+        blocks[i].register_forward_pre_hook(block_device_pre_hook(devices[i]))
+
     th.cuda.empty_cache()
 
+def block_device_pre_hook(
+    device: th.Device,
+) -> callable[[nn.Module, th.Tensor], th.Tensor]:
+    return lambda module, input: input.to(device)
 
 def find_blocks(
     module: nn.Module,
