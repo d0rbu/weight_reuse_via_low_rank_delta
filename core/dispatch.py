@@ -55,7 +55,7 @@ def get_base_layer_devices_pre_hook(
     base_layer_devices = {}
 
     for child in module.modules():
-        if isinstance(child, LoRAfiedLinear):
+        if isinstance(child, LoRAfiedLinear) and isinstance(child.base, nn.Linear):
             base_layer_devices[child.base] = child.base.weight.device
     
     module._base_layer_devices = base_layer_devices
