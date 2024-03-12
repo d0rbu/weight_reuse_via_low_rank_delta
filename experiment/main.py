@@ -262,9 +262,9 @@ def lorafy_lm_parameter_grid_eval(
             full_mapping_json = json.dumps(param_mappings, sort_keys=True)
 
             experiment_hash = hash(f"{permutalign_mode}{orthogonalign_mode}{weight_group_config}{rank}{param_names}{full_mapping_json}")
-            lorafied_params_hashes = [hash(f"{weight_group_config}{model_name}{rank}{mapping_json}") for mapping_json in mapping_jsons]
+            lorafied_params_hashes = [hash(f"{permutalign_mode}{orthogonalign_mode}{weight_group_config}{model_name}{rank}{mapping_json}") for mapping_json in mapping_jsons]
             orthogonalign_hashes = {
-                (layer_to, layer_from): hash(f"{model_name}{orthogonalign_mode}{layer_from}{layer_to}")
+                (layer_to, layer_from): hash(f"{permutalign_mode}{model_name}{orthogonalign_mode}{layer_from}{layer_to}")
                 for layer_to, layer_from in orthogonalign_mapping.items()
             } if orthogonalign_mode else None
             permutalign_hash = hash(f"{model_name}{permutalign_mode}")
