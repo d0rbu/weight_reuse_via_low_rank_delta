@@ -1,10 +1,8 @@
 import os
 import json
-import math
 import matplotlib.pyplot as plt
-import numpy as np
+from typing import Self
 from core.permutalign.permutalign_model import PermutalignMode
-from core.orthogonalign.orthogonalign_model import OrthogonalignMode
 from transformers import AutoConfig, LlamaConfig, GemmaConfig, MistralConfig, PretrainedConfig
 from dataclasses import dataclass
 
@@ -19,6 +17,18 @@ class Result:
     param_name: str
     param_map: int
     value: float
+
+    def copy(self: Self) -> "Result":
+        return Result(
+            permutalign_mode=self.permutalign_mode,
+            orthogonalign_mode=self.orthogonalign_mode,
+            num_weight_groups=self.num_weight_groups,
+            weight_group_axis=self.weight_group_axis,
+            rank=self.rank,
+            param_name=self.param_name,
+            param_map=self.param_map,
+            value=self.value,
+        )
 
 
 default_result = Result(
@@ -35,7 +45,6 @@ default_result = Result(
 
 def filter_results(
     results_dir: os.PathLike | str,
-    results: list[Result],
     model_names: list[str] | None = None,
     permutalign_modes: set[str] | None = None,
     orthogonalign_modes: set[str] | None = None,
@@ -68,11 +77,9 @@ def filter_results(
         with open(vanilla_results_path, "r") as vanilla_results_file:
             vanilla_results = json.load(vanilla_results_file)
             if tasks is None:
-                tasks = set()
-                for task, task_results in vanilla_results.items():
-                    if len(vanilla_results.keys() & value_names) > 0:
-                        tasks.add(task)
+                tasks = set(vanilla_results.keys())
 
+            # if we are measuring accuracy, for example, remove tasks that don't have accuracy
             if len(task_value_name) == 0:
                 for task in tasks:
                     task_results = vanilla_results[task]
@@ -82,10 +89,8 @@ def filter_results(
                     else:
                         tasks.remove(task)
 
-            available_tasks = tasks & vanilla_results.keys()
-
             vanilla_result = default_result.copy()
-            vanilla_result.value = sum([vanilla_results[task][task_value_name[task]] for task in available_tasks]) / len(available_tasks)
+            vanilla_result.value = get_result_value(vanilla_results, tasks, task_value_name)
 
         with open(results_path, "r") as results_file:
             results = json.load(results_file)
@@ -132,6 +137,10 @@ def get_result_value(
     task_value_name: dict[str, str],
 ) -> float:
     available_tasks = tasks & results.keys()
+
+    if len(available_tasks) == 0:
+        return 0
+
     return sum([results[task][task_value_name[task]] for task in available_tasks]) / len(available_tasks)
 
 def plot_results(
@@ -199,7 +208,7 @@ RESULTS_FILE = "results.json"
 VANILLA_RESULTS_FILE = "vanilla_results.json"
 
 def visualize(
-    results_dir: os.PathLike | str = "outputs/",
+    results_dir: os.PathLike | str = "outputs",
     model_names: list[str] = ["meta-llama/Llama-2-7b-hf"],
     permutalign_modes: set[str] | None = None,
     orthogonalign_modes: set[str] | None = None,
@@ -207,7 +216,7 @@ def visualize(
     weight_group_axis: set[int] | None = None,
     ranks: set[float] | None = {1/4, 1/2},
     param_names: set[str] | None = ["self_attn.k_proj", "self_attn.q_proj", "self_attn.q_proj,self_attn.k_proj"],
-    param_maps: set[int | str] | None = set(0),
+    param_maps: set[int | str] | None = set((0,)),
     tasks: set[str] | None = None,
     plot_accuracy: bool = True,  # If false, plot perplexity
 ) -> None:
