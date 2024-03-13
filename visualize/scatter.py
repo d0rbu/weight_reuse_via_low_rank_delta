@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from typing import Self
 from core.permutalign.permutalign_model import PermutalignMode
 from transformers import AutoConfig, LlamaConfig, GemmaConfig, MistralConfig, PretrainedConfig
+from collections import OrderedDict
 from dataclasses import dataclass
 
 
@@ -42,7 +43,6 @@ default_result = Result(
     value=0.0,
 )
 
-
 def filter_results(
     results_dir: os.PathLike | str,
     model_names: list[str] | None = None,
@@ -59,15 +59,15 @@ def filter_results(
     value_names = ACCURACY_NAMES if plot_accuracy else PERPLEXITY_NAMES
     task_value_name = {}
     full_results = {}
-    allowed_property_values = {
-        "permutalign_mode": permutalign_modes,
-        "orthogonalign_mode": orthogonalign_modes,
-        "num_weight_groups": num_weight_groups,
-        "weight_group_axis": weight_group_axis,
-        "rank": ranks,
-        "param_name": param_names,
-        "param_map": param_maps,
-    }
+    allowed_property_values = OrderedDict([
+        ("permutalign_mode", permutalign_modes),
+        ("orthogonalign_mode", orthogonalign_modes),
+        ("num_weight_groups", num_weight_groups),
+        ("weight_group_axis", weight_group_axis),
+        ("rank", ranks),
+        ("param_name", param_names),
+        ("param_map", param_maps),
+    ])
 
     for model_name in model_names:
         model_results = []
@@ -81,13 +81,16 @@ def filter_results(
 
             # if we are measuring accuracy, for example, remove tasks that don't have accuracy
             if len(task_value_name) == 0:
+                to_remove = set()
                 for task in tasks:
                     task_results = vanilla_results[task]
                     task_value_names = task_results.keys() & value_names
                     if len(task_value_names) > 0:
                         task_value_name[task] = task_value_names.pop()
                     else:
-                        tasks.remove(task)
+                        to_remove.add(task)
+                
+                tasks -= to_remove
 
             vanilla_result = default_result.copy()
             vanilla_result.value = get_result_value(vanilla_results, tasks, task_value_name)
@@ -95,9 +98,13 @@ def filter_results(
         with open(results_path, "r") as results_file:
             results = json.load(results_file)
 
-            default_values = {result_property: default_value for result_property, default_value in vars(default_result).items() if result_property in allowed_property_values}
+            default_values = OrderedDict([
+                (result_property, default_value)
+                for result_property, default_value in vars(default_result).items()
+                if result_property in allowed_property_values.keys()
+            ])
 
-            update_full_results_recursive(model_results, results, list(default_values.items()), allowed_property_values, tasks, task_value_name)
+            update_full_results_recursive(model_results, results, list(reversed(default_values.items())), allowed_property_values, tasks, task_value_name)
 
         full_results[model_name] = model_results
 
@@ -115,7 +122,7 @@ def update_full_results_recursive(
     if len(default_values) == 0:
         result = vars(default_result)
         result.update(current_properties)
-        result.value = get_result_value(results, tasks, task_value_name)
+        result["value"] = get_result_value(results, tasks, task_value_name)
         full_results.append(Result(**result))
 
         return
@@ -124,12 +131,19 @@ def update_full_results_recursive(
     allowed_values = allowed_property_values[property_name]
 
     for property_value, property_results in results.items():
-        if allowed_values is None or property_value in allowed_values:
-            current_properties[property_name] = property_value
-            update_full_results_recursive(full_results, property_results, default_values, allowed_property_values, tasks, task_value_name, current_properties)
-            del current_properties[property_name]
+        if allowed_values is not None:
+            allowed_values_type = type(next(iter(allowed_values)))
+            if not isinstance(property_value, allowed_values_type):
+                property_value = allowed_values_type(property_value)
 
-    default_values.insert(0, (property_name, default_value))
+            if property_value not in allowed_values:
+                continue
+
+        current_properties[property_name] = property_value
+        update_full_results_recursive(full_results, property_results, default_values, allowed_property_values, tasks, task_value_name, current_properties)
+        del current_properties[property_name]
+
+    default_values.append((property_name, default_value))
 
 def get_result_value(
     results: list[Result],
@@ -214,26 +228,34 @@ def visualize(
     orthogonalign_modes: set[str] | None = None,
     num_weight_groups: set[int] | None = None,
     weight_group_axis: set[int] | None = None,
-    ranks: set[float] | None = {1/4, 1/2},
+    ranks: set[float] | None = {1/16, 1/8, 1/4, 1/2},
     param_names: set[str] | None = ["self_attn.k_proj", "self_attn.q_proj", "self_attn.q_proj,self_attn.k_proj"],
     param_maps: set[int | str] | None = set((0,)),
     tasks: set[str] | None = None,
     plot_accuracy: bool = True,  # If false, plot perplexity
 ) -> None:
-    param_maps = list(param_maps)
     model_lengths = [AutoConfig.from_pretrained(model_name).num_hidden_layers for model_name in model_names]
 
-    for i, param_map in enumerate(param_maps):
+    removed_param_maps = set()
+    added_param_maps = set()
+    for param_map in param_maps:
         if isinstance(param_map, (int, str)):
-            possible_param_maps = []
+            possible_param_maps = set()
             for model_length in model_lengths:
                 candidate_param_map = {
                     i: param_map for i in range(model_length)
                 }
 
-                possible_param_maps.append(candidate_param_map)
+                possible_param_maps.add(json.dumps(candidate_param_map, sort_keys=True))
 
-            param_maps.extend(possible_param_maps)
+            added_param_maps |= possible_param_maps
+
+            if isinstance(param_map, int):
+                removed_param_maps.add(param_map)
+                added_param_maps.add(str(param_map))
+
+    param_maps -= removed_param_maps
+    param_maps |= added_param_maps
 
     full_results = filter_results(
         results_dir=results_dir,
