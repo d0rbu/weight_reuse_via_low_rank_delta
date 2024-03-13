@@ -7,7 +7,7 @@ weight_group_configs:
   - ["heads", 0]  # group svd according to number of heads on axis 0
   - [1, 0]  # no grouping
 base_layers: [0]
-move_device: "cuda:0"
+move_device: "current"
 tasks: ["winogrande", "wikitext"]
 orthogonalign: ["k", "q"]
 permutalign: ["identity", "optimize"]
