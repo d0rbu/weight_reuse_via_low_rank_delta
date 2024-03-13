@@ -95,12 +95,14 @@ def filter_results(
             vanilla_result = default_result.copy()
             vanilla_result.value = get_result_value(vanilla_results, tasks, task_value_name)
 
+            model_results.append(vanilla_result)
+
         with open(results_path, "r") as results_file:
             results = json.load(results_file)
 
             default_values = OrderedDict([
                 (result_property, default_value)
-                for result_property, default_value in vars(default_result).items()
+                for result_property, default_value in vars(default_result.copy()).items()
                 if result_property in allowed_property_values.keys()
             ])
 
@@ -120,9 +122,16 @@ def update_full_results_recursive(
     current_properties: dict[str, int | float | str] = {},
 ) -> None:
     if len(default_values) == 0:
-        result = vars(default_result)
+        result = vars(default_result.copy())
         result.update(current_properties)
         result["value"] = get_result_value(results, tasks, task_value_name)
+
+        default_result_dict = vars(default_result)
+        result = {
+            key: type(default_result_dict[key])(value) if default_result_dict[key] is not None else value
+            for key, value in result.items()
+        }
+
         full_results.append(Result(**result))
 
         return
@@ -162,10 +171,16 @@ def plot_results(
 ) -> None:
     # scatter plot where same model is same color
 
-    for model_name, model_results in results.items():
+    colors = plt.cm.rainbow([i / len(results) for i in range(len(results))])
+
+    for i, (model_name, model_results) in enumerate(results.items()):
         for result in model_results:
             num_params = calculate_num_params(model_name, result)
-            plt.scatter(num_params, result.value, label=model_name)
+            plt.scatter(num_params, result.value, label=model_name, color=colors[i])
+
+    plt.legend()
+    plt.xlabel("Number of Parameters")
+    plt.ylabel("Accuracy" if ACCURACY_NAMES else "Perplexity")
 
     plt.show()
 
@@ -173,7 +188,7 @@ def calculate_model_params_llama(
     config: PretrainedConfig,
     result: Result,
 ) -> int:
-    reduced_param_names = set(result.param_name.split(","))
+    reduced_param_names = set(result.param_name.split(",")) if result.param_name is not None else set()
 
     num_params = config.hidden_size  # pre-lm head rmsnorm
 
