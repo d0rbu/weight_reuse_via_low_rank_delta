@@ -1,5 +1,6 @@
 import torch as th
 import torch.nn as nn
+from torch.utils.hooks import RemovableHandle
 from core.lorafy.lorafied_weight import LoRAfiedLinear
 from typing import Sequence, TypeVar, Callable
 from transformers import PreTrainedModel
@@ -12,7 +13,8 @@ def dispatch(
     model: PreTrainedModel,
     num_layers: int = 0,
     devices: Sequence[int] | None = None
-) -> None:
+) -> list[RemovableHandle]:
+    handles = []
     pre_layers, blocks, post_layers = find_blocks(model, num_layers)
 
     if devices is None:
@@ -27,7 +29,8 @@ def dispatch(
         device = int(devices[-1])
         new_device_pre_layer = pre_layer.to(device)
         setattr(pre_layer_parent, pre_layer_name, new_device_pre_layer)
-        new_device_pre_layer.register_forward_pre_hook(block_device_pre_hook(device), with_kwargs=True)
+        handle = new_device_pre_layer.register_forward_pre_hook(block_device_pre_hook(device), with_kwargs=True)
+        handles.append(handle)
 
     for i, device in enumerate(block_mappings):
         blocks[i] = blocks[i].to(int(device))
@@ -37,13 +40,16 @@ def dispatch(
         device = int(devices[-1])
         new_device_post_layer = post_layer.to(device)
         setattr(post_layer_parent, post_layer_name, new_device_post_layer)
-        new_device_post_layer.register_forward_pre_hook(block_device_pre_hook(device), with_kwargs=True)
+        handle = new_device_post_layer.register_forward_pre_hook(block_device_pre_hook(device), with_kwargs=True)
+        handles.append(handle)
 
     # return the base layers back to their original devices after a round of inference
-    model.register_forward_pre_hook(get_base_layer_devices_pre_hook)
-    model.register_forward_hook(return_base_layers_hook)
+    handles.append(model.register_forward_pre_hook(get_base_layer_devices_pre_hook))
+    handles.append(model.register_forward_hook(return_base_layers_hook))
 
     th.cuda.empty_cache()
+
+    return handles
 
 def get_base_layer_devices_pre_hook(
     module: nn.Module,

@@ -367,6 +367,10 @@ def lorafy_lm_parameter_grid_eval(
                     encoded = tokenizer(samples, return_tensors="pt", padding=True, truncation=True, max_length=context_length, return_attention_mask=True)
                     input_size = encoded.input_ids.shape[0]
                     batch_size = input_size
+
+                    log_info(f"Dispatching the model for permutalignment...", verbosity)
+                    handles = dispatch(model, num_layers, available_devices)
+
                     while batch_size > 1:
                         try:
                             attn_map_batches = []
@@ -386,7 +390,7 @@ def lorafy_lm_parameter_grid_eval(
                             th.cuda.empty_cache()
                             break
                         except RuntimeError as e:
-                            if "CUDA out of memory" in str(e):
+                            if "CUDA out of memory" in str(e) or "can\'t allocate memory" in str(e):
                                 log_warn(f"Batch size {batch_size} failed, halving...", verbosity)
                                 batch_size //= 2
                             else:
@@ -423,7 +427,7 @@ def lorafy_lm_parameter_grid_eval(
                     )
 
                 log_info(f"Dispatching model to devices...", verbosity)
-                dispatch(model, num_layers, available_devices)
+                # handles = dispatch(model, num_layers, available_devices)
                 # need to dispatch manually because if we do device_map="auto" or "balanced"
                 # when loading the model, it will also add pesky hooks to align devices
                 # which messes with my home grown solution
