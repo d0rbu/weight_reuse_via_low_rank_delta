@@ -1,6 +1,7 @@
 import os
 import json
 import matplotlib.pyplot as plt
+import math
 from typing import Self
 from core.permutalign.permutalign_model import PermutalignMode
 from transformers import AutoConfig, LlamaConfig, GemmaConfig, MistralConfig, PretrainedConfig
@@ -10,14 +11,14 @@ from dataclasses import dataclass
 
 @dataclass
 class Result:
-    permutalign_mode: str
-    orthogonalign_mode: str
-    num_weight_groups: int
-    weight_group_axis: int
-    rank: float
-    param_name: str
-    param_map: int
-    value: float
+    permutalign_mode: str = "identity"
+    orthogonalign_mode: str = json.dumps(None)
+    num_weight_groups: int = 1
+    weight_group_axis: int = 0
+    rank: float = 1.0
+    param_name: str = None
+    param_map: int | str = "0"
+    value: float = 0.0
 
     def copy(self: Self) -> "Result":
         return Result(
@@ -30,18 +31,6 @@ class Result:
             param_map=self.param_map,
             value=self.value,
         )
-
-
-default_result = Result(
-    permutalign_mode=PermutalignMode.IDENTITY,
-    orthogonalign_mode=json.dumps(None),
-    num_weight_groups=1,
-    weight_group_axis=0,
-    rank=1.0,
-    param_name=None,
-    param_map=0,
-    value=0.0,
-)
 
 def filter_results(
     results_dir: os.PathLike | str,
@@ -92,7 +81,7 @@ def filter_results(
                 
                 tasks -= to_remove
 
-            vanilla_result = default_result.copy()
+            vanilla_result = Result()
             vanilla_result.value = get_result_value(vanilla_results, tasks, task_value_name)
 
             model_results.append(vanilla_result)
@@ -102,7 +91,7 @@ def filter_results(
 
             default_values = OrderedDict([
                 (result_property, default_value)
-                for result_property, default_value in vars(default_result.copy()).items()
+                for result_property, default_value in vars(Result()).items()
                 if result_property in allowed_property_values.keys()
             ])
 
@@ -122,11 +111,11 @@ def update_full_results_recursive(
     current_properties: dict[str, int | float | str] = {},
 ) -> None:
     if len(default_values) == 0:
-        result = vars(default_result.copy())
+        result = vars(Result())
         result.update(current_properties)
         result["value"] = get_result_value(results, tasks, task_value_name)
 
-        default_result_dict = vars(default_result)
+        default_result_dict = vars(Result())
         result = {
             key: type(default_result_dict[key])(value) if default_result_dict[key] is not None else value
             for key, value in result.items()
@@ -140,11 +129,14 @@ def update_full_results_recursive(
     allowed_values = allowed_property_values[property_name]
 
     for property_value, property_results in results.items():
-        if allowed_values is not None:
-            allowed_values_type = type(next(iter(allowed_values)))
-            if not isinstance(property_value, allowed_values_type):
-                property_value = allowed_values_type(property_value)
+        try:
+            default_value_type = type(default_value)
+            if not isinstance(property_value, default_value_type):
+                property_value = default_value_type(property_value) if default_value is not None else property_value
+        except ValueError as e:
+            continue
 
+        if allowed_values is not None:
             if property_value not in allowed_values:
                 continue
 
@@ -168,21 +160,91 @@ def get_result_value(
 
 def plot_results(
     results: dict[str, list[Result]],
+    cmap: str = "jet",
 ) -> None:
-    # scatter plot where same model is same color
+    # scatter plot, color by rank (log scale)
+    cm = plt.get_cmap(cmap)
 
-    colors = plt.cm.rainbow([i / len(results) for i in range(len(results))])
+    for model_name, model_results in results.items():
+        min_rank = min([result.rank for result in model_results])
+        max_rank = max([result.rank for result in model_results])
+        for i, result in enumerate(model_results):
+            if result.value == 0:
+                continue
 
-    for i, (model_name, model_results) in enumerate(results.items()):
-        for result in model_results:
             num_params = calculate_num_params(model_name, result)
-            plt.scatter(num_params, result.value, label=model_name, color=colors[i])
+            plt.scatter(
+                num_params,
+                result.value,
+                marker=get_marker(result),
+                color=get_color(result, cm, min_rank, max_rank),
+                label=i,
+            )
 
-    plt.legend()
-    plt.xlabel("Number of Parameters")
-    plt.ylabel("Accuracy" if ACCURACY_NAMES else "Perplexity")
+        plt.title(model_name)
+        plt.xlabel("Number of Parameters")
+        plt.ylabel("Accuracy" if ACCURACY_NAMES else "Perplexity")
 
-    plt.show()
+        plt.show()
+
+def get_color(
+    result: Result,
+    cm: plt.cm.ScalarMappable,
+    min_rank: float,
+    max_rank: float,
+) -> tuple[float, float, float, float]:
+    return cm(0)
+
+    rank = math.log2(result.rank)
+    min_rank = math.log2(min_rank)
+    max_rank = math.log2(max_rank)
+
+    if max_rank > min_rank:
+        return cm((rank - min_rank) / (max_rank - min_rank))
+    else:
+        return cm(0.5)
+
+def get_marker(
+    result: Result,
+) -> str:
+    if result.rank == 1.0:  # vanilla result
+        return "*"
+        return "s"
+
+    return "o"
+    if result.param_name == "self_attn.k_proj":
+        if result.orthogonalign_mode == None:
+            if result.permutalign_mode == PermutalignMode.IDENTITY:
+                return "x"
+            elif result.permutalign_mode == PermutalignMode.OPTIMIZE:
+                return "x"
+        else:
+            if result.permutalign_mode == PermutalignMode.IDENTITY:
+                return "x"
+            elif result.permutalign_mode == PermutalignMode.OPTIMIZE:
+                return "X"
+    elif result.param_name == "self_attn.q_proj":
+        if result.orthogonalign_mode == None:
+            if result.permutalign_mode == PermutalignMode.IDENTITY:
+                return "+"
+            elif result.permutalign_mode == PermutalignMode.OPTIMIZE:
+                return "+"
+        else:
+            if result.permutalign_mode == PermutalignMode.IDENTITY:
+                return "+"
+            elif result.permutalign_mode == PermutalignMode.OPTIMIZE:
+                return "P"
+    elif result.param_name == "self_attn.q_proj,self_attn.k_proj":
+        if result.orthogonalign_mode == None:
+            if result.permutalign_mode == PermutalignMode.IDENTITY:
+                return "."
+            elif result.permutalign_mode == PermutalignMode.OPTIMIZE:
+                return "."
+        else:
+            if result.permutalign_mode == PermutalignMode.IDENTITY:
+                return "."
+            elif result.permutalign_mode == PermutalignMode.OPTIMIZE:
+                return "*"
 
 def calculate_model_params_llama(
     config: PretrainedConfig,
@@ -197,18 +259,18 @@ def calculate_model_params_llama(
         "self_attn.q_proj": config.hidden_size ** 2,
         "self_attn.v_proj": config.hidden_size ** 2,
         "self_attn.out_proj": config.hidden_size ** 2,
-        "mlp.gate_proj": config.hidden_size ** 2,
-        "mlp.up_proj": config.hidden_size ** 2,
-        "mlp.down_proj": config.hidden_size ** 2,
+        "mlp.gate_proj": config.hidden_size * config.intermediate_size,
+        "mlp.up_proj": config.hidden_size * config.intermediate_size,
+        "mlp.down_proj": config.hidden_size * config.intermediate_size,
         "input_layernorm": config.hidden_size,
         "post_attention_layernorm": config.hidden_size,
     }
-    
+
     for param_name in per_layer_weights:
         if param_name in reduced_param_names:
             per_layer_weights[param_name] *= result.rank
-            per_layer_weights[param_name] += (per_layer_weights[param_name] / result.num_weight_groups)
-    
+            per_layer_weights[param_name] += (per_layer_weights[param_name] / int(result.num_weight_groups))
+
     per_layer_params = sum(per_layer_weights.values())
 
     num_params += per_layer_params * config.num_hidden_layers
@@ -260,6 +322,7 @@ def visualize(
                 candidate_param_map = {
                     i: param_map for i in range(model_length)
                 }
+                del candidate_param_map[param_map]
 
                 possible_param_maps.add(json.dumps(candidate_param_map, sort_keys=True))
 
