@@ -29,22 +29,23 @@ def dispatch(
         device = int(devices[-1])
         new_device_pre_layer = pre_layer.to(device)
         setattr(pre_layer_parent, pre_layer_name, new_device_pre_layer)
-        handle = new_device_pre_layer.register_forward_pre_hook(block_device_pre_hook(device), with_kwargs=True)
+        handle = new_device_pre_layer.register_forward_pre_hook(align_device_pre_hook(device), with_kwargs=True)
         handles.append(handle)
 
     for i, device in enumerate(block_mappings):
         blocks[i] = blocks[i].to(int(device))
-        blocks[i].register_forward_pre_hook(block_device_pre_hook(int(block_mappings[i])), with_kwargs=True)
+        blocks[i].register_forward_pre_hook(align_device_pre_hook(int(block_mappings[i])), with_kwargs=True)
     
     for post_layer_parent, post_layer_name, post_layer in post_layers:
         device = int(devices[-1])
         new_device_post_layer = post_layer.to(device)
         setattr(post_layer_parent, post_layer_name, new_device_post_layer)
-        handle = new_device_post_layer.register_forward_pre_hook(block_device_pre_hook(device), with_kwargs=True)
+        handle = new_device_post_layer.register_forward_pre_hook(align_device_pre_hook(device), with_kwargs=True)
         handles.append(handle)
 
     # return the base layers back to their original devices after a round of inference
     handles.append(model.register_forward_pre_hook(get_base_layer_devices_pre_hook))
+    handles.append(model.register_forward_pre_hook(align_device_pre_hook(int(devices[0])), with_kwargs=True))
     handles.append(model.register_forward_hook(return_base_layers_hook))
 
     th.cuda.empty_cache()
@@ -74,7 +75,7 @@ def return_base_layers_hook(
     for base_layer, device in module._base_layer_devices.items():
         base_layer.to(device)
 
-def block_device_pre_hook(
+def align_device_pre_hook(
     device: th.device | int,
 ) -> Callable[[nn.Module, th.Tensor], th.Tensor]:
     def hook(
