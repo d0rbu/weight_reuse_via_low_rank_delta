@@ -364,19 +364,20 @@ def lorafy_lm_parameter_grid_eval(
                     context_length = config.max_position_embeddings
                     with open(os.path.join("experiment", "samples", f"{permutalignment_samples}.json"), "r") as f:
                         samples = json.load(f)  # list of strings
-                    input_ids = tokenizer(samples, return_tensors="pt", padding=True, truncation=True, max_length=context_length)
-                    input_size = input_ids.shape[0]
+                    encoded = tokenizer(samples, return_tensors="pt", padding=True, truncation=True, max_length=context_length, return_attention_mask=True)
+                    input_size = encoded.input_ids.shape[0]
                     batch_size = input_size
                     while batch_size > 1:
                         try:
                             attn_map_batches = []
                             for i in range(0, input_size, batch_size):
-                                input_ids_batch = input_ids[i:i+batch_size]
+                                input_ids_batch = encoded.input_ids[i:i+batch_size]
                                 with th.no_grad():
                                     _, attn_maps = model(
                                         input_ids = input_ids_batch,
                                         use_cache = False,
                                         output_attentions = True,
+                                        attention_mask = encoded.attention_mask[i:i+batch_size],
                                     )
                                 attn_map_batches.append(attn_maps.cpu())
 
