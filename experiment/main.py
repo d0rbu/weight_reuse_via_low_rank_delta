@@ -365,11 +365,33 @@ def lorafy_lm_parameter_grid_eval(
                     with open(os.path.join("experiment", "samples", f"{permutalignment_samples}.json"), "r") as f:
                         samples = json.load(f)  # list of strings
                     input_ids = tokenizer(samples, return_tensors="pt", padding=True, truncation=True, max_length=context_length)
-                    _, attn_maps = model(
-                        input_ids = input_ids,
-                        use_cache = False,
-                        output_attentions = True,
-                    )
+                    input_size = input_ids.shape[0]
+                    batch_size = input_size
+                    while batch_size > 1:
+                        try:
+                            attn_map_batches = []
+                            for i in range(0, input_size, batch_size):
+                                input_ids_batch = input_ids[i:i+batch_size]
+                                with th.no_grad():
+                                    _, attn_maps = model(
+                                        input_ids = input_ids_batch,
+                                        use_cache = False,
+                                        output_attentions = True,
+                                    )
+                                attn_map_batches.append(attn_maps.cpu())
+
+                            attn_maps = tuple(th.cat(attn_map_batch, dim=0) for attn_map_batch in zip(*attn_map_batches))
+                            del attn_map_batches
+                            th.cuda.empty_cache()
+                            break
+                        except RuntimeError as e:
+                            if "CUDA out of memory" in str(e):
+                                log_warn(f"Batch size {batch_size} failed, halving...", verbosity)
+                                batch_size //= 2
+                            else:
+                                raise e
+                    else:
+                        raise ValueError(f"Batch size 1 failed")
 
                     permutalign_model(
                         layers,
