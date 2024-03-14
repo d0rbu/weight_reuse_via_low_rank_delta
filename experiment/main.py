@@ -30,7 +30,9 @@ def get_model_and_tokenizer(
 ) -> tuple[PreTrainedModel, PreTrainedTokenizer]:
     model = AutoModelForCausalLM.from_pretrained(model_name, device_map=device_map)
     tokenizer = AutoTokenizer.from_pretrained(model_name)
-    tokenizer.add_special_tokens({"pad_token": "[PAD]"})
+    # tokenizer.add_special_tokens({"pad_token": "[PAD]"})
+    tokenizer.pad_token = tokenizer.eos_token
+    # tokenizer.padding_side = "left"
 
     return model, tokenizer
 
@@ -364,6 +366,7 @@ def lorafy_lm_parameter_grid_eval(
                     context_length = config.max_position_embeddings
                     with open(os.path.join("experiment", "samples", f"{permutalignment_samples}.json"), "r") as f:
                         samples = json.load(f)  # list of strings
+                    log_info(f"Tokenizing samples...", verbosity)
                     encoded = tokenizer(samples, return_tensors="pt", padding=True, truncation=True, max_length=context_length, return_attention_mask=True)
                     input_size = encoded.input_ids.shape[0]
                     batch_size = input_size
@@ -387,6 +390,7 @@ def lorafy_lm_parameter_grid_eval(
                             break
                         except RuntimeError as e:
                             if "CUDA out of memory" in str(e):
+                                th.cuda.empty_cache()
                                 log_warn(f"Batch size {batch_size} failed, halving...", verbosity)
                                 batch_size //= 2
                             else:

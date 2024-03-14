@@ -10,4 +10,4 @@ base_layers: [0]
 move_device: "current"
 tasks: ["winogrande", "wikitext"]
 orthogonalign: ["k", "q"]
-permutalign: ["identity", "optimize"]
+permutalign: ["optimize", "identity"]
