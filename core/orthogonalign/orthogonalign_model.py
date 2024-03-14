@@ -26,7 +26,7 @@ def orthogonalign_layer(
     k_name: str = "self_attn.k_proj",
     q_name: str = "self_attn.q_proj",
     verbosity: Verbosity = Verbosity.INFO,
-    move_device: str | None = None,
+    move_device: str | int | th.device | None = None,
 ) -> None:
     base_layer = layers[config.base_layer]
     derived_layer = layers[config.derived_layer]
@@ -35,6 +35,9 @@ def orthogonalign_layer(
     base_layer_q = get_nested(base_layer, q_name)
     derived_layer_k = get_nested(derived_layer, k_name)
     derived_layer_q = get_nested(derived_layer, q_name)
+
+    if isinstance(move_device, int):
+        move_device = th.device(move_device)
 
     try:
         if cache_path and os.path.exists(cache_path) and (cached_kq := th.load(cache_path, map_location=move_device or "cpu")):

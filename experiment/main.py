@@ -161,6 +161,9 @@ def lorafy_lm_parameter_grid_eval(
     available_devices = th.linspace(0, WORLD_SIZE, th.cuda.device_count() + 1)[:-1].int()
     available_devices = (available_devices == RANK).nonzero().flatten()
 
+    if move_device == "current":
+        move_device = int(available_devices[0]) if len(available_devices) >= 1 else "cpu"
+
     if not ignore_uncached_results:
         log_info("Initializing tasks...", verbosity)
 
