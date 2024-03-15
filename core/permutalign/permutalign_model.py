@@ -24,7 +24,7 @@ def permutalign_model(
     q_name: str = "self_attn.q_proj",
     v_name: str = "self_attn.v_proj",
     o_name: str = "self_attn.o_proj",
-    attn_maps: th.Tensor | None = None,
+    attn_maps: tuple[th.Tensor] | None = None,  # (L, H, A)
     verbosity: Verbosity = Verbosity.INFO,
     move_device: str | None = None,
 ) -> None:
@@ -68,7 +68,7 @@ def permutalign_model(
         permutation_matrix = permutation_matrices[layer_idx]
 
         # kronecker product with identity (apply permutation on a head-level)
-        permutation_matrix = th.kron(permutation_matrix, th.eye(head_dim))
+        permutation_matrix = th.kron(permutation_matrix, th.eye(head_dim, device=permutation_matrix.device))
 
         if move_device:
             permutation_matrix = permutation_matrix.to(move_device)
@@ -98,7 +98,7 @@ def permutalign_model(
 def calculate_permutation_matrices(
     layer: nn.ModuleList | nn.Sequential,
     num_heads: int,
-    attn_maps: th.Tensor,
+    attn_maps: tuple[th.Tensor],  # (L, H, A)
     base_layer: int = 0,
     k_name: str = "self_attn.k_proj",
     q_name: str = "self_attn.q_proj",
@@ -114,23 +114,21 @@ def calculate_permutation_matrices(
     initial_q = get_nested(layer[base_layer], q_name).weight.data
     initial_v = get_nested(layer[base_layer], v_name).weight.data
     initial_o = get_nested(layer[base_layer], o_name).weight.data
+    initial_attn_map = attn_maps[base_layer]
 
     if move_device:
         initial_k = initial_k.to(move_device)
         initial_q = initial_q.to(move_device)
         initial_v = initial_v.to(move_device)
         initial_o = initial_o.to(move_device)
-        initial_attn_map = attn_maps[base_layer].to(move_device)
-
-    initial_attn_map = initial_attn_map.transpose(0, 1)  # (H, B, T, T)
-    initial_attn_map = initial_attn_map[initial_attn_map > 0.0].view(attn_map.shape[1], -1).transpose(0, 1)  # (H, B, T, T) -> (A, H)
+        initial_attn_map = initial_attn_map.to(move_device)
 
     head_dim = initial_k.shape[0] // num_heads
     permutation_matrices = []
 
     for i, (layer, attn_map) in enumerate(zip(layer, attn_maps)):
         if i == base_layer:  # the layer we are aligning to
-            permutation_matrices.append(th.eye(head_dim).to(move_device))
+            permutation_matrices.append(th.eye(num_heads).to(move_device))
             continue
 
         # solve LAP for permutation matrix
@@ -150,10 +148,7 @@ def calculate_permutation_matrices(
             initial_v = initial_v.to(v.device)
             initial_o = initial_o.to(o.device)
 
-        masked_attn_map = attn_map.transpose(0, 1)
-        masked_attn_map = masked_attn_map[masked_attn_map > 0.0].view(attn_map.shape[1], -1)  # (H, B, T, T) -> (H, A)
-
-        similarity = initial_attn_map @ masked_attn_map
+        similarity = initial_attn_map @ attn_map.T  # (H, H)
 
         permutation_matrix = pygm.linear_solvers.hungarian(-similarity)
 

@@ -4,6 +4,7 @@ import yaml
 import time
 import argparse
 import torch as th
+from tqdm import tqdm
 from mpi4py import MPI
 from torch.nn import ModuleList, Sequential
 from transformers import AutoModelForCausalLM, AutoTokenizer, PreTrainedModel, PreTrainedTokenizer, AutoConfig
@@ -132,6 +133,7 @@ def lorafy_lm_parameter_grid_eval(
     orthogonalign: list[OrthogonalignMode] | OrthogonalignMode | None = None,
     permutalign: list[PermutalignMode] | PermutalignMode = PermutalignMode.IDENTITY,
     permutalignment_samples: str = "redpajama-tiny",
+    permutalignment_context_length: int = -1,
     k_name: str = "self_attn.k_proj",
     q_name: str = "self_attn.q_proj",
     v_name: str = "self_attn.v_proj",
@@ -289,13 +291,13 @@ def lorafy_lm_parameter_grid_eval(
                 (layer_to, layer_from): os.path.join(
                     cache_dir,
                     "orthogonalign",
-                    str(orthogonalign_hash),
+                    f"{orthogonalign_hash}.pt",
                 ) for (layer_to, layer_from), orthogonalign_hash in orthogonalign_hashes.items()
             } if orthogonalign_mode else {}
             permutalign_cache_path = os.path.join(
                 cache_dir,
                 "permutalign",
-                str(permutalign_hash),
+                f"{permutalign_hash}.pt",
             )
             raw_output_filepath = os.path.join(
                 output_dir,
@@ -360,10 +362,17 @@ def lorafy_lm_parameter_grid_eval(
                 log_info(f"Initializing model and tokenizer...", verbosity)
                 model, tokenizer, layers = get_model_tokenizer_and_layers(model_name, blocks_name)
 
+                log_info(f"Dispatching model to devices...", verbosity)
+                handles = dispatch(model, num_layers, available_devices)
+                # need to dispatch manually because if we do device_map="auto" or "balanced"
+                # when loading the model, it will also add pesky hooks to align devices
+                # which messes with my home grown solution
+                th.cuda.empty_cache()
+
                 if permutalign_mode != PermutalignMode.IDENTITY:
                     log_info(f"Permutaligning the model...", verbosity)
 
-                    context_length = config.max_position_embeddings
+                    context_length = config.max_position_embeddings if permutalignment_context_length == -1 else permutalignment_context_length
                     with open(os.path.join("experiment", "samples", f"{permutalignment_samples}.json"), "r") as f:
                         samples = json.load(f)  # list of strings
                     log_info(f"Tokenizing samples...", verbosity)
@@ -371,36 +380,54 @@ def lorafy_lm_parameter_grid_eval(
                     input_size = encoded.input_ids.shape[0]
                     batch_size = input_size
 
-                    log_info(f"Dispatching the model for permutalignment...", verbosity)
-                    handles = dispatch(model, num_layers, available_devices)
-
-                    while batch_size > 1:
-                        try:
-                            attn_map_batches = []
-                            for i in range(0, input_size, batch_size):
-                                input_ids_batch = encoded.input_ids[i:i+batch_size]
-                                with th.no_grad():
-                                    _, attn_maps = model(
+                    with th.no_grad():
+                        while batch_size > 0:
+                            try:
+                                attn_map_batches = []
+                                for i in tqdm(range(0, input_size, batch_size)):
+                                    input_ids_batch = encoded.input_ids[i:i+batch_size]
+                                    model_out = model(
                                         input_ids = input_ids_batch,
                                         use_cache = False,
                                         output_attentions = True,
                                         attention_mask = encoded.attention_mask[i:i+batch_size],
                                     )
-                                attn_map_batches.append(attn_maps.cpu())
+                                    attn_maps = model_out["attentions"]
+                                    padding_mask = encoded.attention_mask[i:i+batch_size]
+                                    padding_mask = padding_mask.unsqueeze(-1).unsqueeze(0).bool()  # (1, B, T, 1)
+                                    padding_mask = padding_mask.expand(config.num_attention_heads, padding_mask.shape[1], padding_mask.shape[2], padding_mask.shape[2])  # (H, B, T, T)
 
-                            attn_maps = tuple(th.cat(attn_map_batch, dim=0) for attn_map_batch in zip(*attn_map_batches))
-                            del attn_map_batches
-                            th.cuda.empty_cache()
-                            break
-                        except RuntimeError as e:
-                            if "CUDA out of memory" in str(e) or "can\'t allocate memory" in str(e):
-                                th.cuda.empty_cache()
-                                log_warn(f"Batch size {batch_size} failed, halving...", verbosity)
-                                batch_size //= 2
-                            else:
-                                raise e
-                    else:
-                        raise ValueError(f"Batch size 1 failed")
+                                    attention_mask = th.ones((1, 1, padding_mask.shape[2], padding_mask.shape[3]), device=padding_mask.device).bool()  # (1, 1, T, T)
+                                    attention_mask = th.triu(attention_mask, diagonal = 1)
+                                    attention_mask = attention_mask.expand(*padding_mask.shape)  # (H, B, T, T)
+
+                                    attention_mask = attention_mask & padding_mask
+
+                                    attn_map_batch = []
+                                    for attn_map in attn_maps:
+                                        attention_mask = attention_mask.to(attn_map.device)
+                                        head_dim = attn_map.shape[1]
+                                        attn_map = attn_map.transpose(0, 1)[attention_mask].cpu()  # (D)
+                                        attn_map = attn_map.view(head_dim, -1)  # (D) -> (H, A)
+                                        attn_map_batch.append(attn_map)
+
+                                    attn_map_batches.append(attn_map_batch)
+
+                                    del attn_maps, attn_map, attn_map_batch, model_out
+                                    th.cuda.empty_cache()
+
+                                attn_maps = tuple(th.cat(attn_map_batch, dim=1) for attn_map_batch in zip(*attn_map_batches))
+                                del attn_map_batches
+                                break
+                            except RuntimeError as e:
+                                if "CUDA out of memory" in str(e) or "can\'t allocate memory" in str(e):
+                                    th.cuda.empty_cache()
+                                    log_warn(f"Batch size {batch_size} failed, halving...", verbosity)
+                                    batch_size //= 2
+                                else:
+                                    raise e
+                        else:
+                            raise ValueError(f"Batch size 1 failed")
 
                     permutalign_model(
                         layers,
@@ -429,12 +456,6 @@ def lorafy_lm_parameter_grid_eval(
                         q_name = q_name,
                         move_device = move_device
                     )
-
-                log_info(f"Dispatching model to devices...", verbosity)
-                # handles = dispatch(model, num_layers, available_devices)
-                # need to dispatch manually because if we do device_map="auto" or "balanced"
-                # when loading the model, it will also add pesky hooks to align devices
-                # which messes with my home grown solution
 
                 log_info(f"LoRAfying the parameters...", verbosity)
                 lorafy_parameters_layerwise(
@@ -508,7 +529,8 @@ if __name__ == "__main__":
     parser.add_argument("--process_timeout", type=int, default=3600, help=f"If multiple processes are running and we run into a file being processed by another process, consider the other process dead if it has been at least this many seconds.")
     parser.add_argument("--orthogonalign", type=list[str], default=None, help="null to keep models as they are, otherwise pass a string literal \"k\"/\"q\" or list of strings. It should tell us which matrix (k or q) to orthogonalign.")
     parser.add_argument("--permutalign", type=list[str], default=PermutalignMode.IDENTITY, help="Either \"identity\" or \"optimize\", or a list of those strings. It should tell us which permutalignment mode(s) to use, identity by default.")
-    parser.add_argument("--permutalignment_samples", type=str, default="redpajama-tiny", help="Which samples to use for permutalignment (check experiments/samples directory)")
+    parser.add_argument("--permutalignment_samples", type=str, default="redpajama-micro", help="Which samples to use for permutalignment (check experiments/samples directory)")
+    parser.add_argument("--permutalignment_context_length", type=int, default=1024, help="Maximum context length for permutalignment samples, -1 indicates full model context length.")
     parser.add_argument("--k_name", type=str, default="self_attn.k_proj", help="Name of the k matrix for orthogonalignment/permutalignment")
     parser.add_argument("--q_name", type=str, default="self_attn.q_proj", help="Name of the q matrix for orthogonalignment/permutalignment")
     parser.add_argument("--v_name", type=str, default="self_attn.v_proj", help="Name of the v matrix for orthogonalignment/permutalignment")
