@@ -215,6 +215,7 @@ def lorafy_lm_parameter_grid_eval(
 
         del raw_full_results
 
+    permutalignment_batch_size = None
     exp_idx = -1
     for permutalign_mode, orthogonalign_mode, weight_group_config, rank, param_names in product(permutalign, orthogonalign, weight_group_configs, ranks, param_name_combinations):
         if not isinstance(param_names, tuple):
@@ -378,22 +379,23 @@ def lorafy_lm_parameter_grid_eval(
                     log_info(f"Tokenizing samples...", verbosity)
                     encoded = tokenizer(samples, return_tensors="pt", padding=True, truncation=True, max_length=context_length, return_attention_mask=True)
                     input_size = encoded.input_ids.shape[0]
-                    batch_size = input_size
+                    if permutalignment_batch_size is None:
+                        permutalignment_batch_size = input_size
 
                     with th.no_grad():
-                        while batch_size > 0:
+                        while permutalignment_batch_size > 0:
                             try:
                                 attn_map_batches = []
-                                for i in tqdm(range(0, input_size, batch_size)):
-                                    input_ids_batch = encoded.input_ids[i:i+batch_size]
+                                for i in tqdm(range(0, input_size, permutalignment_batch_size)):
+                                    input_ids_batch = encoded.input_ids[i:i+permutalignment_batch_size]
                                     model_out = model(
                                         input_ids = input_ids_batch,
                                         use_cache = False,
                                         output_attentions = True,
-                                        attention_mask = encoded.attention_mask[i:i+batch_size],
+                                        attention_mask = encoded.attention_mask[i:i+permutalignment_batch_size],
                                     )
                                     attn_maps = model_out["attentions"]
-                                    padding_mask = encoded.attention_mask[i:i+batch_size]
+                                    padding_mask = encoded.attention_mask[i:i+permutalignment_batch_size]
                                     padding_mask = padding_mask.unsqueeze(-1).unsqueeze(0).bool()  # (1, B, T, 1)
                                     padding_mask = padding_mask.expand(config.num_attention_heads, padding_mask.shape[1], padding_mask.shape[2], padding_mask.shape[2])  # (H, B, T, T)
 
@@ -422,8 +424,8 @@ def lorafy_lm_parameter_grid_eval(
                             except RuntimeError as e:
                                 if "CUDA out of memory" in str(e) or "can\'t allocate memory" in str(e):
                                     th.cuda.empty_cache()
-                                    log_warn(f"Batch size {batch_size} failed, halving...", verbosity)
-                                    batch_size //= 2
+                                    log_warn(f"Batch size {permutalignment_batch_size} failed, halving...", verbosity)
+                                    permutalignment_batch_size //= 2
                                 else:
                                     raise e
                         else:

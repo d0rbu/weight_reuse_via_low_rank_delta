@@ -8,6 +8,6 @@ weight_group_configs:
   - [1, 0]  # no grouping
 base_layers: [0]
 move_device: "current"
-tasks: ["winogrande", "wikitext"]
+tasks: ["winogrande", "wikitext", "mmlu", "hellaswag", "lambada"]
 orthogonalign: ["k", "q"]
 permutalign: ["identity", "optimize"]
