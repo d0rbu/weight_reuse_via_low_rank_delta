@@ -2,7 +2,7 @@ import os
 import torch as th
 import torch.nn as nn
 import pygmtools as pygm
-from core.utils import Verbosity, log_warn, get_nested
+from core.utils import Verbosity, log_warn, get_nested, log_info_1
 from enum import StrEnum
 
 
@@ -67,10 +67,11 @@ def permutalign_model(
 
         permutation_matrix = permutation_matrices[layer_idx]
 
+        log_info_1(f"Permutation matrix {layer_idx}:\n{permutation_matrix}", verbosity)
         # kronecker product with identity (apply permutation on a head-level)
         permutation_matrix = th.kron(permutation_matrix, th.eye(head_dim, device=permutation_matrix.device))
 
-        if move_device:
+        if move_device is not None:
             permutation_matrix = permutation_matrix.to(move_device)
             permuted_k = permutation_matrix @ k.weight.data.to(move_device)
             permuted_q = permutation_matrix @ q.weight.data.to(move_device)
@@ -80,7 +81,7 @@ def permutalign_model(
             permuted_k = permutation_matrix.to(k.weight.device) @ k.weight.data
             permuted_q = permutation_matrix.to(q.weight.device) @ q.weight.data
             permuted_v = permutation_matrix.to(v.weight.device) @ v.weight.data
-            permuted_o = o.weight.data @ permutation_matrix.T.to(o.weight.device)
+            permuted_o = o.weight.data @ permutation_matrix.to(o.weight.device).T
 
         # Apply permutation matrices
         k.weight.data.copy_(permuted_k)
@@ -123,7 +124,6 @@ def calculate_permutation_matrices(
         initial_o = initial_o.to(move_device)
         initial_attn_map = initial_attn_map.to(move_device)
 
-    head_dim = initial_k.shape[0] // num_heads
     permutation_matrices = []
 
     for i, (layer, attn_map) in enumerate(zip(layer, attn_maps)):
@@ -150,8 +150,8 @@ def calculate_permutation_matrices(
 
         similarity = initial_attn_map @ attn_map.T  # (H, H)
 
-        permutation_matrix = pygm.linear_solvers.hungarian(-similarity)
+        permutation_matrix = pygm.linear_solvers.hungarian(-similarity).T
 
         permutation_matrices.append(permutation_matrix)
-    
+
     return permutation_matrices

@@ -50,8 +50,10 @@ def lorafy_parameter_layerwise(
                 if any(key.endswith(param_name_ending) for param_name_ending in lora_name_endings)
             }
         except RuntimeError as e:
+            log_warn(e, verbosity)
             log_warn(f"Unable to read cache file {cache_file}, recalculating...", verbosity)
-            os.remove(cache_file)
+            if os.path.exists(cache_file):
+                os.remove(cache_file)
             load_from_cache = False
 
     to_from_layer_generator = mapping.items()

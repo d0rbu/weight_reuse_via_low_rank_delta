@@ -70,14 +70,17 @@ def orthogonalign_layer(
     derived_weight = derived_layer_k if config.mode == OrthogonalignMode.K else derived_layer_q
     base_weight = base_layer_k if config.mode == OrthogonalignMode.K else base_layer_q
     derived_weight, base_weight = derived_weight.weight.data.to(move_device), base_weight.weight.data.to(move_device)
+    derived_k, derived_q = derived_layer_k.weight.data.to(move_device), derived_layer_q.weight.data.to(move_device)
 
     # Split it up by groups
     base_weight = base_weight.view(config.num_weight_groups, -1, base_weight.shape[-1])
     derived_weight = derived_weight.view(config.num_weight_groups, -1, derived_weight.shape[-1])
+    derived_k = derived_k.view(config.num_weight_groups, -1, derived_k.shape[-1])
+    derived_q = derived_q.view(config.num_weight_groups, -1, derived_q.shape[-1])
 
     # Calculate the orthogonaligned weight groups. assumes same number of groups for both base and derived weights, so no gqa or mqa support for now
-    new_derived_k = th.empty_like(derived_weight)
-    new_derived_q = th.empty_like(derived_weight)
+    new_derived_k = th.empty_like(derived_k)
+    new_derived_q = th.empty_like(derived_q)
 
     for i in range(config.num_weight_groups):
         U, _, Vh = th.linalg.svd(base_weight[i] @ derived_weight[i].T)
@@ -87,11 +90,11 @@ def orthogonalign_layer(
 
         M = M.to(derived_weight.device)
 
-        new_derived_k[i] = M @ derived_weight[i]
-        new_derived_q[i] = M @ derived_weight[i]
+        new_derived_k[i] = M @ derived_k[i]
+        new_derived_q[i] = M @ derived_q[i]
 
     del M
-    
+
     new_derived_k = new_derived_k.view(-1, new_derived_k.shape[-1])
     new_derived_q = new_derived_q.view(-1, new_derived_q.shape[-1])
 

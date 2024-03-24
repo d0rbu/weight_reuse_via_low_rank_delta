@@ -14,6 +14,7 @@ from core.orthogonalign.orthogonalign_model import orthogonalign_model_layerwise
 from core.permutalign.permutalign_model import PermutalignMode, permutalign_model
 from core.dispatch import dispatch
 from core.utils import get_param_ancestors, log_error, log_warn, log_info, log_info_1, Verbosity, powerset, hash
+from experiment.helpers import remove_circular_refs
 from itertools import product, chain
 from collections import defaultdict
 from typing import Iterable, Collection, Mapping, Literal, Sequence
@@ -98,6 +99,8 @@ def vanilla_lm_eval(
             tasks = uncached_tasks,
             batch_size="auto",
         )
+        remove_circular_refs(results)
+
         cached_task_results.update(results["results"])
         results.update(cached_raw_task_results)
         results["results"] = cached_task_results
@@ -125,7 +128,7 @@ def lorafy_lm_parameter_grid_eval(
     output_dir: os.PathLike | str = "outputs/",
     model_name: str = "meta-llama/Llama-2-7b-hf",
     blocks_name: str = "model.layers",
-    ranks: Iterable[int | float] = (1/16, 1/8, 1/4),
+    ranks: Iterable[int | float] = (1/4, 1/8, 1/16),
     param_name_combinations: Iterable[Iterable[str]] = powerset(("self_attn.q_proj", "self_attn.k_proj")),
     mappings: Collection[dict[int, int]] | None = None,
     base_layers: Sequence[int] | int = (0,),
@@ -190,7 +193,7 @@ def lorafy_lm_parameter_grid_eval(
         mappings = layer_mappings(num_layers, base_layers)
         log_info_1(str(mappings), verbosity)
 
-    assert all(orthogonalign_mode in OrthogonalignMode.__members__.values() for orthogonalign_mode in orthogonalign), f"Invalid orthogonalign modes {orthogonalign}"
+    # assert all(orthogonalign_mode in OrthogonalignMode.__members__.values() for orthogonalign_mode in orthogonalign), f"Invalid orthogonalign modes {orthogonalign}"
     assert all(permutalign_mode in PermutalignMode.__members__.values() for permutalign_mode in permutalign), f"Invalid permutalign modes {permutalign}"
 
     full_results = RecursiveDefaultDict()
@@ -314,19 +317,19 @@ def lorafy_lm_parameter_grid_eval(
             cached_output_file = raw_output_filepath if os.path.exists(raw_output_filepath) else None
 
             log_info(f"Checking results caches...", verbosity)
-            if cached_output_results := full_results.get(permutalign_mode, {}) \
+            if (cached_output_results := full_results.get(permutalign_mode, {}) \
                                                     .get(orthogonalign_mode, {}) \
                                                     .get(num_weight_groups, {}) \
                                                     .get(weight_group_axis, {}) \
                                                     .get(rank, {}) \
                                                     .get(param_names_str, {}) \
-                                                    .get(mapping_key, None):
+                                                    .get(mapping_key, None)):
                 log_info(f"Found results in full results cache...", verbosity)
                 cached_task_results.update(cached_output_results)
                 if set(tasks).issubset(cached_task_results.keys()):
                     continue
 
-            if cached_output_file:
+            if cached_output_file is not None:
                 with open(cached_output_file, "r", encoding="utf-8") as f:
                     results = json.load(f)
 
@@ -400,7 +403,7 @@ def lorafy_lm_parameter_grid_eval(
                                     padding_mask = padding_mask.expand(config.num_attention_heads, padding_mask.shape[1], padding_mask.shape[2], padding_mask.shape[2])  # (H, B, T, T)
 
                                     attention_mask = th.ones((1, 1, padding_mask.shape[2], padding_mask.shape[3]), device=padding_mask.device).bool()  # (1, 1, T, T)
-                                    attention_mask = th.triu(attention_mask, diagonal = 1)
+                                    attention_mask = th.tril(attention_mask)
                                     attention_mask = attention_mask.expand(*padding_mask.shape)  # (H, B, T, T)
 
                                     attention_mask = attention_mask & padding_mask
@@ -483,6 +486,7 @@ def lorafy_lm_parameter_grid_eval(
                     tasks = uncached_tasks,
                     batch_size="auto",
                 )
+                remove_circular_refs(results)
                 results["lorafy_config"] = {
                     "num_weight_groups": num_weight_groups,
                     "weight_group_axis": weight_group_axis,
@@ -499,6 +503,8 @@ def lorafy_lm_parameter_grid_eval(
                 log_info_1(f"Raw output written to {raw_output_filepath}", verbosity)
 
             results = results["results"]
+
+            log_info(f"Results:\n{results}", verbosity)
 
             full_results[permutalign_mode][orthogonalign_mode][num_weight_groups][weight_group_axis][rank][param_names_str][mapping_key] = results
 
@@ -517,7 +523,7 @@ if __name__ == "__main__":
     parser.add_argument("--output_dir", type=str, default="outputs/", help="Path to the output directory")
     parser.add_argument("--model_name", type=str, default="meta-llama/Llama-2-7b-hf", help="Huggingface model name")
     parser.add_argument("--blocks_name", type=str, default="model.layers", help="Name of the blocks in the model")
-    parser.add_argument("--ranks", type=float, nargs="+", default=[1/16, 1/8, 1/4], help="Ranks to evaluate")
+    parser.add_argument("--ranks", type=float, nargs="+", default=[1/4, 1/8, 1/16], help="Ranks to evaluate")
     parser.add_argument("--param_name_combinations", type=str, nargs="+", default=powerset(("self_attn.q_proj", "self_attn.k_proj")), help="Parameter name combinations to evaluate")
     parser.add_argument("--mappings", type=list, default=None, help="Mappings to evaluate")
     parser.add_argument("--base_layers", type=list, default=(0,), help="Either a list of base layers or the number of base layers; the last will generate all combinations of that many base layers")
